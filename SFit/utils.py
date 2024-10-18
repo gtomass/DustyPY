@@ -5,18 +5,22 @@ import glob
 import pandas as pd
 import astropy
 import os
+import astropy.units as u
 
 
 
-def ScatterPlot(Flux, Wavelength, unit = {'x':'Wavelength', 'y': 'Flux'}, scale='linear',kwargs={}):
+def ScatterPlot(Flux, Wavelength, unit = {'x':'Wavelength', 'y': 'Flux'}, xlim = {} , ylim = {}, scale='linear',kwargs={}):
     """Create a scatter plot
 
     Args:
         Flux (array): Flux 
         Wavelength (array): Wavelength
         unit (dict, optional): Description of what is show on each axes. Defaults to {'x':'Wavelength', 'y': 'Flux'}.
+        xlim (dict, optional): x axis limit.
+        ylim (dict, optional): y axis limit.
         scale (str, optional): Y axe scale. Defaults to 'linear'.
         kwargs (dict, optional): matplolib.pyplot kwargs. Defaults to {}.
+
     """
     fig,ax = plt.subplots()
 
@@ -25,6 +29,10 @@ def ScatterPlot(Flux, Wavelength, unit = {'x':'Wavelength', 'y': 'Flux'}, scale=
     ax.set_ylabel(f'{unit['y']}')
 
     ax.set_yscale(scale)
+
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
+    ax.invert_yaxis()
 
     plt.show()
 
@@ -106,6 +114,30 @@ def ChangeParameter(Path,change,car):
         file[line] = new_line
 
     SaveFile(Path,file)
+
+def ListToDict(keys,values):
+     key_value_pairs = zip(keys, values)
+     return dict(key_value_pairs)
+
+def SuppCarList(list,car):
+     return [el.split('\n')[0] for el in list if el not in car]
+
+def GetColumnSpectrum(file, index, index_header=0):
+     array = np.asarray(file[index_header:])
+     col = np.array([el.split('  ')[1:-1] for el in array],dtype=float).T[index]
+     return col
+
+def WattToJansky(Flux, Wavelength):
+     return (Flux * u.W/u.m**2).to(u.Jy,equivalencies=u.spectral_density(Wavelength * u.um))
+
+def UmToMeter(Wavelength):
+     return (Wavelength * u.um).to(u.m)
+
+def CalculRayonVrai(results,L):
+     return results['r1(cm)']*np.sqrt(L/1e4) *1e-2
+
+def CalculFluxTotal(F,r_vrai,distance):
+     return F*(4*np.pi*r_vrai**2)/(4*np.pi*distance**2)
 
 if __name__=="__main__":
      pass

@@ -8,9 +8,10 @@ import os
 
 class Dusty():
 
-    def __init__(self, PATH='', Model=Model):
+    def __init__(self, PATH='', Model=Model, Lestimation=1e4):
         self._dustyPath = PATH
         self._Model = Model
+        self._Lest = Lestimation
         self._DustyReconizer = {'BB': 'Number of BB',
                                 'Temperature': 'Temperature', 
                                 'Luminosities': 'Luminosities',
@@ -66,8 +67,31 @@ class Dusty():
         subprocess.check_call(['./dusty'],cwd=self._dustyPath)
 
     def GetResults(self):
-        print('Not implemented yet')
-        return None
+        result_file = utils.LoadFile(self._dustyPath+self._Model.get_Name()+'.out')
+        line = result_file[utils.SearchLine(result_file,'tau0')].split(' ')
+        keys = utils.SuppCarList(line, ['###','','\n'])
+        line = result_file[utils.SearchLine(result_file,'tau0') + 3].split(' ')
+        values = [float(el) for el in utils.SuppCarList(line,['','1','\n'])]
+        return utils.ListToDict(keys,values)
+    
+    def GetSED(self,distance, Jansky = True , um = True):
+
+        results = self.GetResults()
+
+        r_vrai = utils.CalculRayonVrai(results,self._Lest)
+        FTot = utils.CalculFluxTotal(results['F1(W/m2)'],r_vrai,distance)
+
+        SED_file = utils.LoadFile(self._dustyPath+self._Model.get_Name()+'.stb')
+        Wavelengths = utils.GetColumnSpectrum(SED_file,index = 0, index_header=4)
+        Flux = FTot*utils.GetColumnSpectrum(SED_file,index=1,index_header=4)
+
+        if Jansky:
+            Flux = utils.WattToJansky(Flux,Wavelengths)
+        if not um:
+            Wavelengths = utils.UmToMeter(Wavelengths)
+
+        return Wavelengths,Flux
+    
 
     def __Check(self):
         for species in self._Model.get_Dust().get_Composition():
