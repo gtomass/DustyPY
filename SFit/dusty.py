@@ -2,13 +2,23 @@ import subprocess
 import glob
 import SFit.utils as utils 
 from SFit.stars import Model
+import os
+
+
 
 class Dusty():
 
     def __init__(self, PATH='', Model=Model):
         self._dustyPath = PATH
         self._Model = Model
+        self._DustyReconizer = {'BB': 'Number of BB',
+                                'Temperature': 'Temperature', 
+                                'Luminosities': 'Luminosities',
+                                'Opacity': 'tau(min)',
+                                'Composition': 'Number of additional components',
+                                'Abundances': 'Abundances for these components'}
         self.__Check()
+        self.__CreateDustyFile()
 
     def set_Model(self, Model):
         self._Model = Model
@@ -26,57 +36,27 @@ class Dusty():
         
 
     def ChangeParameter(self):
-        i_T,i_tau,i_comp,i_abun= 0,0,0,0
-        file = []
-        line_T,line_tau, line_comp, line_abun = [],[],[],[]
 
         name = self._Model.get_Name()
         Stars = self._Model.get_Stars()
 
         T = [str(Star.get_Temperature()) for Star in Stars]
+        L = [str(Star.get_Luminosity())for Star in Stars]
+
         dust = self._Model.get_Dust()
-
-        with open(self._dustyPath+name+'.inp' , 'r') as f:
-            lines = f.readlines()
-            for j,lin in enumerate(lines):
-                if 'Temperature' in lin and i_T == 0:
-                    i_T=j
-                    line_T=lin.split(' ')
-                if 'tau(min)' in lin and i_tau == 0:
-                    i_tau=j
-                    line_tau=lin.split(' ')
-                if 'Number of additional components' in lin and i_comp == 0:
-                    i_comp = j
-                    line_comp = lin.split(' ')
-                if 'Abundances for these components' in lin and i_abun == 0:
-                    i_abun = j
-                    line_abun = lin.split(' ')
-                
-            file = lines
-
-        line_T[-2] = f'{",".join(T)}'
-        line_T = " ".join(line_T)
-        file[i_T] = line_T
+        comp = " \n        ".join(f'{'Lib_nk/'+comp}'+'.nk' for comp in dust.get_Composition().keys())
+        nbcomp = str(len(dust.get_Composition().keys()))
+        abondances = ", ".join(f'{ab}' for ab in dust.get_Composition().values())
         
-        line_tau[-10] = f'{dust.get_tau()}'
-        line_tau[-13] = f'{dust.get_tau()};'
-        line_tau = " ".join(line_tau)
-        file[i_tau] = line_tau
+        change = {  'BB': f'        	Number of BB = {len(T)} \n',
+                    'Temperature': f'        	Temperature = {', '.join(T)} K \n', 
+                    'Luminosities': f'        	Luminosities = {', '.join(L)} \n',
+                    'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n' ,
+                    'Composition': f'	Number of additional components = {nbcomp} properties listed in: \n        {comp}',
+                    'Abundances': f'   Abundances for these components = {abondances} \n \n'    ,
+                }
 
-        line_comp[5] = str(len(dust.get_Composition().keys()))
-        line_comp[9] = ",".join(f'{comp}'+'.nk' for comp in dust.get_Composition().keys())
-        line_comp = " ".join(line_comp) + '\n'
-        file[i_comp] = line_comp
-
-        print(line_abun)
-
-        line_abun[8] = ",".join(f'{ab}' for ab in dust.get_Composition().values())
-        line_abun = " ".join(line_abun)
-        file[i_abun] = line_abun
-
-
-        with open(self._dustyPath+name+'.inp' , 'w') as f:
-            f.write("".join(file))
+        utils.ChangeParameter(self._dustyPath+name+'.inp',change=change,car=self._DustyReconizer)
 
     def PrintParam(self):
         name = self._Model.get_Name()
@@ -94,3 +74,11 @@ class Dusty():
             if species not in self.AvailableComposition():
                 raise ValueError(f'The following species does not exist: {species}')
 
+        if sum([Star.get_Luminosity() for Star in self._Model.get_Stars()]) != 1.:
+            raise Exception('Sum of Luminosities must be 1')
+
+    def __CreateDustyFile(self):
+        if self._dustyPath+self._Model.get_Name()+'.inp' in glob.glob(self._dustyPath):
+            pass
+        else:
+            subprocess.call([f'cp {os.getcwd()+'/SFit/Mod.inp'} {self._dustyPath+self._Model.get_Name()+'.inp'}'],shell=True)

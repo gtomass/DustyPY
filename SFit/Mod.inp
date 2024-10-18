@@ -30,9 +30,9 @@
   I PHYSICAL PARAMETERS                                                 
      1) External radiation:                                             
         	Spectrum =  1  
-        	Number of BB = 2 
-        	Temperature = 4000,7000 K 
-        	Luminosities = 0.5,0.5 
+        	Number of BB =  1
+        	Temperature = 7000 K
+         Luminosities = 1
         
      2) Dust Properties 
      
@@ -42,9 +42,11 @@
                Sil-Ow  Sil-Oc  Sil-DL  grf-DL  amC-Hn  SiC-Pg 
            x =  0.00    0.00    0.00    0.00   0.00    0.00
 
-	Number of additional components = 0 properties listed in: 
+	Number of additional components = 1 properties listed in: Mg2SiO4.nk
+
    
-   Abundances for these components =        2.2 Grain size distribution
+   Abundances for these components = 1     
+       2.2 Grain size distribution
 
 	  Size distribution = 2
           q = 3.5, a(min) = 0.005 micron, a(max) = 0.25 micron 
@@ -61,7 +63,8 @@
      4) Optical Depth     
         - grid type = 1                    % linear grid
         - lambda0 = 0.55 micron            % optical depth specified 
-        - tau(min) = 0.1; tau(max) = 0.1  % for the visual wavelength        - number of models = 1            
+        - tau(min) = 0.0; tau(max) = 0.0  % for the visual wavelength   
+        - number of models = 1            
 
   ----------------------------------------------------------------------
                                                                         
@@ -90,7 +93,7 @@
 
         FILE DESCRIPTION                               FLAG        
        ------------------------------------------------------------     
-       - verbosity flag;                               verbose = 0
+       - verbosity flag;                               verbose = 1
        - properties of emerging spectra;             fname.spp = 1    
        - detailed spectra for each model;           fname.s### = 1   
        - images at specified wavelengths;           fname.i### = 0

@@ -4,6 +4,9 @@ import subprocess
 import glob
 import pandas as pd
 import astropy
+import os
+
+
 
 def ScatterPlot(Flux, Wavelength, unit = {'x':'Wavelength', 'y': 'Flux'}, scale='linear',kwargs={}):
     """Create a scatter plot
@@ -73,13 +76,41 @@ def LoadFits(file):
     """
     return astropy.io.fits.open(file)[0].data 
 
-def SearchLine(f,line):
-     for i,lines in enumerate(f):
+def SearchLine(file,line):
+    for i,lines in enumerate(file):
         if line in lines:
             return i 
+    raise Exception(f'This line does dot exist: {line}')
+
+# def SearchStr(line,car):
+#     for i,seq in enumerate(line.split(' ')):
+#         if car in seq:
+#             return i
+#     return None
+
+# def ModifyStr(line, index, car):
+#     l = line.split(' ')
+#     l[index] = car
+#     return ' '.join(l)
+
+def SaveFile(Path,file):
+    with open(Path , 'w') as f:
+            f.write("".join(file))
+
+def ChangeParameter(Path,change,car):
+     
+    file = LoadFile(Path)
+    for param in change.keys():
+        line = SearchLine(file,car[param])
+        new_line = change[param]
+        file[line] = new_line
+
+    SaveFile(Path,file)
 
 if __name__=="__main__":
-     
-     f = LoadFile('/Users/gabriel/Documents/SFit/AFGL4106.inp')
-     i = SearchLine(f, 'Number of additional components')
-     print(f[i])
+     pass
+    #  f = LoadFile('/Users/gabriel/Documents/SFit/AFGL4106.inp')
+    #  i = SearchLine(f, 'Number of additional components')
+    #  j = SearchStr(f[i], '.nk')  
+    #  print(f[i])
+    #  print(ModifyStr(f[i], j, 'prout'))
