@@ -6,6 +6,8 @@ import pandas as pd
 import astropy
 import os
 import astropy.units as u
+from scipy.interpolate import make_interp_spline
+from pymcmcstat.MCMC import MCMC
 
 
 
@@ -138,6 +140,42 @@ def CalculRayonVrai(results,L):
 
 def CalculFluxTotal(F,r_vrai,distance):
      return F*(4*np.pi*r_vrai**2)/(4*np.pi*distance**2)
+
+def Interpolate(Wavelength, Flux, order=3):
+    return make_interp_spline(Wavelength, Flux, order)
+
+def model(q,x,y):
+    I = q
+    return I*Interpolate(x,y)(x)
+
+def Chi2(theta,data):
+    try:
+        xdata = data.xdata[0]
+        ydata = data.ydata[0]
+    except AttributeError:
+        xdata,ydata = data
+    
+    ymodel = model(theta[:2], xdata[0], ydata[0]).reshape(ydata.shape)
+    # calc sos
+    ss = np.nansum((ymodel - ydata)**2)
+    return ss
+
+def SetMCMCParam(mc=MCMC, param={}):
+     
+     for par in param.keys():
+          mc.parameters.add_model_parameter(name = par,
+                                            theta0 = param[par]['theta0'],
+                                            minimum = param[par]['minimum'],
+                                            maximum = param[par]['maximum'])
+          
+def SetMCMC(mc=MCMC,param={}):
+    mc.simulation_options.define_simulation_options(nsimu=param['nsimu'],
+                                                    updatesigma=param['updatesigma'],
+                                                    method=param['method'],
+                                                    adaptint=param['adaptint'],
+                                                    verbosity=param['verbosity'],
+                                                    waitbar=param['waitbar'])
+
 
 if __name__=="__main__":
      pass
