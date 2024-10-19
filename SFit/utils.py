@@ -38,6 +38,33 @@ def ScatterPlot(Flux, Wavelength, unit = {'x':'Wavelength', 'y': 'Flux'}, xlim =
 
     plt.show()
 
+def Plot(Flux, Wavelength, unit = {'x':'Wavelength', 'y': 'Flux'}, xlim = {} , ylim = {}, scale='linear',kwargs={}):
+    """Create a scatter plot
+
+    Args:
+        Flux (array): Flux 
+        Wavelength (array): Wavelength
+        unit (dict, optional): Description of what is show on each axes. Defaults to {'x':'Wavelength', 'y': 'Flux'}.
+        xlim (dict, optional): x axis limit.
+        ylim (dict, optional): y axis limit.
+        scale (str, optional): Y axe scale. Defaults to 'linear'.
+        kwargs (dict, optional): matplolib.pyplot kwargs. Defaults to {}.
+
+    """
+    fig,ax = plt.subplots()
+
+    ax.plot(Wavelength,Flux,**kwargs)
+    ax.set_xlabel(f'{unit['x']}')
+    ax.set_ylabel(f'{unit['y']}')
+
+    ax.set_yscale(scale)
+
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
+    #ax.invert_yaxis()
+
+    plt.show()
+
 def PrintFile(file, stop=-1):
     """Print a file
 
@@ -146,7 +173,10 @@ def Interpolate(Wavelength, Flux, order=3):
 
 def model(q,x,y):
     I = q
-    return I*Interpolate(x,y)(x)
+    try:
+        return I*Interpolate(x.flatten(),y.flatten())(x.flatten())
+    except:
+        return I*Interpolate(x,y)(x)
 
 def Chi2(theta,data):
     try:
@@ -155,7 +185,7 @@ def Chi2(theta,data):
     except AttributeError:
         xdata,ydata = data
     
-    ymodel = model(theta[:2], xdata[0], ydata[0]).reshape(ydata.shape)
+    ymodel = model(theta[:2], xdata, ydata).reshape(ydata.shape)
     # calc sos
     ss = np.nansum((ymodel - ydata)**2)
     return ss
@@ -175,7 +205,6 @@ def SetMCMC(mc=MCMC,param={}):
                                                     adaptint=param['adaptint'],
                                                     verbosity=param['verbosity'],
                                                     waitbar=param['waitbar'])
-
 
 if __name__=="__main__":
      pass
