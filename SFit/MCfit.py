@@ -1,7 +1,7 @@
 import pymcmcstat
 import pymcmcstat.MCMC
-import utils
-import Data
+import SFit.utils as utils
+import SFit.Data as Data
 import numpy as np
 
 
@@ -36,20 +36,19 @@ class Fit():
     def get_Results(self):
         return self._Results
 
-    def Fit(self):
+    def Fit(self, Chi2):
         y= self._Data.get_ydata()
         x= self._Data.get_xdata()
         self._Model.data.add_data_set(x,y)
         self.set_Model()
 
-        self.set_Chi2Func(utils.Chi2)
+        self.set_Chi2Func(Chi2)
         self._Model.run_simulation()
 
         results = {}
         results = self._Model.simulation_results.results.copy()
 
         self._Results = results
-        return None
 
     def PrintResults(self):
         chain = self._Results['chain']

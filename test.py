@@ -1,6 +1,7 @@
 import SFit.stars as stars
 import SFit.dusty as dusty
 import SFit.utils as utils
+import SFit.DustyFit as DustyFit
 
 if __name__== '__main__':
 
@@ -23,14 +24,18 @@ if __name__== '__main__':
 
     mod = stars.Model('AFGL4106', NbStar=2, Stars=[S1,S2], Dust=dust)
    
-    fit = dusty.Dusty(PATH='/Users/gabriel/Documents/Stage/code/dustyV2/', Model=mod)
+    dustyMod = dusty.Dusty(PATH='/Users/gabriel/Documents/Stage/code/dustyV2/', Model=mod)
+
+    fit = DustyFit.DustyFit(dustyMod, Data={}, ParamFit={}, Param={})
+
+    fit.InitParam()
 
     #fit.ChangeParameter()
     #fit.LunchDusty()
-    print(fit.GetResults())
+    #print(fit.GetResults())
 
-    kwargs = {'marker':'+', 'color':'red'}
+    # kwargs = {'marker':'+', 'color':'red'}
 
-    W,F = fit.GetSED(distance = distance, Jansky=False)
+    # W,F = fit.GetSED(distance = distance, Jansky=False)
 
-    utils.ScatterPlot(F,W,xlim={0.1,10},ylim={100,0.001},kwargs=kwargs)
+    # utils.ScatterPlot(F,W,xlim={0.1,10},ylim={100,0.001},kwargs=kwargs)
