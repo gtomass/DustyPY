@@ -44,9 +44,6 @@ def ScatterPlot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax = None, sc
 
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
-    #ax.invert_yaxis()
-
-    #plt.show()
 
 def Plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
     """Create a scatter plot
@@ -81,8 +78,6 @@ def Plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='line
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
 
-
-    #plt.show()
 
 def PrintFile(file, stop=-1):
     """Print a file
@@ -173,14 +168,35 @@ def DeleteLine(file, line):
 
 
 def SaveFile(Path,file):
+    def SaveFile(Path, file):
+        """
+        Save the given content to a file at the specified path.
+
+        Args:
+            Path (str): The path where the file will be saved.
+            file (list of str): The content to be written to the file, provided as a list of strings.
+
+        Returns:
+            None
+        """
     with open(Path , 'w') as f:
             f.write("".join(file))
 
 def ChangeParameter(Path, change, car, ncomp):
+    """
+    Modify specific parameters in a file by removing certain lines and updating others.
+    Args:
+        Path (str): The path to the file to be modified.
+        change (dict): A dictionary where keys are parameter names and values are the new lines to replace the old ones.
+        car (dict): A dictionary where keys are parameter names and values are the search criteria for locating the lines to be changed.
+        ncomp (int): The number of components (not used in the current implementation).
+    Returns:
+        None
+    """
     file = LoadFile(Path)
     
     # Remove all lines containing '.nk'
-    file = [line for line in file if ('.nk' not in line) and ('cocomponents' not in line)] 
+    file = [line for line in file if ('.nk' not in line) and ('components' not in line)] 
     
     for param in change.keys():
         line = SearchLine(file, car[param])
@@ -190,81 +206,237 @@ def ChangeParameter(Path, change, car, ncomp):
     SaveFile(Path, file)
 
 def ListToDict(keys,values):
-     key_value_pairs = zip(keys, values)
-     return dict(key_value_pairs)
+    """
+    Convert two lists into a dictionary.
+
+    This function takes two lists, one containing keys and the other containing values,
+    and combines them into a dictionary where each key from the first list is paired
+    with the corresponding value from the second list.
+
+    Parameters:
+    keys (list): A list of keys.
+    values (list): A list of values.
+
+    Returns:
+    dict: A dictionary with keys from the 'keys' list and values from the 'values' list.
+
+    Example:
+    >>> keys = ['a', 'b', 'c']
+    >>> values = [1, 2, 3]
+    >>> ListToDict(keys, values)
+    {'a': 1, 'b': 2, 'c': 3}
+    """
+    key_value_pairs = zip(keys, values)
+    return dict(key_value_pairs)
 
 def SuppCarList(list,car):
-     return [el.split('\n')[0] for el in list if el not in car]
+    """
+    Filters out elements from the input list that are present in the car list and removes newline characters.
+
+    Args:
+        list (list of str): The input list of strings to be filtered.
+        car (list of str): The list of strings to be excluded from the input list.
+
+    Returns:
+        list of str: A new list with elements from the input list that are not in the car list, 
+                        with newline characters removed.
+    """
+    return [el.split('\n')[0] for el in list if el not in car]
 
 def GetColumnSpectrum(file, index, index_header=0):
+    """
+    Extrait une colonne spécifique d'un fichier.
+
+    Paramètres:
+    file (list of str): Le contenu du fichier en entrée sous forme de liste de chaînes, où chaque chaîne représente une ligne du fichier.
+    index (int): L'index de la colonne à extraire.
+    index_header (int, optional): L'index de la ligne d'en-tête à ignorer. Par défaut à 0.
+
+    Retourne:
+    numpy.ndarray: Un tableau numpy contenant les valeurs de la colonne spécifiée.
+    """
     array = np.asarray(file[index_header:])
-    return np.array([el.split('  ')[1:-1] for el in array],dtype=float).T[index]
+    return np.array([el.split('  ')[1:-1] for el in array], dtype=float).T[index]
 
 def WattToJansky(Flux, Wavelength):
-     #return Flux *1e26*(Wavelength)**2/3e8
-     return (Flux * u.W/u.m**2).to(u.Jy,equivalencies=u.spectral_density(Wavelength * u.um)).value
+    """
+    Convertit le flux de Watts par mètre carré en Jansky.
+
+    Paramètres:
+    Flux (float): Le flux en Watts par mètre carré.
+    Wavelength (float): La longueur d'onde en micromètres.
+
+    Retourne:
+    float: Le flux en Jansky.
+    """
+    return (Flux * u.W/u.m**2).to(u.Jy, equivalencies=u.spectral_density(Wavelength * u.um)).value
 
 def JanskyToWatt(Flux, Wavelength):
-     #return Flux * 1e-26*3e8/Wavelength**2
-     return (Flux * u.Jy ).to(u.W/u.m**2,equivalencies=u.spectral_density(Wavelength * u.um)).value
+    """
+    Convertit le flux de Jansky en Watts par mètre carré.
+
+    Paramètres:
+    Flux (float): Le flux en Jansky.
+    Wavelength (float): La longueur d'onde en micromètres.
+
+    Retourne:
+    float: Le flux en Watts par mètre carré.
+    """
+    return (Flux * u.Jy).to(u.W/u.m**2, equivalencies=u.spectral_density(Wavelength * u.um)).value
 
 def UmToMeter(Wavelength):
-     return (Wavelength * u.um).to(u.m).value
+    """
+    Convertit la longueur d'onde de micromètres en mètres.
 
-def CalculRayonVrai(results,L):
-     return results['r1(cm)']*np.sqrt(L/1e4) *1e-2
+    Paramètres:
+    Wavelength (float): La longueur d'onde en micromètres.
 
-def CalculFluxTotal(F,r_vrai,distance):
-     return F*(4*np.pi*r_vrai**2)/(4*np.pi*distance**2)
+    Retourne:
+    float: La longueur d'onde en mètres.
+    """
+    return (Wavelength * u.um).to(u.m).value
+
+def CalculRayonVrai(results, L):
+    """
+    Calcule le rayon réel en fonction des résultats et de la luminosité.
+
+    Paramètres:
+    results (dict): Un dictionnaire contenant les résultats, y compris 'r1(cm)'.
+    L (float): La luminosité en unités arbitraires.
+
+    Retourne:
+    float: Le rayon réel en mètres.
+    """
+    return results['r1(cm)'] * np.sqrt(L / 1e4) * 1e-2
+
+def CalculFluxTotal(F, r_vrai, distance):
+    """
+    Calcule le flux total en fonction du flux, du rayon réel et de la distance.
+
+    Paramètres:
+    F (float): Le flux en unités arbitraires.
+    r_vrai (float): Le rayon réel en mètres.
+    distance (float): La distance en mètres.
+
+    Retourne:
+    float: Le flux total en unités arbitraires.
+    """
+    return F * (4 * np.pi * r_vrai**2) / (4 * np.pi * distance**2)
 
 def Interpolate(Wavelength, Flux, order=3):
+    """
+    Interpole les données de flux en fonction de la longueur d'onde.
+
+    Paramètres:
+    Wavelength (array-like): Les longueurs d'onde.
+    Flux (array-like): Les flux correspondants.
+    order (int, optional): L'ordre de l'interpolation. Par défaut à 3.
+
+    Retourne:
+    function: Une fonction d'interpolation spline.
+    """
     return make_interp_spline(Wavelength, Flux, order)
 
-def model(q,xdata,xdusty,ydusty):
+def model(q, xdata, xdusty, ydusty):
+    """
+    Calcule le modèle en fonction des paramètres fournis.
+
+    Paramètres:
+    q (float): Le facteur d'échelle.
+    xdata (array-like): Les données x.
+    xdusty (array-like): Les longueurs d'onde du modèle de poussière.
+    ydusty (array-like): Les flux du modèle de poussière.
+
+    Retourne:
+    array-like: Les valeurs du modèle interpolé.
+    """
     I = q
     try:
-        return I*Interpolate(np.asarray(xdusty).flatten(),np.asarray(ydusty).flatten())(np.asarray(xdata).flatten())
+        return I * Interpolate(np.asarray(xdusty).flatten(), np.asarray(ydusty).flatten())(np.asarray(xdata).flatten())
     except Exception:
-        return I*Interpolate(xdusty,ydusty)(xdusty)
+        return I * Interpolate(xdusty, ydusty)(xdusty)
 
-def Chi2(theta,data):
+def Chi2(theta, data):
+    """
+    Calcule le chi2 entre les données observées et le modèle.
+
+    Paramètres:
+    theta (array-like): Les paramètres du modèle.
+    data (tuple or object): Les données observées. Peut être un tuple (xdata, ydata) ou un objet avec des attributs xdata et ydata.
+
+    Retourne:
+    float: La valeur du chi2.
+    """
     try:
         xdata = data.xdata[0]
         ydata = data.ydata[0]
     except AttributeError:
-        xdata,ydata = data
+        xdata, ydata = data
 
     ymodel = model(theta, xdata, ydata).reshape(ydata.shape)
     return np.nansum((ymodel - ydata)**2)
 
 def SetMCMCParam(mc=MCMC, param=None):
-     
+    """
+    Définit les paramètres du modèle pour l'objet MCMC.
+
+    Paramètres:
+    mc (MCMC object): L'objet MCMC.
+    param (dict, optional): Un dictionnaire contenant les paramètres du modèle. Par défaut à None.
+    """
     if param is None:
         param = {}
     for par in param.keys():
-         mc.parameters.add_model_parameter(name = par,
-                                           theta0 = param[par]['theta0'],
-                                           minimum = param[par]['minimum'],
-                                           maximum = param[par]['maximum'])
-          
-def SetMCMC(mc=MCMC,param=None):
+        mc.parameters.add_model_parameter(name=par,
+                                          theta0=param[par]['theta0'],
+                                          minimum=param[par]['minimum'],
+                                          maximum=param[par]['maximum'])
+
+def SetMCMC(mc=MCMC, param=None):
+    """
+    Définit les options de simulation pour l'objet MCMC.
+
+    Paramètres:
+    mc (MCMC object): L'objet MCMC.
+    param (dict, optional): Un dictionnaire contenant les options de simulation. Par défaut à None.
+    """
     mc.simulation_options.define_simulation_options(nsimu=param['nsimu'],
                                                     updatesigma=param['updatesigma'],
                                                     method=param['method'],
                                                     adaptint=param['adaptint'],
-                                                    verbosity=param['verbosity'],
-                                                    waitbar=param['waitbar'])
+                                                    verbosity=param['verbosity'])
 
 
 def Unred(Wavelength, Flux, EBV, Rv=3.1):
-    return pyasl.unred(Wavelength,Flux, ebv=EBV, R_V=Rv)
+    """
+    Applique une correction de déreddening aux flux observés.
+
+    Paramètres:
+    Wavelength (array-like): Les longueurs d'onde des observations.
+    Flux (array-like): Les flux observés.
+    EBV (float): La valeur de E(B-V) pour la correction.
+    Rv (float, optional): Le rapport de la loi d'extinction. Par défaut à 3.1.
+
+    Retourne:
+    array-like: Les flux corrigés.
+    """
+    return pyasl.unred(Wavelength, Flux, ebv=EBV, R_V=Rv)
 
 def Check(change):
-        L = 0
-        for key in change.keys():
-            if 'Lum' in key:
-                L+=change[key]
-        return L==1
+    """
+    Vérifie si la somme des changements de luminosité est égale à 1.
+
+    Paramètres:
+    change (dict): Un dictionnaire contenant les changements de paramètres.
+
+    Retourne:
+    bool: True si la somme des changements de luminosité est égale à 1, sinon False.
+    """
+    L = 0
+    for key in change.keys():
+        if 'Lum' in key:
+            L += change[key]
+    return L == 1
 
 
 
