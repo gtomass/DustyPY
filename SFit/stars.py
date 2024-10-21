@@ -62,11 +62,13 @@ class Dust():
 
 class Model():
 
-    def __init__(self, Name = '', NbStar = 1, Stars = list, Dust = Dust):
+    def __init__(self, Name = '', NbStar = 0, Stars = list(), Dust = Dust(), distance = 1):
         self._Name = Name
         self._NbStar = NbStar
         self._Stars = Stars
         self._Dust = Dust
+        self._distance = distance
+
 
         self.__Check()
 
@@ -83,28 +85,34 @@ class Model():
     def get_NbStar(self):
         return self._NbStar
 
-    def set_Stars(self,Stars = list):
+    def set_Stars(self,Stars = list()):
         self._Stars = Stars
         self.__Check()
     
     def get_Stars(self):
         return self._Stars
     
-    def set_Dust(self,Dust = Dust):
+    def set_Dust(self,Dust = Dust()):
         self._Dust = Dust
     
     def get_Dust(self):
         return self._Dust
     
+    def set_Distance(self, distance):
+        self._distance = distance
+    
+    def get_Distance(self):
+        return self._distance
+    
     def __Check(self):
 
         if len(self._Stars) != self._NbStar:
             raise ValueError("Number of stars don't match")
-
-    
-    
-
-    
+        if self._Dust.get_tau() < 0:
+            raise ValueError("Tau must be positive")
+        if self._distance < 0:
+            raise ValueError("Distance must be positive")
+        
 
 
 if __name__== '__main__':

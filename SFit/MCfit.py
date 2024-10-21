@@ -1,20 +1,34 @@
 import pymcmcstat
 import pymcmcstat.MCMC
-import SFit.utils as utils
-import SFit.Data as Data
+from . import utils as utils
+from . import Data as Data
 import numpy as np
 
 
 class Fit():
 
-    def __init__(self, Data = Data.Data, Model = pymcmcstat.MCMC.MCMC(), ParamFit = {}, Param={}):
+    def __init__(self, Data = Data.Data(), Model = pymcmcstat.MCMC.MCMC(), ParamFit=None, Param=None):
+        if ParamFit is None:
+            ParamFit = {
+                        'nsimu': 10000,
+                        'updatesigma': True,
+                        'method': 'dram',
+                        'adaptint': 100,
+                        'verbosity': 0,
+                        'waitbar': True,
+                    }
+        if Param is None:
+            Param = {}
+
         self._Model = Model
         self._Data = Data
         self._ParamFit = ParamFit
         self._Param = Param
         self._Results = {}
 
-    def set_Data(self, Data = Data.Data):
+    def set_Data(self, Data=None):
+        if Data is None:
+            Data = Data.Data
         self._Data = Data
 
     def get_Data(self):
@@ -22,13 +36,28 @@ class Fit():
 
     def set_Model(self):
         utils.SetMCMCParam(self._Model,self._Param)
-        self._Model.simulation_options.define_simulation_options(*self._ParamFit)
+        self._Model.simulation_options.define_simulation_options(**self._ParamFit)
 
     def set_ParamFit(self, ParamFit):
+        if ParamFit is None:
+            ParamFit = {
+                        'nsimu': 10000,
+                        'updatesigma': True,
+                        'method': 'dram',
+                        'adaptint': 100,
+                        'verbosity': 0,
+                        'waitbar': True,
+                    }
         self._ParamFit = ParamFit
+
+    def get_ParamFit(self):
+        return self._ParamFit
         
     def set_Param(self, Param):
         self._Param = Param
+
+    def get_Param(self):
+        return self._Param
 
     def set_Chi2Func(self, func):
         self._Model.model_settings.define_model_settings(sos_function=func)
@@ -36,7 +65,7 @@ class Fit():
     def get_Results(self):
         return self._Results
 
-    def Fit(self, Chi2):
+    def Fit(self, Chi2=utils.Chi2):
         y= self._Data.get_ydata()
         x= self._Data.get_xdata()
         self._Model.data.add_data_set(x,y)
@@ -66,20 +95,19 @@ class Fit():
         modelfunction=pred_modelfun)
         self._Model.PI.generate_prediction_intervals()
         self._Model.PI.plot_prediction_intervals(adddata=True, figsizeinches=(6, 6))
-
-    def get_ModelSpline():
-        pass 
     
 
 if __name__=='__main__':
     dat = Data.Data(xdata=[0,1,2,3,4,5,6,7,8,9,10],ydata=[0,1,2,3,4,5,6,7,8,9,10])
 
-    ParamFit= {'nsimu':int(10000),
-        'updatesigma':True,
-        'method':'dram',
-        'adaptint':100,
-        'verbosity':0,
-        'waitbar':True}
+    ParamFit = {
+        'nsimu': 10000,
+        'updatesigma': True,
+        'method': 'dram',
+        'adaptint': 100,
+        'verbosity': 0,
+        'waitbar': True,
+    }
 
     f = Fit(Param={'I':{'theta0':1,'minimum':0,'maximum':2}},Data=dat)
 

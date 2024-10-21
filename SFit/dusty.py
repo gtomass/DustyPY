@@ -1,14 +1,15 @@
 import subprocess
 import glob
-import SFit.utils as utils 
-from SFit.stars import Model
+from . import utils as utils
+from .stars import Model as Model
+from . import SED as SED
 import os
 
 
 
 class Dusty():
 
-    def __init__(self, PATH='', Model=Model, Lestimation=1e4):
+    def __init__(self, PATH='', Model=Model(), Lestimation=1e4):
         self._dustyPath = PATH
         self._Model = Model
         self._Lest = Lestimation
@@ -18,6 +19,7 @@ class Dusty():
                                 'Opacity': 'tau(min)',
                                 'Composition': 'Number of additional components',
                                 'Abundances': 'Abundances for these components'}
+        self._SED = SED.SED()
         self.__Check()
         self.__CreateDustyFile()
 
@@ -32,8 +34,10 @@ class Dusty():
         self._dustyPath = Path
 
     def AvailableComposition(self):
-        NkFiles = [file.split('/')[-1].split('.')[0] for file in glob.glob(self._dustyPath+'/Lib_nk/*.nk')]
-        return NkFiles
+        return [
+            file.split('/')[-1].split('.')[0]
+            for file in glob.glob(f'{self._dustyPath}/Lib_nk/*.nk')
+        ]
         
 
     def ChangeParameter(self):
@@ -45,19 +49,21 @@ class Dusty():
         L = [str(Star.get_Luminosity())for Star in Stars]
 
         dust = self._Model.get_Dust()
-        comp = " \n        ".join(f'{'Lib_nk/'+comp}'+'.nk' for comp in dust.get_Composition().keys())
+        comp = "\n        ".join(
+            f"{f'Lib_nk/{comp}'}.nk" for comp in dust.get_Composition().keys()
+        )
         nbcomp = str(len(dust.get_Composition().keys()))
         abondances = ", ".join(f'{ab}' for ab in dust.get_Composition().values())
-        
+
         change = {  'BB': f'        	Number of BB = {len(T)} \n',
                     'Temperature': f'        	Temperature = {', '.join(T)} K \n', 
                     'Luminosities': f'        	Luminosities = {', '.join(L)} \n',
                     'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n' ,
-                    'Composition': f'	Number of additional components = {nbcomp} properties listed in: \n        {comp}',
-                    'Abundances': f'   Abundances for these components = {abondances} \n \n'    ,
+                    'Composition': f'	Number of additional components = {nbcomp} properties listed in: \n        {comp}\n',
+                    'Abundances': f'   Abundances for these components = {abondances} \n'    ,
                 }
 
-        utils.ChangeParameter(self._dustyPath+name+'.inp',change=change,car=self._DustyReconizer)
+        utils.ChangeParameter(self._dustyPath+name+'.inp',change=change,car=self._DustyReconizer,ncomp=int(nbcomp))
 
     def PrintParam(self):
         name = self._Model.get_Name()
@@ -65,6 +71,7 @@ class Dusty():
 
     def LunchDusty(self):
         subprocess.check_call(['./dusty'],cwd=self._dustyPath)
+
 
     def GetResults(self):
         result_file = utils.LoadFile(self._dustyPath+self._Model.get_Name()+'.out')
@@ -74,7 +81,7 @@ class Dusty():
         values = [float(el) for el in utils.SuppCarList(line,['','1','\n'])]
         return utils.ListToDict(keys,values)
     
-    def GetSED(self,distance, Jansky = True , um = True):
+    def MakeSED(self,distance, Jansky = True , um = True):
 
         results = self.GetResults()
 
@@ -90,7 +97,14 @@ class Dusty():
         if not um:
             Wavelengths = utils.UmToMeter(Wavelengths)
 
-        return Wavelengths,Flux
+        self._SED.set_Wavelength(wavelength=Wavelengths)
+        self._SED.set_Flux(Flux=Flux)
+
+    def GetSED(self):
+        return self._SED
+    
+    def PlotSED(self, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+        self._SED.PlotSED(unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs)
     
 
     def __Check(self):
@@ -98,11 +112,16 @@ class Dusty():
             if species not in self.AvailableComposition():
                 raise ValueError(f'The following species does not exist: {species}')
 
-        if sum([Star.get_Luminosity() for Star in self._Model.get_Stars()]) != 1.:
+        if sum(Star.get_Luminosity() for Star in self._Model.get_Stars()) != 1.0:
             raise Exception('Sum of Luminosities must be 1')
 
     def __CreateDustyFile(self):
-        if self._dustyPath+self._Model.get_Name()+'.inp' in glob.glob(self._dustyPath):
-            pass
-        else:
-            subprocess.call([f'cp {os.getcwd()+'/SFit/Mod.inp'} {self._dustyPath+self._Model.get_Name()+'.inp'}'],shell=True)
+        if self._dustyPath + self._Model.get_Name() + '.inp' not in glob.glob(
+            self._dustyPath
+        ):
+            subprocess.call(
+                [
+                    f"cp {os.getcwd()}/SFit/Mod.inp {self._dustyPath + self._Model.get_Name() + '.inp'}"
+                ],
+                shell=True,
+            )

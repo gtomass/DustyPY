@@ -42,10 +42,10 @@
                Sil-Ow  Sil-Oc  Sil-DL  grf-DL  amC-Hn  SiC-Pg 
            x =  0.00    0.00    0.00    0.00   0.00    0.00
 
-	Number of additional components = 1 properties listed in: Mg2SiO4.nk
+	Number of additional components = 0 properties listed in: 
 
    
-   Abundances for these components = 1     
+   Abundances for these components = 0     
        2.2 Grain size distribution
 
 	  Size distribution = 2
@@ -93,7 +93,7 @@
 
         FILE DESCRIPTION                               FLAG        
        ------------------------------------------------------------     
-       - verbosity flag;                               verbose = 1
+       - verbosity flag;                               verbose = 0
        - properties of emerging spectra;             fname.spp = 1    
        - detailed spectra for each model;           fname.s### = 1   
        - images at specified wavelengths;           fname.i### = 0
