@@ -112,16 +112,16 @@ class Dusty():
             if species not in self.AvailableComposition():
                 raise ValueError(f'The following species does not exist: {species}')
 
-        if sum(Star.get_Luminosity() for Star in self._Model.get_Stars()) != 1.0:
-            raise Exception('Sum of Luminosities must be 1')
+        # if sum(Star.get_Luminosity() for Star in self._Model.get_Stars()) != 1.0:
+        #     raise Exception('Sum of Luminosities must be 1')
 
     def __CreateDustyFile(self):
-        if self._dustyPath + self._Model.get_Name() + '.inp' not in glob.glob(
-            self._dustyPath
-        ):
-            subprocess.call(
-                [
-                    f"cp {os.getcwd()}/SFit/Mod.inp {self._dustyPath + self._Model.get_Name() + '.inp'}"
-                ],
-                shell=True,
-            )
+        # if self._dustyPath + self._Model.get_Name() + '.inp' not in glob.glob(
+        #     self._dustyPath
+        # ):
+        subprocess.call(
+            [
+                f"cp {os.getcwd()}/SFit/Mod.inp {self._dustyPath + self._Model.get_Name() + '.inp'}"
+            ],
+            shell=True,
+        )

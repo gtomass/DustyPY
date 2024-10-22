@@ -78,6 +78,30 @@ def Plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='line
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
 
+def ErrorPlot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+    """Create a scatter plot
+    """
+
+    if unit is None:
+        unit = {'x':'Wavelength', 'y': 'Flux'}
+    if xlim is None:
+        xlim = {}
+    if ylim is None:
+        ylim = {}
+    if kwargs is None:
+        kwargs = {}
+    if ax is None:
+        fig,ax = plt.subplots()
+
+    ax.errorbar(Wavelength,Flux,yerr=eFlux,**kwargs)
+    ax.set_xlabel(f'{unit['x']}')
+    ax.set_ylabel(f'{unit['y']}')
+
+    ax.set_yscale(scale)
+
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
+
 
 def PrintFile(file, stop=-1):
     """Print a file
@@ -196,7 +220,7 @@ def ChangeParameter(Path, change, car, ncomp):
     file = LoadFile(Path)
     
     # Remove all lines containing '.nk'
-    file = [line for line in file if ('.nk' not in line) and ('components' not in line)] 
+    file = [line for line in file if ('.nk' not in line)] 
     
     for param in change.keys():
         line = SearchLine(file, car[param])

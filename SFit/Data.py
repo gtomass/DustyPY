@@ -46,8 +46,7 @@ class Data():
         if self._yerr is None:
             utils.ScatterPlot(self._ydata,self._xdata,unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs)
         else:
-            print('implementer errorbar')
-            utils.ScatterPlot(self._ydata,self._xdata,unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs)
+            utils.ErrorPlot(self._ydata,self._xdata,self._yerr,unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs)
 
     def UnredData(self, EBV, Rv = 3.1):
         self._ydata = utils.Unred(self._xdata*1e4,self._ydata, EBV=EBV,Rv=Rv)

@@ -84,7 +84,11 @@ class DustyFit():
             xdata,ydata = data.get_xdata(),data.get_ydata()
 
         ymodel = utils.model(theta[-1], xdata, self._Data.get_xdata(), self._Data.get_ydata()).reshape(ydata.shape)
-        return np.nansum((ymodel - ydata)**2)
+
+        if self._Data.get_yerr() is not None:
+            return np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2)
+        else:    
+            return np.nansum((ymodel - ydata)**2)
             
     
     def LunchFit(self):
@@ -97,12 +101,16 @@ class DustyFit():
     def PlotResults(self,unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs_fit=None, kwargs_data=None):
         result = self._Fit.get_Results()['theta']
         self.__setChange(utils.ListToDict(list(self._Fit.get_Param().keys()),result))
+        print(utils.ListToDict(list(self._Fit.get_Param().keys()),result))
         self._Dusty.ChangeParameter()
         self._Dusty.LunchDusty()
         self._Dusty.MakeSED(distance = self._Dusty.get_Model().get_Distance())
         SED = self._Dusty.GetSED()
         utils.Plot(SED.get_Flux(),SED.get_Wavelength(),unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs_fit)
-        utils.ScatterPlot(self._Data.get_ydata(),self._Data.get_xdata(),unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs_data)
+        if self._Data.get_yerr() is not None:
+            utils.ErrorPlot(self._Data.get_ydata(),self._Data.get_xdata(),self._Data.get_yerr(),unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs_data)
+        else:
+            utils.ScatterPlot(self._Data.get_ydata(),self._Data.get_xdata(),unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs_data)
         plt.show()
 
 
