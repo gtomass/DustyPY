@@ -3,13 +3,32 @@ import glob
 from . import utils as utils
 from .stars import Model as Model
 from . import SED as SED
+from . import constants 
 import os
 
 
 
 class Dusty():
+    """
+    Class representing a Dusty model with a specified path, model, and luminosity estimation.
+
+    Attributes:
+    _dustyPath (str): The path to the Dusty model files.
+    _Model (Model): The model used in the Dusty simulation.
+    _Lest (float): The luminosity estimation of the model.
+    _DustyReconizer (dict): A dictionary mapping Dusty parameters to their descriptions.
+    _SED (SED): The Spectral Energy Distribution (SED) associated with the Dusty model.
+    """
 
     def __init__(self, PATH='', Model=Model(), Lestimation=1e4):
+        """
+        Initializes an instance of the Dusty class.
+
+        Parameters:
+        PATH (str, optional): The path to the Dusty model files. Defaults to an empty string.
+        Model (Model, optional): The model used in the Dusty simulation. Defaults to an instance of Model.
+        Lestimation (float, optional): The luminosity estimation. Defaults to 1e4.
+        """
         self._dustyPath = PATH
         self._Model = Model
         self._Lest = Lestimation
@@ -24,16 +43,40 @@ class Dusty():
         self.__CreateDustyFile()
 
     def set_Model(self, Model):
+        """
+        Sets the model used in the Dusty simulation.
+
+        Parameters:
+        Model (Model): The model to be used in the Dusty simulation.
+        """
         self._Model = Model
         self.__Check()
 
     def get_Model(self):
+        """
+        Returns the model used in the Dusty simulation.
+
+        Returns:
+        Model: The model used in the Dusty simulation.
+        """
         return self._Model
 
     def set_PATH(self, Path):
+        """
+        Sets the path to the Dusty model files.
+
+        Parameters:
+        Path (str): The path to the Dusty model files.
+        """
         self._dustyPath = Path
 
     def AvailableComposition(self):
+        """
+        Returns a list of available compositions for the Dusty model.
+
+        Returns:
+        list: A list of available compositions.
+        """
         return [
             file.split('/')[-1].split('.')[0]
             for file in glob.glob(f'{self._dustyPath}/Lib_nk/*.nk')
@@ -41,6 +84,9 @@ class Dusty():
         
 
     def ChangeParameter(self):
+        """
+        Changes the parameters of the Dusty model based on the current model settings.
+        """
 
         name = self._Model.get_Name()
         Stars = self._Model.get_Stars()
@@ -66,14 +112,29 @@ class Dusty():
         utils.ChangeParameter(self._dustyPath+name+'.inp',change=change,car=self._DustyReconizer,ncomp=int(nbcomp))
 
     def PrintParam(self):
+        """
+        Prints the current parameters of the Dusty model.
+        """
+
         name = self._Model.get_Name()
         utils.PrintFile(self._dustyPath+name+'.inp',stop=73)
 
     def LunchDusty(self):
+        """
+        Runs the Dusty simulation with the current model settings.
+        """
+
         subprocess.check_call(['./dusty'],cwd=self._dustyPath)
 
 
     def GetResults(self):
+        """
+        Retrieves the results of the Dusty simulation.
+
+        Returns:
+        dict: A dictionary containing the results of the Dusty simulation.
+        """
+         
         result_file = utils.LoadFile(self._dustyPath+self._Model.get_Name()+'.out')
         line = result_file[utils.SearchLine(result_file,'tau0')].split(' ')
         keys = utils.SuppCarList(line, ['###','','\n'])
@@ -82,6 +143,17 @@ class Dusty():
         return utils.ListToDict(keys,values)
     
     def MakeSED(self,distance, Jansky = True , um = True):
+        
+        """
+        Generates the Spectral Energy Distribution (SED) for the given distance.
+        
+        Parameters:
+        distance (float): The distance in parsec to the object for which the SED is being generated.
+        Jansky (bool, optional): If True, converts the flux to Jansky. Defaults to True.
+        um (bool, optional): If True, keeps the wavelength in micrometers. If False, converts to meters. Defaults to True.
+        """
+
+        distance = distance * constants.pc
 
         results = self.GetResults()
 
@@ -101,24 +173,45 @@ class Dusty():
         self._SED.set_Flux(Flux=Flux)
 
     def GetSED(self):
+        """
+        Returns the Spectral Energy Distribution (SED) of the Dusty model.
+
+        Returns:
+        SED: The SED of the Dusty model.
+        """
+
         return self._SED
     
     def PlotSED(self, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+        """
+        Plots the Spectral Energy Distribution (SED) of the Dusty model.
+
+        Parameters:
+        unit (str, optional): The unit of the axes. Defaults to None.
+        xlim (tuple, optional): The limits of the x-axis. Defaults to None.
+        ylim (tuple, optional): The limits of the y-axis. Defaults to None.
+        ax (matplotlib.axes.Axes, optional): The axis on which to plot. Defaults to None.
+        scale (str, optional): The scale of the axes ('linear' or 'log'). Defaults to 'linear'.
+        kwargs (dict, optional): Additional arguments for the plot function. Defaults to None.
+        """
+
         self._SED.PlotSED(unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs)
     
 
     def __Check(self):
+        """
+        Checks the consistency of the Dusty model's attributes.
+        """
+         
         for species in self._Model.get_Dust().get_Composition():
             if species not in self.AvailableComposition():
                 raise ValueError(f'The following species does not exist: {species}')
 
-        # if sum(Star.get_Luminosity() for Star in self._Model.get_Stars()) != 1.0:
-        #     raise Exception('Sum of Luminosities must be 1')
-
     def __CreateDustyFile(self):
-        # if self._dustyPath + self._Model.get_Name() + '.inp' not in glob.glob(
-        #     self._dustyPath
-        # ):
+        """
+        Creates the necessary Dusty model files based on the current model settings.
+        """
+
         subprocess.call(
             [
                 f"cp {os.getcwd()}/SFit/Mod.inp {self._dustyPath + self._Model.get_Name() + '.inp'}"

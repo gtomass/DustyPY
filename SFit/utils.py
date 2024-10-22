@@ -3,9 +3,10 @@ import numpy as np
 import subprocess
 import glob
 import pandas as pd
-import astropy
+import test2
 import os
 import astropy.units as u
+from astropy.table import Table
 from scipy.interpolate import make_interp_spline
 from pymcmcstat.MCMC import MCMC
 from PyAstronomy import pyasl
@@ -148,7 +149,7 @@ def LoadFits(Path):
     Returns:
         array: array containing the file
     """
-    return astropy.io.fits.open(Path)[0].data 
+    return test2.io.fits.open(Path)[0].data 
 
 
 def SearchLine(file, line):
@@ -461,6 +462,20 @@ def Check(change):
         if 'Lum' in key:
             L += change[key]
     return L == 1
+
+def VizierQuery(radius, target):
+    """
+    Interroge Vizier pour obtenir des données.
+
+    Paramètres:
+    radius (str): Le rayon de la requête.
+    target (str): La cible de la requête.
+
+    Retourne:
+    array-like: Les données obtenues.
+    """
+
+    return Table.read(f"https://vizier.cds.unistra.fr/viz-bin/sed?-c={target}&-c.rs={radius}")
 
 
 
