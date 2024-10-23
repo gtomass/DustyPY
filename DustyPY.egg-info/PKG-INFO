@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: DustyPY
+Version: 0.1.0
+Summary: SFit is a convenient Package to run and fit SED using the radiative transfer modeling code dusty
+Home-page: https://github.com/Radron74/DustyPY.git
+Author: Gabriel TOMASSINI
+Author-email: gabriel.tomassini@oca.eu
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+Requires-Dist: matplotlib
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: astropy
+Requires-Dist: scipy
+Requires-Dist: pymcmcstat
+Requires-Dist: PyAstronomy
+
+SFit is a convenient Package to run and fit SED using the radiative transfer modeling code dusty (https://github.com/ivezic/dusty.git)
