@@ -6,6 +6,7 @@ import pandas as pd
 import os
 import astropy.units as u
 from astropy.table import Table
+from astropy.io import fits
 from scipy.interpolate import make_interp_spline
 from pymcmcstat.MCMC import MCMC
 from PyAstronomy import pyasl
@@ -148,7 +149,7 @@ def LoadFits(Path):
     Returns:
         array: array containing the file
     """
-    return test2.io.fits.open(Path)[0].data 
+    return fits.open(Path)[0].data 
 
 
 def SearchLine(file, line):
