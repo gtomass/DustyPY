@@ -1,5 +1,6 @@
 try:
     from . import utils as utils
+    from .constants import *
 except ImportError:
     import sys
     import os

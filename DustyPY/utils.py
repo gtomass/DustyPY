@@ -206,7 +206,7 @@ def SaveFile(Path,file):
     with open(Path , 'w') as f:
             f.write("".join(file))
 
-def ChangeParameter(Path, change, car, ncomp):
+def ChangeParameter(Path, change, car, nstar):
     """
     Modify specific parameters in a file by removing certain lines and updating others.
     Args:
@@ -223,9 +223,14 @@ def ChangeParameter(Path, change, car, ncomp):
     file = [line for line in file if ('.nk' not in line)] 
     
     for param in change.keys():
-        line = SearchLine(file, car[param])
-        new_line = change[param]
-        file[line] = new_line
+        if nstar == 1 and car[param]=='Luminosities':
+            file = [line for line in file if ('Luminosities' not in line)] 
+            print('here')
+            pass
+        else:
+            line = SearchLine(file, car[param])
+            new_line = change[param]
+            file[line] = new_line
 
     SaveFile(Path, file)
 
@@ -475,3 +480,8 @@ def VizierQuery(radius, target):
     """
 
     return Table.read(f"https://vizier.cds.unistra.fr/viz-bin/sed?-c={target}&-c.rs={radius}")
+
+
+
+if __name__=="__main__":
+     pass

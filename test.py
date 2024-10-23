@@ -14,7 +14,7 @@ if __name__== '__main__':
     #print(7.6/(7.6+9.8))
 
     S1 = stars.Star(Name='E1',Temperature=3000,Luminosity=9.8/(7.6+9.8))
-    S2 = stars.Star(Name='E2',Temperature=7250,Luminosity=7.6/(7.6+9.8))
+    #S2 = stars.Star(Name='E2',Temperature=7250,Luminosity=7.6/(7.6+9.8))
 
     Composition = {'Mg2SiO4':0.04, 
                    'MgSiO3':0.1, 
@@ -26,12 +26,12 @@ if __name__== '__main__':
 
     dust = stars.Dust(DustSize={'amin' : 0.005, 'amax': 0.25}, Composition=Composition,tau=0)
 
-    mod = stars.Model('AFGL4106', NbStar=2, Stars=[S1,S2], Dust=dust, distance=distance)
+    mod = stars.Model('AFGL4106', NbStar=1, Stars=[S1], Dust=dust, distance=distance)
    
     dustyMod = dusty.Dusty(PATH='/Users/gabriel/Documents/Stage/code/dustyV2/', Model=mod)
 
-    #dustyMod.ChangeParameter()
-    #dustyMod.LunchDusty()
+    dustyMod.ChangeParameter()
+    dustyMod.LunchDusty()
 
     kwargs_data = {'fmt':'+','color':'r'}
     kwargs_dusty = {'color':'k'}

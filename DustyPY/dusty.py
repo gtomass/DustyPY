@@ -109,7 +109,7 @@ class Dusty():
                     'Abundances': f'   Abundances for these components = {abondances} \n'    ,
                 }
 
-        utils.ChangeParameter(self._dustyPath+name+'.inp',change=change,car=self._DustyReconizer,ncomp=int(nbcomp))
+        utils.ChangeParameter(self._dustyPath+name+'.inp',change=change,car=self._DustyReconizer,nstar=int(len(T)))
 
     def PrintParam(self):
         """
@@ -123,7 +123,6 @@ class Dusty():
         """
         Runs the Dusty simulation with the current model settings.
         """
-
         subprocess.check_call(['./dusty'],cwd=self._dustyPath)
 
 
