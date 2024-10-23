@@ -1,8 +1,8 @@
-import SFit.stars as stars
-import SFit.dusty as dusty
-import SFit.utils as utils
-import SFit.DustyFit as DustyFit
-import SFit.Data as Data
+import DustyPY.stars as stars
+import DustyPY.dusty as dusty
+import DustyPY.utils as utils
+import DustyPY.DustyFit as DustyFit
+import DustyPY.Data as Data
 import matplotlib.pyplot as plt
 
 import numpy as np

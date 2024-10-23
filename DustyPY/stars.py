@@ -299,10 +299,3 @@ class Model():
         if self._distance < 0:
             raise ValueError("Distance must be positive")
         
-
-
-if __name__== '__main__':
-    S = Star()
-
-    S.set_Name('AFGL 4106')
-    print(S.get_Name())

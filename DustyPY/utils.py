@@ -3,7 +3,6 @@ import numpy as np
 import subprocess
 import glob
 import pandas as pd
-import test2
 import os
 import astropy.units as u
 from astropy.table import Table
@@ -476,8 +475,3 @@ def VizierQuery(radius, target):
     """
 
     return Table.read(f"https://vizier.cds.unistra.fr/viz-bin/sed?-c={target}&-c.rs={radius}")
-
-
-
-if __name__=="__main__":
-     pass
