@@ -20,12 +20,13 @@ if __name__== '__main__':
 
     dust = stars.Dust(DustSize={'amin' : 0.01, 'amax': 1}, Composition=Composition,tau=0)
 
-    mod = stars.Model('Betelgeuse', NbStar=1, Stars=[S1], Dust=dust, distance=distance)
+    mod = stars.Model('Prout', NbStar=1, Stars=[S1], Dust=dust, distance=distance)
    
     dustyMod = dusty.Dusty(PATH='/Users/gabriel/Documents/Stage/code/dustyV2/', Model=mod,Lestimation=1.8e5)
+    print(dustyMod.AvailableComposition())
 
-    #dustyMod.ChangeParameter()
-    #dustyMod.LunchDusty()
+    dustyMod.ChangeParameter()
+    dustyMod.LunchDusty()
 
     kwargs_data = {'fmt':'+','color':'r'}
     kwargs_dusty = {'color':'k'}

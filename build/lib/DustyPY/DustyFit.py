@@ -181,8 +181,8 @@ class DustyFit():
         self._Dusty.LunchDusty()
         self._Dusty.MakeSED(distance = self._Dusty.get_Model().get_Distance())
 
-        self._Data.set_xdata(self._Dusty.GetSED().get_Wavelength())
-        self._Data.set_ydata(self._Dusty.GetSED().get_Flux())
+        # self._Data.set_xdata(self._Dusty.GetSED().get_Wavelength())
+        # self._Data.set_ydata(self._Dusty.GetSED().get_Flux())
 
 
         try:
@@ -191,7 +191,8 @@ class DustyFit():
         except AttributeError:
             xdata,ydata = data.get_xdata(),data.get_ydata()
 
-        ymodel = utils.model(theta[-1], xdata, self._Data.get_xdata(), self._Data.get_ydata()).reshape(ydata.shape)
+        ymodel = utils.model(theta[-1], xdata, self._Dusty.GetSED().get_Wavelength(), self._Dusty.GetSED().get_Flux()
+                             ).reshape(ydata.shape)
 
         if self._Data.get_yerr() is not None:
             return np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2)

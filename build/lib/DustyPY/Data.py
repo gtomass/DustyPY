@@ -211,6 +211,7 @@ class Data():
             self._ydata = self._ydata[restriction]
             self._xerr = self._xerr[restriction] if self._xerr is not None else None
             self._yerr = self._yerr[restriction] if self._yerr is not None else None
+            
 # Example usage of the Data class and the RestrictData method
 if __name__ == "__main__":
     # Create an instance of the Data class with some example data

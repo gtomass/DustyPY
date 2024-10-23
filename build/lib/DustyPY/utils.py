@@ -226,7 +226,6 @@ def ChangeParameter(Path, change, car, nstar):
     for param in change.keys():
         if nstar == 1 and car[param]=='Luminosities':
             file = [line for line in file if ('Luminosities' not in line)] 
-            print('here')
             pass
         else:
             line = SearchLine(file, car[param])

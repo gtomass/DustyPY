@@ -79,7 +79,7 @@ class Dusty():
         """
         return [
             file.split('/')[-1].split('.')[0]
-            for file in glob.glob(f'{self._dustyPath}/Lib_nk/*.nk')
+            for file in glob.glob(f'{os.path.join(self._dustyPath,'Lib_nk','*.nk')}')
         ]
         
 
@@ -96,7 +96,7 @@ class Dusty():
 
         dust = self._Model.get_Dust()
         comp = "\n        ".join(
-            f"{f'Lib_nk/{comp}'}.nk" for comp in dust.get_Composition().keys()
+            f"{f'{os.path.join('Lib_nk',comp)}'}.nk" for comp in dust.get_Composition().keys()
         )
         nbcomp = str(len(dust.get_Composition().keys()))
         abondances = ", ".join(f'{ab}' for ab in dust.get_Composition().values())
@@ -109,7 +109,10 @@ class Dusty():
                     'Abundances': f'   Abundances for these components = {abondances} \n'    ,
                 }
 
-        utils.ChangeParameter(self._dustyPath+name+'.inp',change=change,car=self._DustyReconizer,nstar=int(len(T)))
+        utils.ChangeParameter(os.path.join(self._dustyPath,
+                                           name,
+                                           name+'.inp'),
+                                           change=change,car=self._DustyReconizer,nstar=int(len(T)))
 
     def PrintParam(self):
         """
@@ -117,7 +120,7 @@ class Dusty():
         """
 
         name = self._Model.get_Name()
-        utils.PrintFile(self._dustyPath+name+'.inp',stop=73)
+        utils.PrintFile(os.path.join(self._dustyPath,name,name+'.inp'),stop=73)
 
     def LunchDusty(self):
         """
@@ -134,7 +137,7 @@ class Dusty():
         dict: A dictionary containing the results of the Dusty simulation.
         """
          
-        result_file = utils.LoadFile(self._dustyPath+self._Model.get_Name()+'.out')
+        result_file = utils.LoadFile(os.path.join(self._dustyPath+self._Model.get_Name(),self._Model.get_Name()+'.out'))
         line = result_file[utils.SearchLine(result_file,'tau0')].split(' ')
         keys = utils.SuppCarList(line, ['###','','\n'])
         line = result_file[utils.SearchLine(result_file,'tau0') + 3].split(' ')
@@ -159,7 +162,7 @@ class Dusty():
         r_vrai = utils.CalculRayonVrai(results,self._Lest)
         FTot = utils.CalculFluxTotal(results['F1(W/m2)'],r_vrai,distance)
 
-        SED_file = utils.LoadFile(self._dustyPath+self._Model.get_Name()+'.stb')
+        SED_file = utils.LoadFile(os.path.join(self._dustyPath+self._Model.get_Name(),self._Model.get_Name()+'.stb'))
         Wavelengths = utils.GetColumnSpectrum(SED_file,index = 0, index_header=4)
         Flux = FTot*utils.GetColumnSpectrum(SED_file,index=1,index_header=4)
 
@@ -210,9 +213,24 @@ class Dusty():
         """
         Creates the necessary Dusty model files based on the current model settings.
         """
+        os.makedirs(os.path.join(self._dustyPath,self._Model.get_Name()), exist_ok=True)
         subprocess.call(
-            [
-                f"cp {os.path.dirname(__file__)+'/Mod.inp'} {self._dustyPath + self._Model.get_Name() + '.inp'}"
+            [   
+                f"cp {os.path.join(os.path.dirname(__file__),'Mod.inp')} {os.path.join(self._dustyPath ,self._Model.get_Name(), self._Model.get_Name()+'.inp')}"
             ],
             shell=True,
         )
+
+        file = utils.LoadFile(self._dustyPath + 'dusty.inp')
+        file = [line if '%' in line else '%'+line for line in file ]
+
+        found = False
+        for i, line in enumerate(file):
+            if self._Model.get_Name() in line:
+                file[i] = line.replace('%', '')
+                found = True
+                break
+        if not found:
+            
+            file.append(f'\t{os.path.join(self._Model.get_Name(),self._Model.get_Name())}\n')
+        utils.SaveFile(self._dustyPath + 'dusty.inp',file)
