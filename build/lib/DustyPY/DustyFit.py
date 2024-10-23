@@ -144,7 +144,7 @@ class DustyFit():
             elif 'Lum' in key:
                 self._Dusty.get_Model().get_Stars()[int(key.split('Lum')[-1])-1].set_Luminosity(change[key])
             elif key in ['Opacity']:
-                self._Dusty.get_Model().get_Dust().set_Opacity(change[key])
+                self._Dusty.get_Model().get_Dust().set_tau(change[key])
             elif key in ['Composition', 'Abundances']:
                 self._Dusty.get_Model().get_Dust().set_Composition(change[key])
             elif key in ['DustSize']:
