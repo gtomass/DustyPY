@@ -214,7 +214,7 @@ class Dusty():
         print(os.getcwd())
         subprocess.call(
             [
-                f"cp {__file__+'../Mod.inp'} {self._dustyPath + self._Model.get_Name() + '.inp'}"
+                f"cp {__file__+'/../Mod.inp'} {self._dustyPath + self._Model.get_Name() + '.inp'}"
             ],
             shell=True,
         )
