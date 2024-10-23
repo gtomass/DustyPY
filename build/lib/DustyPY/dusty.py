@@ -214,7 +214,7 @@ class Dusty():
 
         subprocess.call(
             [
-                f"cp {os.getcwd()}/SFit/Mod.inp {self._dustyPath + self._Model.get_Name() + '.inp'}"
+                f"cp {os.getcwd()}/DustyPY/Mod.inp {self._dustyPath + self._Model.get_Name() + '.inp'}"
             ],
             shell=True,
         )
