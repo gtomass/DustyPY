@@ -1,0 +1,7 @@
+matplotlib
+numpy
+pandas
+astropy
+scipy
+pymcmcstat
+PyAstronomy

@@ -9,6 +9,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Radron74/DustyPY.git",
+    package_dir={"DustyPY": "DustyPY"},
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
