@@ -211,10 +211,9 @@ class Dusty():
         """
         Creates the necessary Dusty model files based on the current model settings.
         """
-        print(os.getcwd())
         subprocess.call(
             [
-                f"cp {__file__+'/../Mod.inp'} {self._dustyPath + self._Model.get_Name() + '.inp'}"
+                f"cp {os.path.dirname(__file__)+'/Mod.inp'} {self._dustyPath + self._Model.get_Name() + '.inp'}"
             ],
             shell=True,
         )
