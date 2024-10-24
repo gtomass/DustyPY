@@ -36,8 +36,10 @@ class Dusty():
                                 'Temperature': 'Temperature', 
                                 'Luminosities': 'Luminosities',
                                 'Opacity': 'tau(min)',
+                                'Dust size': 'a(min) =',
                                 'Composition': 'Number of additional components',
-                                'Abundances': 'Abundances for these components'}
+                                'Abundances': 'Abundances for these components'
+                                }
         self._SED = SED.SED()
         self.__Check()
         self.__CreateDustyFile()
@@ -105,6 +107,7 @@ class Dusty():
                     'Temperature': f'        	Temperature = {', '.join(T)} K \n', 
                     'Luminosities': f'        	Luminosities = {', '.join(L)} \n',
                     'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n' ,
+                    'Dust size': f'        q = 3.5, a(min) = {dust.get_DustSize()["amin"]} micron, a(max) = {dust.get_DustSize()["amax"]} micron \n',
                     'Composition': f'	Number of additional components = {nbcomp} properties listed in: \n        {comp}\n',
                     'Abundances': f'   Abundances for these components = {abondances} \n'    ,
                 }
