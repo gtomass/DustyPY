@@ -32,13 +32,18 @@ class Dusty():
         self._dustyPath = PATH
         self._Model = Model
         self._Lest = Lestimation
-        self._DustyReconizer = {'BB': 'Number of BB',
+        self._DustyReconizer = {'Spectral': 'Spectral shape', # new black_body or engelke-marengo
+                                'BB': 'Number of BB', # only with black_body
                                 'Temperature': 'Temperature', 
-                                'Luminosities': 'Luminosities',
-                                'Opacity': 'tau(min)',
+                                'Luminosities': 'Luminosities', # only with black_body and BB > 1
+                                'Absorption': 'SiO absorption depth', # new (not compatible with luminosities and only 1 star)
+                                'Optical properties': 'optical properties index', # new
+                                'Composition': 'Number of additional components', 
+                                'Abundances': 'Abundances for these components',
+                                'Size Distribution': 'SIZE DISTRIBUTION', # new MRN, Modified MRN
                                 'Dust size': 'a(min) =',
-                                'Composition': 'Number of additional components',
-                                'Abundances': 'Abundances for these components'
+                                'Sublimation temperature': 'Tsub', # new
+                                'Opacity': 'tau(min)'
                                 }
         self._SED = SED.SED()
         self.__Check()
@@ -81,7 +86,7 @@ class Dusty():
         """
         return [
             file.split('/')[-1].split('.')[0]
-            for file in glob.glob(f'{os.path.join(self._dustyPath,'Lib_nk','*.nk')}')
+            for file in glob.glob(f'{os.path.join(self._dustyPath,'data','Lib_nk','*.nk')}')
         ]
         
 
@@ -90,32 +95,11 @@ class Dusty():
         Changes the parameters of the Dusty model based on the current model settings.
         """
 
-        name = self._Model.get_Name()
-        Stars = self._Model.get_Stars()
-
-        T = [str(Star.get_Temperature()) for Star in Stars]
-        L = [str(Star.get_Luminosity())for Star in Stars]
-
-        dust = self._Model.get_Dust()
-        comp = "\n        ".join(
-            f"{f'{os.path.join('Lib_nk',comp)}'}.nk" for comp in dust.get_Composition().keys()
-        )
-        nbcomp = str(len(dust.get_Composition().keys()))
-        abondances = ", ".join(f'{ab}' for ab in dust.get_Composition().values())
-
-        change = {  'BB': f'        	Number of BB = {len(T)} \n',
-                    'Temperature': f'        	Temperature = {', '.join(T)} K \n', 
-                    'Luminosities': f'        	Luminosities = {', '.join(L)} \n',
-                    'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n' ,
-                    'Dust size': f'        q = 3.5, a(min) = {dust.get_DustSize()["amin"]} micron, a(max) = {dust.get_DustSize()["amax"]} micron \n',
-                    'Composition': f'	Number of additional components = {nbcomp} properties listed in: \n        {comp}\n',
-                    'Abundances': f'   Abundances for these components = {abondances} \n'    ,
-                }
-
+        change = utils.build_change_dict(self._Model)
         utils.ChangeParameter(os.path.join(self._dustyPath,
-                                           name,
-                                           name+'.inp'),
-                                           change=change,car=self._DustyReconizer,nstar=int(len(T)))
+                                           self._Model.get_Name(),
+                                           self._Model.get_Name()+'.inp'),
+                                           change=change,car=self._DustyReconizer,nstar=int(self._Model.get_NbStar()))
 
     def PrintParam(self):
         """
@@ -129,7 +113,8 @@ class Dusty():
         """
         Runs the Dusty simulation with the current model settings.
         """
-        subprocess.check_call(['./dusty'],cwd=self._dustyPath)
+        print(self._dustyPath)
+        subprocess.check_call(['./dusty model.mas'],cwd=self._dustyPath,shell=True)
 
 
     def GetResults(self):
@@ -140,7 +125,7 @@ class Dusty():
         dict: A dictionary containing the results of the Dusty simulation.
         """
          
-        result_file = utils.LoadFile(os.path.join(self._dustyPath+self._Model.get_Name(),self._Model.get_Name()+'.out'))
+        result_file = utils.LoadFile(os.path.join(self._dustyPath,self._Model.get_Name(),self._Model.get_Name()+'.out'))
         line = result_file[utils.SearchLine(result_file,'tau0')].split(' ')
         keys = utils.SuppCarList(line, ['###','','\n'])
         line = result_file[utils.SearchLine(result_file,'tau0') + 3].split(' ')
@@ -163,11 +148,11 @@ class Dusty():
         results = self.GetResults()
 
         r_vrai = utils.CalculRayonVrai(results,self._Lest)
-        FTot = utils.CalculFluxTotal(results['F1(W/m2)'],r_vrai,distance)
+        FTot = utils.CalculFluxTotal(results['Fi(W/m2)'],r_vrai,distance)
 
-        SED_file = utils.LoadFile(os.path.join(self._dustyPath+self._Model.get_Name(),self._Model.get_Name()+'.stb'))
-        Wavelengths = utils.GetColumnSpectrum(SED_file,index = 0, index_header=4)
-        Flux = FTot*utils.GetColumnSpectrum(SED_file,index=1,index_header=4)
+        SED_file = utils.LoadFile(os.path.join(self._dustyPath,self._Model.get_Name(),self._Model.get_Name()+'.stb'))
+        Wavelengths = utils.GetColumnSpectrum(SED_file,index = 0, index_header=6)
+        Flux = FTot*utils.GetColumnSpectrum(SED_file,index=1,index_header=6)
 
         if Jansky:
             Flux = utils.WattToJansky(Flux,Wavelengths)
@@ -217,23 +202,14 @@ class Dusty():
         Creates the necessary Dusty model files based on the current model settings.
         """
         os.makedirs(os.path.join(self._dustyPath,self._Model.get_Name()), exist_ok=True)
+        print(os.path.join(os.path.dirname(__file__),'Mod.inp'))
+
         subprocess.call(
             [   
                 f"cp {os.path.join(os.path.dirname(__file__),'Mod.inp')} {os.path.join(self._dustyPath ,self._Model.get_Name(), self._Model.get_Name()+'.inp')}"
             ],
-            shell=True,
+            shell=True
         )
 
-        file = utils.LoadFile(self._dustyPath + 'dusty.inp')
-        file = [line if '%' in line else '%'+line for line in file ]
-
-        found = False
-        for i, line in enumerate(file):
-            if self._Model.get_Name() in line:
-                file[i] = line.replace('%', '')
-                found = True
-                break
-        if not found:
-            
-            file.append(f'\t{os.path.join(self._Model.get_Name(),self._Model.get_Name())}\n')
-        utils.SaveFile(self._dustyPath + 'dusty.inp',file)
+        with open(os.path.join(self._dustyPath,'model.mas'),'w') as file:
+            file.write(f'{os.path.join(self._Model.get_Name(),self._Model.get_Name())+'.inp'}\n')

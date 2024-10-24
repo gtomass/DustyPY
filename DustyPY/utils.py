@@ -207,6 +207,55 @@ def SaveFile(Path,file):
     with open(Path , 'w') as f:
             f.write("".join(file))
 
+def ChangeCarLine(line, change,reconizer):
+    
+    line_split = line.split(reconizer)
+    for i in range(1, len(line_split)):
+        line_split[i] = change + ' '+' '.join(line_split[i].split(' ')[1:])+' '
+    line = reconizer.join(line_split)
+    return line
+
+
+def build_change_dict(model):
+    """
+    Build a dictionary with various parameters extracted from the model.
+
+    Args:
+        model: The model object containing the necessary data.
+        dusty_path: The path to the dusty directory.
+
+    Returns:
+        dict: A dictionary with the extracted parameters.
+    """
+    stars = model.get_Stars()
+
+    temperatures = [str(star.get_Temperature()) for star in stars]
+    luminosities = [str(star.get_Luminosity()) for star in stars]
+
+    dust = model.get_Dust()
+    composition_files = "\n        ".join(
+        f"{os.path.join('data','Lib_nk', comp)}.nk" for comp in dust.get_Composition().keys()
+    )
+    nbcomp = str(len(dust.get_Composition().keys()))
+    abundances = ", ".join(f'{ab}' for ab in dust.get_Composition().values())
+
+    change = {
+        'Spectral': f'      	        Spectral shape = {model.get_Spectral()} \n',
+        'BB': f'        	Number of BB = {len(temperatures)} \n',
+        'Temperature': f'        	Temperature = {", ".join(temperatures)} K \n',
+        'Luminosities': f'        	Luminosities = {", ".join(luminosities)} \n',
+        'Absorption': f'        SiO absorption depth = {model.get_SiOAbsorption()}  percents\n',
+        'Optical properties': f'        optical properties index = {dust.get_Properties()} \n',
+        'Composition': f'	Number of additional components = {nbcomp} properties listed files \n        {composition_files}\n',
+        'Abundances': f'   Abundances for these components = {abundances} \n',
+        'Size Distribution': f'        SIZE DISTRIBUTION = {dust.get_DustSize()["Distribution"]} \n',
+        'Dust size': f'        q = 3.5, a(min) = {dust.get_DustSize()["amin"]} micron, a(max) = {dust.get_DustSize()["amax"]} micron \n',
+        'Sublimation temperature': f'        Tsub = {dust.get_Sublimation()} K \n',
+        'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n',
+    }
+
+    return change
+
 def ChangeParameter(Path, change, car, nstar):
     """
     Modify specific parameters in a file by removing certain lines and updating others.
@@ -222,15 +271,30 @@ def ChangeParameter(Path, change, car, nstar):
     
     # Remove all lines containing '.nk'
     file = [line for line in file if ('.nk' not in line)] 
+
+    #cannot have multiple stars with engelke_marengo
+    if 'engelke_marengo' in change['Spectral']:
+        change.pop('BB')
+        change.pop('Luminosities')
+        file = [line for line in file if ('Number of BB' not in line)]
+    else:
+        change.pop('Absorption')
+        file = [line for line in file if ('SiO absorption depth' not in line)]
+
+    if 'MRN' in change['Size Distribution']:
+        change.pop('Dust size')
+        file = [line for line in file if ('q = 3.5' not in line)]
+
+    if nstar == 1 and 'Luminosities' in change.keys():
+        file = [line for line in file if ('Luminosities' not in line)]
+        change.pop('Luminosities')
     
+    print(change)
     for param in change.keys():
-        if nstar == 1 and car[param]=='Luminosities':
-            file = [line for line in file if ('Luminosities' not in line)] 
-            pass
-        else:
-            line = SearchLine(file, car[param])
-            new_line = change[param]
-            file[line] = new_line
+        line = SearchLine(file, car[param])
+        new_line = change[param]
+        file[line] = new_line
+
 
     SaveFile(Path, file)
 

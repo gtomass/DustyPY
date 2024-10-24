@@ -85,7 +85,13 @@ class Dust():
     Class representing dust with opacity, size, temperature, and composition.
     """
 
-    def __init__(self, tau=0.1, DustSize={}, Temperature=800, Composition={}):
+    def __init__(self, 
+                 tau=0.1, 
+                 DustSize={'Distribution':'MRN','q':3.5, 'amin':0.005, 'amax':0.25}, 
+                 Temperature=800, 
+                 Sublimation=1200,
+                 Composition={},
+                 Properties= 'common_grain_composite'):
         """
         Initializes an instance of the Dust class.
 
@@ -95,10 +101,22 @@ class Dust():
         Temperature (float, optional): The temperature of the dust in Kelvin. Defaults to 800.
         Composition (dict, optional): A dictionary representing the composition of the dust. Defaults to an empty dictionary.
         """
+        if 'Distribution' not in DustSize:
+            DustSize.update({'Distribution': 'MRN'})
+        if 'q' not in DustSize:
+            DustSize.update({'q': 3.5})
+        if 'amin' not in DustSize:
+            DustSize.update({'amin': 0.005})
+        if 'amax' not in DustSize:
+            DustSize.update({'amax': 0.25})
+
         self._tau = tau
         self._DustSize = DustSize
         self._Temperature = Temperature
+        self._Sublimation = Sublimation
         self._Composition = Composition
+        self._Properties = Properties
+        self.__Check()
 
     def set_tau(self, tau):
         """
@@ -125,6 +143,15 @@ class Dust():
         Parameters:
         DustSize (dict): A dictionary representing the size of the dust.
         """
+        if 'Distribution' not in DustSize:
+            DustSize.update({'Distribution': 'MRN'})
+        if 'q' not in DustSize:
+            DustSize.update({'q': 3.5})
+        if 'amin' not in DustSize:
+            DustSize.update({'amin': 0.005})
+        if 'amax' not in DustSize:
+            DustSize.update({'amax': 0.25})
+            
         self._DustSize = DustSize
 
     def get_DustSize(self):
@@ -153,6 +180,24 @@ class Dust():
         float: The temperature of the dust in Kelvin.
         """
         return self._Temperature
+    
+    def set_Sublimation(self, Sublimation):
+        """
+        Sets the sublimation temperature of the dust.
+
+        Parameters:
+        Sublimation (float): The sublimation temperature of the dust in Kelvin.
+        """
+        self._Sublimation = Sublimation
+
+    def get_Sublimation(self):
+        """
+        Returns the sublimation temperature of the dust.
+
+        Returns:
+        float: The sublimation temperature of the dust in Kelvin.
+        """
+        return self._Sublimation
 
     def set_Composition(self, Composition):
         """
@@ -171,6 +216,40 @@ class Dust():
         dict: A dictionary representing the composition of the dust.
         """
         return self._Composition
+    
+    def set_Properties(self, Properties):
+        """
+        Sets the properties of the dust.
+
+        Parameters:
+        Properties (str): The properties of the dust.
+        """
+        self._Properties = Properties
+    
+    def get_Properties(self):
+        """
+        Returns the properties of the dust.
+
+        Returns:
+        str: The properties of the dust.
+        """
+        return self._Properties
+    
+    def __Check(self):
+        """
+        Checks the consistency of the dust's attributes.
+        """
+        if self._tau < 0:
+            raise ValueError("Tau must be positive")
+        if self._Temperature < 0:
+            raise ValueError("Temperature must be positive")
+        if self._Properties not in ['common_grain_composite','common_and_addl_grain','common_and_addl_grain_composite','tabulates']:
+            raise ValueError("Properties must be common_grain_composite, common_and_addl_grain, common_and_addl_grain_composite, or tabulates")
+        if self._DustSize['Distribution'] not in ['MRN','MODIFIED_MRN']:
+            raise ValueError("Size distribution must be MRN or MODIFIED_MRN")
+        for key in self._DustSize:
+            if key not in ['Distribution','q','amin','amax']:
+                raise ValueError(f"Invalid key {key} in DustSize")
 
 
 class Model():
@@ -178,7 +257,13 @@ class Model():
     Class representing a model with a name, number of stars, stars, dust, and distance.
     """
 
-    def __init__(self, Name='', NbStar=0, Stars=list(), Dust=Dust(), distance=1):
+    def __init__(self, Name='',
+                 NbStar=0, 
+                 Stars=list(), 
+                 Dust=Dust(), 
+                 distance=1, 
+                 Spectral='black_body',
+                 SiOAbsorption=10):
         """
         Initializes an instance of the Model class.
 
@@ -194,6 +279,8 @@ class Model():
         self._Stars = Stars
         self._Dust = Dust
         self._distance = distance
+        self._Spectral = Spectral
+        self._SiOAbsorption = SiOAbsorption
         self.__Check()
 
     def set_Name(self, Name):
@@ -288,6 +375,44 @@ class Model():
         """
         return self._distance
     
+    def set_Spectral(self, Spectral):
+        """
+        Sets the spectral shape of the model.
+
+        Parameters:
+        Spectral (str): The spectral shape of the model.
+        """
+        self._Spectral = Spectral
+        self.__Check()
+    
+    def get_Spectral(self):
+        """
+        Returns the spectral shape of the model.
+
+        Returns:
+        str: The spectral shape of the model.
+        """
+        return self._Spectral
+    
+    def set_SiOAbsorption(self, SiOAbsorption):
+        """
+        Sets the SiO absorption depth of the model.
+
+        Parameters:
+        SiOAbsorption (float): The SiO absorption depth of the model.
+        """
+        self._SiOAbsorption = SiOAbsorption
+        self.__Check()
+
+    def get_SiOAbsorption(self):
+        """
+        Returns the SiO absorption depth of the model.
+
+        Returns:
+        float: The SiO absorption depth of the model.
+        """
+        return self._SiOAbsorption
+    
     def __Check(self):
         """
         Checks the consistency of the model's attributes.
@@ -298,4 +423,10 @@ class Model():
             raise ValueError("Tau must be positive")
         if self._distance < 0:
             raise ValueError("Distance must be positive")
+        if self._Spectral not in ['black_body','engelke_marengo']:
+            raise ValueError("Spectral shape must be black_body or engelke_marengo")
+        if self._Spectral == 'engelke_marengo' and self._NbStar > 1:
+            raise ValueError("engelke_marengo is only compatible with 1 star")
+        if self._SiOAbsorption < 0 or self._SiOAbsorption > 100:
+            raise ValueError("SiO absorption depth must be between 0 and 100")
         
