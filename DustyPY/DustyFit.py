@@ -148,7 +148,9 @@ class DustyFit():
             elif key in ['Composition', 'Abundances']:
                 self._Dusty.get_Model().get_Dust().set_Composition(change[key])
             elif key in ['DustSize']:
-                raise NotImplementedError('Dust size is not fittable yet')
+                self._Dusty.get_Model().get_Dust().set_DustSize(change[key])
+            else:
+                raise NotImplementedError(f'Parameter {key} not recognized.')
             
     def __Chi2Dusty(self,theta,data):
         
