@@ -75,6 +75,15 @@ class Fit():
         utils.SetMCMCParam(self._Model, self._Param)
         self._Model.simulation_options.define_simulation_options(**self._ParamFit)
 
+    def get_Model(self):
+        """
+        Returns the MCMC model.
+
+        Returns:
+        pymcmcstat.MCMC.MCMC: The MCMC model.
+        """
+        return self._Model
+
     def set_ParamFit(self, ParamFit):
         """
         Sets the fitting parameters for the MCMC model.

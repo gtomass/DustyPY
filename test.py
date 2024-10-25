@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 
 if __name__=='__main__':
     
-    S = stars.Star(Name='E1',Temperature=7000,Luminosity=1)
+    S = stars.Star(Name='E1',Temperature=3697.87,Luminosity=1)
 
     dust = stars.Dust(DustSize={'Distribution':'MODIFIED_MRN','amin' : 0.01, 'amax': 1}, 
                       Composition={'Al2O3-comp':0.2,'MgFeSiO4':0.16,'Ca2Al2SiO7':0.64},
-                      tau=0,
+                      tau=1.06,
                       Sublimation=1200,
                       Properties='common_and_addl_grain_composite'
                       )
@@ -24,7 +24,7 @@ if __name__=='__main__':
 
     
     dustyMod = dusty.Dusty(PATH='/Users/gabriel/Documents/These/Recherche/lib/dusty/release/dusty',
-                           Model=mod,Lestimation=1.8e5)
+                           Model=mod,Lestimation=0.68*1.8e5)
     
     dustyMod.MakeWavelength(119)
 
@@ -38,12 +38,11 @@ if __name__=='__main__':
     Dat.SetVizierData(table)
     Dat.RestrictData(['yerr != 0.'])
     
-    #print(dustyMod.AvailableComposition())
-    #dustyMod.ChangeParameter()
+    # dustyMod.ChangeParameter()
     # dustyMod.LunchDusty(verbose=0)
     # dustyMod.MakeSED(distance=197)
-    # dustyMod.PlotSED(xlim=(0,10),ax=ax)
-    # Dat.ScatterData(xlim=(0,20),ylim=(0,6e4), ax=ax, kwargs=kwargs_data)
+    # dustyMod.PlotSED(xlim=(0,10),ax=ax,kwargs=kwargs_dusty)
+    # Dat.ScatterData(xlim=(0,20), ax=ax, kwargs=kwargs_data)
     # plt.show()
 
     
@@ -69,5 +68,5 @@ if __name__=='__main__':
 
     fit.LunchFit()
     fit.get_Fit().PrintResults()
-    fit.PlotResults(xlim=(0,5),ylim=(0,100), ax=ax, kwargs_fit=kwargs_dusty, kwargs_data=kwargs_data)
+    fit.PlotResults(xlim=(0,5), ax=ax, kwargs_fit=kwargs_dusty, kwargs_data=kwargs_data)
 

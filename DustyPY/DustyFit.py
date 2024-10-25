@@ -4,6 +4,7 @@ from . import Data
 from . import utils as utils
 import numpy as np
 import matplotlib.pyplot as plt
+import subprocess
 
 class DustyFit():
     """
@@ -178,16 +179,13 @@ class DustyFit():
         """
         
         change = utils.ListToDict(list(self._Fit.get_Param().keys()),theta)
+        
 
         self.__setChange(change)
         
         self._Dusty.ChangeParameter()
         self._Dusty.LunchDusty(verbose = 0)
         self._Dusty.MakeSED(distance = self._Dusty.get_Model().get_Distance())
-
-        # self._Data.set_xdata(self._Dusty.GetSED().get_Wavelength())
-        # self._Data.set_ydata(self._Dusty.GetSED().get_Flux())
-
 
         try:
             xdata = data.xdata[0]
@@ -197,6 +195,8 @@ class DustyFit():
 
         ymodel = utils.model(theta[-1], xdata, self._Dusty.GetSED().get_Wavelength(), self._Dusty.GetSED().get_Flux()
                              ).reshape(ydata.shape)
+        
+        subprocess.call('clear', shell=True)
 
         if self._Data.get_yerr() is not None:
             return np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2)
@@ -236,9 +236,12 @@ class DustyFit():
 
         This method retrieves the fitting results, updates the Dusty model parameters, runs the Dusty simulation, and generates the Spectral Energy Distribution (SED). It then plots the SED and the data with optional error bars.
         """
-        result = self._Fit.get_Results()['theta']
-        self.__setChange(utils.ListToDict(list(self._Fit.get_Param().keys()), result))
-        print(utils.ListToDict(list(self._Fit.get_Param().keys()), result))
+
+        chain = self._Fit.get_Results()['chain']
+        burnin = int(self._Fit.get_Results()['nsimu'] / 2)
+        result = self._Fit.get_Model().chainstats(chain[burnin:, :], self._Fit.get_Results(), returnstats=True)
+
+        self.__setChange(utils.ListToDict(list(self._Fit.get_Param().keys()), result['mean']))
         self._Dusty.ChangeParameter()
         self._Dusty.LunchDusty()
         self._Dusty.MakeSED(distance=self._Dusty.get_Model().get_Distance())
