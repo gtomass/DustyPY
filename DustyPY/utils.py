@@ -281,7 +281,7 @@ def ChangeParameter(Path, change, car, nstar):
         change.pop('Absorption')
         file = [line for line in file if ('SiO absorption depth' not in line)]
 
-    if 'MRN' in change['Size Distribution']:
+    if ('MRN' in change['Size Distribution']) and ('MODIFIED_MRN' not in change['Size Distribution']):
         change.pop('Dust size')
         file = [line for line in file if ('q = 3.5' not in line)]
 
@@ -289,7 +289,6 @@ def ChangeParameter(Path, change, car, nstar):
         file = [line for line in file if ('Luminosities' not in line)]
         change.pop('Luminosities')
     
-    print(change)
     for param in change.keys():
         line = SearchLine(file, car[param])
         new_line = change[param]
@@ -545,6 +544,50 @@ def VizierQuery(radius, target):
 
     return Table.read(f"https://vizier.cds.unistra.fr/viz-bin/sed?-c={target}&-c.rs={radius}")
 
+def LogSpace(start, stop, num):
+    """
+    Crée un tableau de valeurs espacées logarithmiquement.
+
+    Paramètres:
+    start (float): La valeur de départ.
+    stop (float): La valeur de fin.
+    num (int): Le nombre de valeurs.
+
+    Retourne:
+    array-like: Un tableau de valeurs espacées logarithmiquement.
+    """
+    return np.logspace(start, stop, num)
+
+def WriteWavelength(Path, Wavelength):
+    """
+    Écrit les longueurs d'onde dans un fichier.
+
+    Paramètres:
+    Path (str): Le chemin du fichier.
+    Wavelength (array-like): Les longueurs d'onde à écrire.
+
+    Retourne:
+    None
+    """
+    header = []
+
+    with open(Path, 'r') as f:
+        lines = f.readlines()
+        for i,line in enumerate(lines):
+            if '# nL =' in line:
+                line = f'# nL = {len(Wavelength)}\n'
+                header.append(line)
+            elif '#' in line:
+                header.append(line)
+                pass
+            else:
+                break
+
+    with open(Path, 'w') as f:
+        for line in header:
+            f.write(line)
+        for w in Wavelength:
+            f.write(f"{w}\n")
 
 
 if __name__=="__main__":

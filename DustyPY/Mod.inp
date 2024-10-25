@@ -16,8 +16,8 @@ II. PHYSICAL PARAMETERS
 
      1.2) Scale: %(available options: flux\Lum_r1\energy_den\dilutn_fac\T1)
         
-		Scale:    type of entry = FLUX
-                            Fe = 3E4 W/m^2
+		Scale:    type of entry = T1
+                            Td = 800 K
 
      2) External source  %(available options: on\off)
                

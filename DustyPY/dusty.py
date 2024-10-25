@@ -109,12 +109,13 @@ class Dusty():
         name = self._Model.get_Name()
         utils.PrintFile(os.path.join(self._dustyPath,name,name+'.inp'),stop=73)
 
-    def LunchDusty(self):
+    def LunchDusty(self,verbose=2):
         """
         Runs the Dusty simulation with the current model settings.
         """
-        print(self._dustyPath)
-        subprocess.check_call(['./dusty model.mas'],cwd=self._dustyPath,shell=True)
+        if verbose not in [0,1,2]:
+            raise ValueError('The verbose parameter must be 0, 1 or 2')
+        subprocess.check_call([f'./dusty model.mas {verbose}'],cwd=self._dustyPath,shell=True)
 
 
     def GetResults(self):
@@ -172,6 +173,23 @@ class Dusty():
 
         return self._SED
     
+
+    def MakeWavelength(self, number_of_wavelength=200):
+        """
+        Generates a list of wavelengths for the Dusty model.
+
+        Parameters:
+        number_of_wavelength (int, optional): The number of wavelengths to generate. Defaults to 200.
+        """
+
+        wavelengths = utils.LogSpace(-2,4,number_of_wavelength)
+        check = [wavelengths[i+1]/wavelengths[i] < 1.5 for i in range(len(wavelengths)-1)]
+        if all(check):
+            utils.WriteWavelength(os.path.join(self._dustyPath,'data','lambda_grid.dat'),wavelengths)
+        else:
+            raise ValueError('Not all wavelengths are spaced by less than 50%')
+
+    
     def PlotSED(self, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
         """
         Plots the Spectral Energy Distribution (SED) of the Dusty model.
@@ -202,7 +220,7 @@ class Dusty():
         Creates the necessary Dusty model files based on the current model settings.
         """
         os.makedirs(os.path.join(self._dustyPath,self._Model.get_Name()), exist_ok=True)
-        print(os.path.join(os.path.dirname(__file__),'Mod.inp'))
+        #print(os.path.join(os.path.dirname(__file__),'Mod.inp'))
 
         subprocess.call(
             [   

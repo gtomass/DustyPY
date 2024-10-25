@@ -149,6 +149,8 @@ class DustyFit():
                 self._Dusty.get_Model().get_Dust().set_Composition(change[key])
             elif key in ['DustSize']:
                 self._Dusty.get_Model().get_Dust().set_DustSize(change[key])
+            elif key == 'Lest':
+                pass
             else:
                 raise NotImplementedError(f'Parameter {key} not recognized.')
             
@@ -180,7 +182,7 @@ class DustyFit():
         self.__setChange(change)
         
         self._Dusty.ChangeParameter()
-        self._Dusty.LunchDusty()
+        self._Dusty.LunchDusty(verbose = 0)
         self._Dusty.MakeSED(distance = self._Dusty.get_Model().get_Distance())
 
         # self._Data.set_xdata(self._Dusty.GetSED().get_Wavelength())
