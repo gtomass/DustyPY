@@ -3,7 +3,7 @@ class Star():
     Class representing a star with a name, temperature, and luminosity.
     """
 
-    def __init__(self, Name='', Temperature=0, Luminosity=0):
+    def __init__(self, Name: str = '', Temperature: float = 0, Luminosity: float = 0) -> None:
         """
         Initializes an instance of the Star class.
 
@@ -16,7 +16,7 @@ class Star():
         self._Temperature = Temperature
         self._Luminosity = Luminosity
     
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Returns a string representation of the star.
 
@@ -25,7 +25,7 @@ class Star():
         """
         return fr'{self._Name}: Temperature = {self._Temperature} K and Luminosity = {self._Luminosity} L_sol'
     
-    def set_Name(self, Name):
+    def set_Name(self, Name:str) -> None:
         """
         Sets the name of the star.
 
@@ -34,7 +34,7 @@ class Star():
         """
         self._Name = Name
 
-    def get_Name(self):
+    def get_Name(self) -> str:
         """
         Returns the name of the star.
 
@@ -43,7 +43,7 @@ class Star():
         """
         return self._Name
 
-    def set_Temperature(self, Temperature):
+    def set_Temperature(self, Temperature: float) -> None:
         """
         Sets the temperature of the star.
 
@@ -52,7 +52,7 @@ class Star():
         """
         self._Temperature = Temperature
     
-    def get_Temperature(self):
+    def get_Temperature(self) -> float:
         """
         Returns the temperature of the star.
 
@@ -61,7 +61,7 @@ class Star():
         """
         return self._Temperature
 
-    def set_Luminosity(self, Luminosity):
+    def set_Luminosity(self, Luminosity: float) -> None:
         """
         Sets the luminosity of the star.
 
@@ -70,7 +70,7 @@ class Star():
         """
         self._Luminosity = Luminosity
 
-    def get_Luminosity(self):
+    def get_Luminosity(self) -> float:
         """
         Returns the luminosity of the star.
 
@@ -86,12 +86,12 @@ class Dust():
     """
 
     def __init__(self, 
-                 tau=0.1, 
-                 DustSize={'Distribution':'MRN','q':3.5, 'amin':0.005, 'amax':0.25}, 
-                 Temperature=800, 
-                 Sublimation=1200,
-                 Composition={},
-                 Properties= 'common_grain_composite'):
+                 tau: float = 0.1, 
+                 DustSize: dict = None, 
+                 Temperature: float = 800, 
+                 Sublimation: float = 1200,
+                 Composition: dict = None,
+                 Properties: str = 'common_grain_composite') -> None:
         """
         Initializes an instance of the Dust class.
 
@@ -101,6 +101,8 @@ class Dust():
         Temperature (float, optional): The temperature of the dust in Kelvin. Defaults to 800.
         Composition (dict, optional): A dictionary representing the composition of the dust. Defaults to an empty dictionary.
         """
+        if DustSize is None:
+            DustSize = {'Distribution':'MRN','q':3.5, 'amin':0.005, 'amax':0.25}
         if 'Distribution' not in DustSize:
             DustSize.update({'Distribution': 'MRN'})
         if 'q' not in DustSize:
@@ -110,6 +112,9 @@ class Dust():
         if 'amax' not in DustSize:
             DustSize.update({'amax': 0.25})
 
+        if Composition is None:
+            Composition = {}
+
         self._tau = tau
         self._DustSize = DustSize
         self._Temperature = Temperature
@@ -118,7 +123,7 @@ class Dust():
         self._Properties = Properties
         self.__Check()
 
-    def set_tau(self, tau):
+    def set_tau(self, tau: float) -> None:
         """
         Sets the opacity (tau) of the dust.
 
@@ -127,7 +132,7 @@ class Dust():
         """
         self._tau = tau
 
-    def get_tau(self):
+    def get_tau(self) -> float:
         """
         Returns the opacity (tau) of the dust.
 
@@ -136,7 +141,7 @@ class Dust():
         """
         return self._tau
 
-    def set_DustSize(self, DustSize):
+    def set_DustSize(self, DustSize: dict) -> None:
         """
         Sets the size of the dust.
 
@@ -154,7 +159,7 @@ class Dust():
             
         self._DustSize = DustSize
 
-    def get_DustSize(self):
+    def get_DustSize(self) -> dict:
         """
         Returns the size of the dust.
 
@@ -163,7 +168,7 @@ class Dust():
         """
         return self._DustSize
 
-    def set_Temperature(self, Temperature):
+    def set_Temperature(self, Temperature: float) -> None:
         """
         Sets the temperature of the dust.
 
@@ -172,7 +177,7 @@ class Dust():
         """
         self._Temperature = Temperature
 
-    def get_Temperature(self):
+    def get_Temperature(self) -> float:
         """
         Returns the temperature of the dust.
 
@@ -181,7 +186,7 @@ class Dust():
         """
         return self._Temperature
     
-    def set_Sublimation(self, Sublimation):
+    def set_Sublimation(self, Sublimation: float) -> None:
         """
         Sets the sublimation temperature of the dust.
 
@@ -190,7 +195,7 @@ class Dust():
         """
         self._Sublimation = Sublimation
 
-    def get_Sublimation(self):
+    def get_Sublimation(self) -> float:
         """
         Returns the sublimation temperature of the dust.
 
@@ -199,7 +204,7 @@ class Dust():
         """
         return self._Sublimation
 
-    def set_Composition(self, Composition):
+    def set_Composition(self, Composition: dict) -> None:
         """
         Sets the composition of the dust.
 
@@ -208,7 +213,7 @@ class Dust():
         """
         self._Composition = Composition
 
-    def get_Composition(self):
+    def get_Composition(self) -> dict:
         """
         Returns the composition of the dust.
 
@@ -217,7 +222,7 @@ class Dust():
         """
         return self._Composition
     
-    def set_Properties(self, Properties):
+    def set_Properties(self, Properties: str) -> None:
         """
         Sets the properties of the dust.
 
@@ -226,7 +231,7 @@ class Dust():
         """
         self._Properties = Properties
     
-    def get_Properties(self):
+    def get_Properties(self) -> str:
         """
         Returns the properties of the dust.
 
@@ -235,7 +240,7 @@ class Dust():
         """
         return self._Properties
     
-    def __Check(self):
+    def __Check(self) -> None:
         """
         Checks the consistency of the dust's attributes.
         """
@@ -257,13 +262,13 @@ class Model():
     Class representing a model with a name, number of stars, stars, dust, and distance.
     """
 
-    def __init__(self, Name='',
-                 NbStar=0, 
-                 Stars=list(), 
-                 Dust=Dust(), 
-                 distance=1, 
-                 Spectral='black_body',
-                 SiOAbsorption=10):
+    def __init__(self, Name: str = '',
+                 NbStar: int = 0, 
+                 Stars: list = None, 
+                 Dust: Dust = None, 
+                 distance: float = 1, 
+                 Spectral: str = 'black_body',
+                 SiOAbsorption: float = 10):
         """
         Initializes an instance of the Model class.
 
@@ -274,6 +279,11 @@ class Model():
         Dust (Dust, optional): An instance of the Dust class representing the dust in the model. Defaults to a new Dust instance.
         distance (float, optional): The distance of the model in arbitrary units. Defaults to 1.
         """
+        if Stars is None:
+            Stars = []
+        if Dust is None:
+            Dust = Dust()
+
         self._Name = Name
         self._NbStar = NbStar
         self._Stars = Stars
@@ -283,7 +293,7 @@ class Model():
         self._SiOAbsorption = SiOAbsorption
         self.__Check()
 
-    def set_Name(self, Name):
+    def set_Name(self, Name: str) -> None:
         """
         Sets the name of the model.
 
@@ -292,7 +302,7 @@ class Model():
         """
         self._Name = Name
 
-    def get_Name(self):
+    def get_Name(self) -> str:
         """
         Returns the name of the model.
 
@@ -301,7 +311,7 @@ class Model():
         """
         return self._Name
     
-    def set_NbStar(self, NbStar):
+    def set_NbStar(self, NbStar: int) -> None:
         """
         Sets the number of stars in the model.
 
@@ -311,7 +321,7 @@ class Model():
         self._NbStar = NbStar
         self.__Check()
 
-    def get_NbStar(self):
+    def get_NbStar(self) -> int:
         """
         Returns the number of stars in the model.
 
@@ -320,17 +330,19 @@ class Model():
         """
         return self._NbStar
 
-    def set_Stars(self, Stars=list()):
+    def set_Stars(self, Stars: list = None) -> None:
         """
         Sets the list of stars in the model.
 
         Parameters:
         Stars (list, optional): A list of stars in the model. Defaults to an empty list.
         """
+        if Stars is None:
+            raise ValueError("Stars cannot be None")
         self._Stars = Stars
         self.__Check()
     
-    def get_Stars(self):
+    def get_Stars(self) -> list:
         """
         Returns the list of stars in the model.
 
@@ -339,16 +351,18 @@ class Model():
         """
         return self._Stars
     
-    def set_Dust(self, Dust=Dust()):
+    def set_Dust(self, Dust: Dust = None) -> None:
         """
         Sets the dust in the model.
 
         Parameters:
         Dust (Dust, optional): An instance of the Dust class representing the dust in the model. Defaults to a new Dust instance.
         """
+        if Dust is None:
+            raise ValueError("Dust cannot be None")
         self._Dust = Dust
     
-    def get_Dust(self):
+    def get_Dust(self) -> Dust:
         """
         Returns the dust in the model.
 
@@ -357,7 +371,7 @@ class Model():
         """
         return self._Dust
     
-    def set_Distance(self, distance):
+    def set_Distance(self, distance: float) -> None:
         """
         Sets the distance of the model.
 
@@ -366,7 +380,7 @@ class Model():
         """
         self._distance = distance
     
-    def get_Distance(self):
+    def get_Distance(self) -> float:
         """
         Returns the distance of the model.
 
@@ -375,7 +389,7 @@ class Model():
         """
         return self._distance
     
-    def set_Spectral(self, Spectral):
+    def set_Spectral(self, Spectral: str) -> None:
         """
         Sets the spectral shape of the model.
 
@@ -385,7 +399,7 @@ class Model():
         self._Spectral = Spectral
         self.__Check()
     
-    def get_Spectral(self):
+    def get_Spectral(self) -> str:
         """
         Returns the spectral shape of the model.
 
@@ -394,7 +408,7 @@ class Model():
         """
         return self._Spectral
     
-    def set_SiOAbsorption(self, SiOAbsorption):
+    def set_SiOAbsorption(self, SiOAbsorption: float) -> None:
         """
         Sets the SiO absorption depth of the model.
 
@@ -404,7 +418,7 @@ class Model():
         self._SiOAbsorption = SiOAbsorption
         self.__Check()
 
-    def get_SiOAbsorption(self):
+    def get_SiOAbsorption(self) -> float:
         """
         Returns the SiO absorption depth of the model.
 
@@ -413,7 +427,7 @@ class Model():
         """
         return self._SiOAbsorption
     
-    def __Check(self):
+    def __Check(self) -> None:
         """
         Checks the consistency of the model's attributes.
         """

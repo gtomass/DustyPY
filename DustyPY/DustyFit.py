@@ -18,7 +18,7 @@ class DustyFit():
     _Fit (Fit): The fitting object.
     """
 
-    def __init__(self, Dusty, Data, ParamFit=None, Param=None, Fit=MCfit.Fit()):
+    def __init__(self, Dusty: dusty.Dusty, Data: Data.Data, ParamFit: dict = None, Param: dict = None, Fit:MCfit.Fit = None) -> None:
         """
         Initializes an instance of the DustyFit class.
 
@@ -29,13 +29,16 @@ class DustyFit():
         Param (dict, optional): The model parameters. Defaults to None.
         Fit (Fit, optional): The fitting object. Defaults to an instance of MCfit.Fit.
         """
+        if Fit is None:
+            Fit = MCfit.Fit()
+    
         self._Dusty = Dusty
         self._Data = Data
         self._ParamFit = ParamFit
         self._Param = Param
         self._Fit = Fit
 
-    def __InitFit(self):
+    def __InitFit(self) -> None:
         """
         Initializes the fitting object with the data, fitting parameters, and model parameters.
         """
@@ -44,7 +47,7 @@ class DustyFit():
         self._Fit.set_Param(Param=self._Param)
 
     # Méthodes set
-    def set_Dusty(self, Dusty):
+    def set_Dusty(self, Dusty: dusty.Dusty) -> None:
         """
         Sets the Dusty model to be fitted.
 
@@ -53,7 +56,7 @@ class DustyFit():
         """
         self._Dusty = Dusty
 
-    def set_Data(self, Data):
+    def set_Data(self, Data: Data.Data) -> None:
         """
         Sets the data to fit.
 
@@ -62,7 +65,7 @@ class DustyFit():
         """
         self._Data = Data
 
-    def set_ParamFit(self, ParamFit):
+    def set_ParamFit(self, ParamFit: dict) -> None:
         """
         Sets the fitting parameters.
 
@@ -71,7 +74,7 @@ class DustyFit():
         """
         self._ParamFit = ParamFit
 
-    def set_Param(self, Param):
+    def set_Param(self, Param: dict) -> None:
         """
         Sets the model parameters.
 
@@ -80,11 +83,11 @@ class DustyFit():
         """
         self._Param = Param
 
-    def set_Fit(self, Fit):
+    def set_Fit(self, Fit: MCfit.Fit) -> None:
         self._Fit = Fit
 
     # Méthodes get
-    def get_Dusty(self):
+    def get_Dusty(self) -> dusty.Dusty:
         """
         Returns the Dusty model to be fitted.
 
@@ -93,7 +96,7 @@ class DustyFit():
         """
         return self._Dusty
 
-    def get_Data(self):
+    def get_Data(self) -> Data.Data:
         """
         Returns the data to fit.
 
@@ -102,7 +105,7 @@ class DustyFit():
         """
         return self._Data
 
-    def get_ParamFit(self):
+    def get_ParamFit(self) -> dict:
         """
         Returns the fitting parameters.
 
@@ -111,7 +114,7 @@ class DustyFit():
         """
         return self._ParamFit
 
-    def get_Param(self):
+    def get_Param(self) -> dict:
         """
         Returns the model parameters.
 
@@ -120,7 +123,7 @@ class DustyFit():
         """
         return self._Param
 
-    def get_Fit(self):
+    def get_Fit(self) -> MCfit.Fit:
         """
         Returns the fitting object.
 
@@ -129,7 +132,7 @@ class DustyFit():
         """
         return self._Fit
     
-    def __setChange(self, change):
+    def __setChange(self, change: dict) -> None:
         """
         Applies changes to the Dusty model based on the provided dictionary.
 
@@ -155,7 +158,7 @@ class DustyFit():
             else:
                 raise NotImplementedError(f'Parameter {key} not recognized.')
             
-    def __Chi2Dusty(self,theta,data):
+    def __Chi2Dusty(self,theta,data) -> float:
         
         """
         Calculate the chi-squared value for the Dusty model fit.
@@ -204,7 +207,7 @@ class DustyFit():
             return np.nansum((ymodel - ydata)**2)
             
     
-    def LunchFit(self):
+    def LunchFit(self) -> None:
         """
         Initializes the fitting procedure and performs the fit using the chi-squared function.
 
@@ -213,7 +216,7 @@ class DustyFit():
         self.__InitFit()
         self._Fit.Fit(Chi2=self.__Chi2Dusty)
 
-    def PrintResults(self):
+    def PrintResults(self) -> None:
         """
         Prints the results of the fitting procedure.
 
@@ -221,7 +224,14 @@ class DustyFit():
         """
         self._Fit.PrintResults()
     
-    def PlotResults(self, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs_fit=None, kwargs_data=None):
+    def PlotResults(self, 
+                    unit: str = None, 
+                    xlim: tuple = None, 
+                    ylim: tuple = None, 
+                    ax: plt.Axes = None, 
+                    scale: str = 'linear', 
+                    kwargs_fit: dict = None, 
+                    kwargs_data: dict = None) -> None:
         """
         Plots the results of the fitting procedure along with the data.
 
@@ -236,7 +246,6 @@ class DustyFit():
 
         This method retrieves the fitting results, updates the Dusty model parameters, runs the Dusty simulation, and generates the Spectral Energy Distribution (SED). It then plots the SED and the data with optional error bars.
         """
-
         chain = self._Fit.get_Results()['chain']
         burnin = int(self._Fit.get_Results()['nsimu'] / 2)
         result = self._Fit.get_Model().chainstats(chain[burnin:, :], self._Fit.get_Results(), returnstats=True)
@@ -256,7 +265,3 @@ class DustyFit():
                 kwargs_data.update({'marker': marker})
             utils.ScatterPlot(self._Data.get_ydata(), self._Data.get_xdata(), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data)
         plt.show()
-
-
-    def __Check(self):
-        pass

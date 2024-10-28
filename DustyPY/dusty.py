@@ -20,7 +20,7 @@ class Dusty():
     _SED (SED): The Spectral Energy Distribution (SED) associated with the Dusty model.
     """
 
-    def __init__(self, PATH='', Model=Model(), Lestimation=1e4):
+    def __init__(self, Model: Model = None , PATH: str = None, Lestimation: float = 1e4) -> None:
         """
         Initializes an instance of the Dusty class.
 
@@ -29,6 +29,12 @@ class Dusty():
         Model (Model, optional): The model used in the Dusty simulation. Defaults to an instance of Model.
         Lestimation (float, optional): The luminosity estimation. Defaults to 1e4.
         """
+
+        if PATH is None:
+            PATH = ''
+        if Model is None:
+            Model = Model()
+
         self._dustyPath = PATH
         self._Model = Model
         self._Lest = Lestimation
@@ -49,7 +55,7 @@ class Dusty():
         self.__Check()
         self.__CreateDustyFile()
 
-    def set_Model(self, Model):
+    def set_Model(self, Model: Model) -> None:
         """
         Sets the model used in the Dusty simulation.
 
@@ -59,7 +65,7 @@ class Dusty():
         self._Model = Model
         self.__Check()
 
-    def get_Model(self):
+    def get_Model(self) -> Model:
         """
         Returns the model used in the Dusty simulation.
 
@@ -68,7 +74,7 @@ class Dusty():
         """
         return self._Model
 
-    def set_PATH(self, Path):
+    def set_PATH(self, Path: str) -> None:
         """
         Sets the path to the Dusty model files.
 
@@ -77,7 +83,7 @@ class Dusty():
         """
         self._dustyPath = Path
 
-    def AvailableComposition(self):
+    def AvailableComposition(self) -> list:
         """
         Returns a list of available compositions for the Dusty model.
 
@@ -90,7 +96,7 @@ class Dusty():
         ]
         
 
-    def ChangeParameter(self):
+    def ChangeParameter(self) -> None:
         """
         Changes the parameters of the Dusty model based on the current model settings.
         """
@@ -101,7 +107,7 @@ class Dusty():
                                            self._Model.get_Name()+'.inp'),
                                            change=change,car=self._DustyReconizer,nstar=int(self._Model.get_NbStar()))
 
-    def PrintParam(self):
+    def PrintParam(self) -> None:
         """
         Prints the current parameters of the Dusty model.
         """
@@ -109,7 +115,7 @@ class Dusty():
         name = self._Model.get_Name()
         utils.PrintFile(os.path.join(self._dustyPath,name,name+'.inp'),stop=73)
 
-    def LunchDusty(self,verbose=2):
+    def LunchDusty(self,verbose: str = 2) -> None:
         """
         Runs the Dusty simulation with the current model settings.
         """
@@ -118,7 +124,7 @@ class Dusty():
         subprocess.check_call([f'./dusty model.mas {verbose}'],cwd=self._dustyPath,shell=True)
 
 
-    def GetResults(self):
+    def GetResults(self) -> dict:
         """
         Retrieves the results of the Dusty simulation.
 
@@ -133,7 +139,7 @@ class Dusty():
         values = [float(el) for el in utils.SuppCarList(line,['','1','\n'])]
         return utils.ListToDict(keys,values)
     
-    def MakeSED(self,distance, Jansky = True , um = True):
+    def MakeSED(self,distance, Jansky: bool = True , um: bool = True) -> None:
         
         """
         Generates the Spectral Energy Distribution (SED) for the given distance.
@@ -163,7 +169,7 @@ class Dusty():
         self._SED.set_Wavelength(wavelength=Wavelengths)
         self._SED.set_Flux(Flux=Flux)
 
-    def GetSED(self):
+    def GetSED(self) -> SED:
         """
         Returns the Spectral Energy Distribution (SED) of the Dusty model.
 
@@ -174,7 +180,7 @@ class Dusty():
         return self._SED
     
 
-    def MakeWavelength(self, number_of_wavelength=200):
+    def MakeWavelength(self, number_of_wavelength: int = 200) -> None:
         """
         Generates a list of wavelengths for the Dusty model.
 
@@ -190,7 +196,7 @@ class Dusty():
             raise ValueError('Not all wavelengths are spaced by less than 50%')
 
     
-    def PlotSED(self, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+    def PlotSED(self, unit: str = None, xlim: tuple = None, ylim: tuple = None, ax = None, scale: str = 'linear', kwargs: dict = None) -> None:
         """
         Plots the Spectral Energy Distribution (SED) of the Dusty model.
 
@@ -206,7 +212,7 @@ class Dusty():
         self._SED.PlotSED(unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs)
     
 
-    def __Check(self):
+    def __Check(self) -> None:
         """
         Checks the consistency of the Dusty model's attributes.
         """
@@ -215,7 +221,7 @@ class Dusty():
             if species not in self.AvailableComposition():
                 raise ValueError(f'The following species does not exist: {species}')
 
-    def __CreateDustyFile(self):
+    def __CreateDustyFile(self) -> None:
         """
         Creates the necessary Dusty model files based on the current model settings.
         """

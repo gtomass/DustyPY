@@ -17,14 +17,14 @@ if __name__=='__main__':
                       Properties='common_and_addl_grain_composite'
                       )
     
-    mod = stars.Model('Prout', NbStar=1, Stars=[S], 
+    mod = stars.Model('Betelgeuse', NbStar=1, Stars=[S], 
                       Dust=dust, distance=197.0,
                       Spectral='black_body',
                       SiOAbsorption=10)
 
     
     dustyMod = dusty.Dusty(PATH='/Users/gabriel/Documents/These/Recherche/lib/dusty/release/dusty',
-                           Model=mod,Lestimation=0.68*1.8e5)
+                           Model=mod,Lestimation=1.8e5)
     
     dustyMod.MakeWavelength(119)
 
@@ -37,6 +37,8 @@ if __name__=='__main__':
     table = Dat.QuerryVizierData(radius = 5, target='Betelgeuse')
     Dat.SetVizierData(table)
     Dat.RestrictData(['yerr != 0.'])
+
+    Dat.UnredData(EBV=0.4042)
     
     # dustyMod.ChangeParameter()
     # dustyMod.LunchDusty(verbose=0)
@@ -56,7 +58,7 @@ if __name__=='__main__':
 
     #Initialize the parameter of the MCMC
     ParamFit = {
-                            'nsimu': 100,         #Number of iteration (larger is better but slow due to the dusty runtime)   
+                            'nsimu': 1000,         #Number of iteration (larger is better but slow due to the dusty runtime)   
                             'updatesigma': True,  #Update the sigma of the likelihood function
                             'method': 'dram',     #Sampling method
                             'adaptint': 100,      #Number of interates between adaptation.

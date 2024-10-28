@@ -17,7 +17,7 @@ class Fit():
     _Results (dict): The results of the fitting procedure.
     """
 
-    def __init__(self, Data=Data.Data(), Model=pymcmcstat.MCMC.MCMC(), ParamFit=None, Param=None):
+    def __init__(self, Data: Data.Data = None, Model: pymcmcstat.MCMC.MCMC = None, ParamFit: dict = None, Param: dict = None) -> None:
         """
         Initializes an instance of the Fit class.
 
@@ -27,6 +27,10 @@ class Fit():
         ParamFit (dict, optional): The fitting parameters. Defaults to a predefined dictionary.
         Param (dict, optional): The model parameters. Defaults to an empty dictionary.
         """
+        if Data is None:
+            Data = Data.Data()
+        if Model is None:
+            Model = pymcmcstat.MCMC.MCMC()
         if ParamFit is None:
             ParamFit = {
                         'nsimu': 10000,
@@ -45,7 +49,7 @@ class Fit():
         self._Param = Param
         self._Results = {}
 
-    def set_Data(self, Data=None):
+    def set_Data(self, Data:Data.Data = None) -> None:
         """
         Sets the data to fit.
 
@@ -56,7 +60,7 @@ class Fit():
             Data = Data.Data()
         self._Data = Data
 
-    def get_Data(self):
+    def get_Data(self) -> Data.Data:
         """
         Returns the data to fit.
 
@@ -65,7 +69,7 @@ class Fit():
         """
         return self._Data
 
-    def set_Model(self):
+    def set_Model(self) -> None:
         """
         Sets the MCMC model parameters and simulation options.
 
@@ -75,7 +79,7 @@ class Fit():
         utils.SetMCMCParam(self._Model, self._Param)
         self._Model.simulation_options.define_simulation_options(**self._ParamFit)
 
-    def get_Model(self):
+    def get_Model(self) -> pymcmcstat.MCMC.MCMC:
         """
         Returns the MCMC model.
 
@@ -84,7 +88,7 @@ class Fit():
         """
         return self._Model
 
-    def set_ParamFit(self, ParamFit):
+    def set_ParamFit(self, ParamFit: dict = None) -> None:
         """
         Sets the fitting parameters for the MCMC model.
 
@@ -100,17 +104,10 @@ class Fit():
         }
         """
         if ParamFit is None:
-            ParamFit = {
-                        'nsimu': 10000,
-                        'updatesigma': True,
-                        'method': 'dram',
-                        'adaptint': 100,
-                        'verbosity': 0,
-                        'waitbar': True,
-                    }
+            raise ValueError('ParamFit cannot be None')
         self._ParamFit = ParamFit
 
-    def get_ParamFit(self):
+    def get_ParamFit(self) -> dict:
         """
         Returns the fitting parameters for the MCMC model.
 
@@ -119,16 +116,18 @@ class Fit():
         """
         return self._ParamFit
         
-    def set_Param(self, Param):
+    def set_Param(self, Param: dict) -> None:
         """
         Sets the model parameters for the MCMC model.
 
         Parameters:
         Param (dict): A dictionary containing the model parameters.
         """
+        if Param is None:
+            raise ValueError('Param cannot be None')
         self._Param = Param
 
-    def get_Param(self):
+    def get_Param(self) -> dict:
         """
         Returns the model parameters for the MCMC model.
 
@@ -137,16 +136,18 @@ class Fit():
         """
         return self._Param
 
-    def set_Chi2Func(self, func):
+    def set_Chi2Func(self, func: function) -> None:
         """
         Sets the chi-squared function for the MCMC model.
 
         Parameters:
         func (function): The chi-squared function to be used by the MCMC model.
         """
+        if func is None:
+            raise ValueError('func cannot be None')
         self._Model.model_settings.define_model_settings(sos_function=func)
 
-    def get_Results(self):
+    def get_Results(self) -> dict:
         """
         Returns the results of the fitting procedure.
 
@@ -155,7 +156,7 @@ class Fit():
         """
         return self._Results
 
-    def Fit(self, Chi2=utils.Chi2):
+    def Fit(self, Chi2: function = utils.Chi2) -> None:
         """
         Performs the fitting procedure using the provided chi-squared function.
 
@@ -175,7 +176,7 @@ class Fit():
 
         self._Results = results
 
-    def PrintResults(self):
+    def PrintResults(self) -> None:
         """
         Prints the results of the fitting procedure, including chain statistics.
         """
@@ -183,7 +184,7 @@ class Fit():
         burnin = int(self._Results['nsimu'] / 2)
         self._Model.chainstats(chain[burnin:, :], self._Results)
 
-    def PredictionModel(self):
+    def PredictionModel(self) -> None:
         """
         Sets up the prediction model for calculating prediction intervals.
         """
@@ -195,25 +196,3 @@ class Fit():
 
         self._Model.PI.setup_prediction_interval_calculation(pred_modelfun)
     
-
-if __name__=='__main__':
-    dat = Data.Data(xdata=[0,1,2,3,4,5,6,7,8,9,10],ydata=[0,1,2,3,4,5,6,7,8,9,10])
-
-    ParamFit = {
-        'nsimu': 10000,
-        'updatesigma': True,
-        'method': 'dram',
-        'adaptint': 100,
-        'verbosity': 0,
-        'waitbar': True,
-    }
-
-    f = Fit(Param={'I':{'theta0':1,'minimum':0,'maximum':2}},Data=dat)
-
-    f.Fit()
-    f.PrintResults()
-    result = f.get_Results()['theta'][0]
-    x = np.linspace(0,10,100)
-    y = utils.model(q=result,x=dat.get_xdata(),y=dat.get_ydata())
-
-    utils.Plot(y,dat.get_xdata())
