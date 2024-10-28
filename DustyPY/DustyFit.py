@@ -153,9 +153,18 @@ class DustyFit():
             elif key in ['Opacity']:
                 self._Dusty.get_Model().get_Dust().set_tau(change[key])
             elif key in ['Composition', 'Abundances']:
-                self._Dusty.get_Model().get_Dust().set_Composition(change[key])
+                # self._Dusty.get_Model().get_Dust().set_Composition(change[key]
+                # Composition must be fixed but abundances can be fitted
+                raise NotImplementedError(
+                    'Composition and Abundances are not yet fittable.')
             elif key in ['DustSize']:
                 self._Dusty.get_Model().get_Dust().set_DustSize(change[key])
+            elif key in ['Sublimation']:
+                self._Dusty.get_Model().get_Dust().set_Sublimation(
+                    change[key])
+            elif key in ['Absorption']:
+                self._Dusty.get_Model().set_SiOAbsorption(change[key])
+
             elif key == 'Lest':
                 pass
             else:
@@ -213,6 +222,8 @@ class DustyFit():
 
         This method initializes the fitting object and then runs the fitting procedure using the chi-squared function specific to the Dusty model.
         """
+        if list(self._Param.keys())[-1] != 'Lest':
+            raise Exception('The last parameter must be Lest')
         self.__InitFit()
         self._Fit.fit(Chi2=self.__Chi2Dusty)
 

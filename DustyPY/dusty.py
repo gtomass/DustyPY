@@ -37,18 +37,17 @@ class Dusty():
         self._dustyPath = PATH
         self._Model = Model
         self._Lest = Lestimation
-        self._DustyReconizer = {'Spectral': 'Spectral shape',  # new black_body or engelke-marengo
-                                'BB': 'Number of BB',  # only with black_body
+        self._DustyReconizer = {'Spectral': 'Spectral shape',
+                                'BB': 'Number of BB',
                                 'Temperature': 'Temperature',
-                                'Luminosities': 'Luminosities',  # only with black_body and BB > 1
-                                # new (not compatible with luminosities and only 1 star)
+                                'Luminosities': 'Luminosities',
                                 'Absorption': 'SiO absorption depth',
-                                'Optical properties': 'optical properties index',  # new
+                                'Optical properties': 'optical properties index',
                                 'Composition': 'Number of additional components',
                                 'Abundances': 'Abundances for these components',
-                                'Size Distribution': 'SIZE DISTRIBUTION',  # new MRN, Modified MRN
+                                'Size Distribution': 'SIZE DISTRIBUTION',
                                 'Dust size': 'a(min) =',
-                                'Sublimation temperature': 'Tsub',  # new
+                                'Sublimation temperature': 'Tsub',
                                 'Opacity': 'tau(min)'
                                 }
         self._SED = SED.SED()
