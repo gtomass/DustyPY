@@ -1,10 +1,11 @@
-from . import dusty 
+from . import dusty
 from . import MCfit
 from . import Data
 from . import utils as utils
 import numpy as np
 import matplotlib.pyplot as plt
 import subprocess
+
 
 class DustyFit():
     """
@@ -15,10 +16,10 @@ class DustyFit():
     _Data (Data): The data to fit.
     _ParamFit (dict): The fitting parameters.
     _Param (dict): The model parameters.
-    _Fit (Fit): The fitting object.
+    _Fit (fit): The fitting object.
     """
 
-    def __init__(self, Dusty: dusty.Dusty, Data: Data.Data, ParamFit: dict = None, Param: dict = None, Fit:MCfit.Fit = None) -> None:
+    def __init__(self, Dusty: dusty.Dusty, Data: Data.Data, ParamFit: dict = None, Param: dict = None, fit: MCfit.fit = None) -> None:
         """
         Initializes an instance of the DustyFit class.
 
@@ -27,16 +28,16 @@ class DustyFit():
         Data (Data): The data to fit.
         ParamFit (dict, optional): The fitting parameters. Defaults to None.
         Param (dict, optional): The model parameters. Defaults to None.
-        Fit (Fit, optional): The fitting object. Defaults to an instance of MCfit.Fit.
+        fit (fit, optional): The fitting object. Defaults to an instance of MCfit.fit.
         """
-        if Fit is None:
-            Fit = MCfit.Fit()
-    
+        if fit is None:
+            fit = MCfit.fit()
+
         self._Dusty = Dusty
         self._Data = Data
         self._ParamFit = ParamFit
         self._Param = Param
-        self._Fit = Fit
+        self._Fit = fit
 
     def __InitFit(self) -> None:
         """
@@ -83,8 +84,8 @@ class DustyFit():
         """
         self._Param = Param
 
-    def set_Fit(self, Fit: MCfit.Fit) -> None:
-        self._Fit = Fit
+    def set_Fit(self, fit: MCfit.fit) -> None:
+        self._Fit = fit
 
     # Méthodes get
     def get_Dusty(self) -> dusty.Dusty:
@@ -123,15 +124,15 @@ class DustyFit():
         """
         return self._Param
 
-    def get_Fit(self) -> MCfit.Fit:
+    def get_Fit(self) -> MCfit.fit:
         """
         Returns the fitting object.
 
         Returns:
-        Fit: The fitting object.
+        fit: The fitting object.
         """
         return self._Fit
-    
+
     def __setChange(self, change: dict) -> None:
         """
         Applies changes to the Dusty model based on the provided dictionary.
@@ -144,9 +145,11 @@ class DustyFit():
         """
         for key in change.keys():
             if 'Temp' in key:
-                self._Dusty.get_Model().get_Stars()[int(key.split('Temp')[-1])-1].set_Temperature(change[key])
+                self._Dusty.get_Model().get_Stars()[int(
+                    key.split('Temp')[-1])-1].set_Temperature(change[key])
             elif 'Lum' in key:
-                self._Dusty.get_Model().get_Stars()[int(key.split('Lum')[-1])-1].set_Luminosity(change[key])
+                self._Dusty.get_Model().get_Stars()[int(
+                    key.split('Lum')[-1])-1].set_Luminosity(change[key])
             elif key in ['Opacity']:
                 self._Dusty.get_Model().get_Dust().set_tau(change[key])
             elif key in ['Composition', 'Abundances']:
@@ -157,9 +160,8 @@ class DustyFit():
                 pass
             else:
                 raise NotImplementedError(f'Parameter {key} not recognized.')
-            
-    def __Chi2Dusty(self,theta,data) -> float:
-        
+
+    def __Chi2Dusty(self, theta, data) -> float:
         """
         Calculate the chi-squared value for the Dusty model fit.
         This method updates the Dusty model parameters based on the provided 
@@ -180,58 +182,56 @@ class DustyFit():
             SED and the observed data. If observational errors (`yerr`) are available, 
             they are used in the chi-squared calculation.
         """
-        
-        change = utils.ListToDict(list(self._Fit.get_Param().keys()),theta)
-        
+
+        change = utils.list_to_dict(list(self._Fit.get_Param().keys()), theta)
 
         self.__setChange(change)
-        
-        self._Dusty.ChangeParameter()
-        self._Dusty.LunchDusty(verbose = 0)
-        self._Dusty.MakeSED(distance = self._Dusty.get_Model().get_Distance())
+
+        self._Dusty.change_parameter()
+        self._Dusty.LunchDusty(verbose=0)
+        self._Dusty.MakeSED(distance=self._Dusty.get_Model().get_Distance())
 
         try:
             xdata = data.xdata[0]
             ydata = data.ydata[0]
         except AttributeError:
-            xdata,ydata = data.get_xdata(),data.get_ydata()
+            xdata, ydata = data.get_xdata(), data.get_ydata()
 
         ymodel = utils.model(theta[-1], xdata, self._Dusty.GetSED().get_Wavelength(), self._Dusty.GetSED().get_Flux()
                              ).reshape(ydata.shape)
-        
+
         subprocess.call('clear', shell=True)
 
         if self._Data.get_yerr() is not None:
             return np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2)
-        else:    
+        else:
             return np.nansum((ymodel - ydata)**2)
-            
-    
-    def LunchFit(self) -> None:
+
+    def lunch_fit(self) -> None:
         """
         Initializes the fitting procedure and performs the fit using the chi-squared function.
 
         This method initializes the fitting object and then runs the fitting procedure using the chi-squared function specific to the Dusty model.
         """
         self.__InitFit()
-        self._Fit.Fit(Chi2=self.__Chi2Dusty)
+        self._Fit.fit(Chi2=self.__Chi2Dusty)
 
-    def PrintResults(self) -> None:
+    def print_results(self) -> None:
         """
         Prints the results of the fitting procedure.
 
-        This method calls the PrintResults method of the fitting object to display the results of the fitting procedure.
+        This method calls the print_results method of the fitting object to display the results of the fitting procedure.
         """
-        self._Fit.PrintResults()
-    
-    def PlotResults(self, 
-                    unit: str = None, 
-                    xlim: tuple = None, 
-                    ylim: tuple = None, 
-                    ax: plt.Axes = None, 
-                    scale: str = 'linear', 
-                    kwargs_fit: dict = None, 
-                    kwargs_data: dict = None) -> None:
+        self._Fit.print_results()
+
+    def plot_results(self,
+                     unit: str = None,
+                     xlim: tuple = None,
+                     ylim: tuple = None,
+                     ax: plt.Axes = None,
+                     scale: str = 'linear',
+                     kwargs_fit: dict = None,
+                     kwargs_data: dict = None) -> None:
         """
         Plots the results of the fitting procedure along with the data.
 
@@ -248,20 +248,25 @@ class DustyFit():
         """
         chain = self._Fit.get_Results()['chain']
         burnin = int(self._Fit.get_Results()['nsimu'] / 2)
-        result = self._Fit.get_Model().chainstats(chain[burnin:, :], self._Fit.get_Results(), returnstats=True)
+        result = self._Fit.get_Model().chainstats(
+            chain[burnin:, :], self._Fit.get_Results(), returnstats=True)
 
-        self.__setChange(utils.ListToDict(list(self._Fit.get_Param().keys()), result['mean']))
-        self._Dusty.ChangeParameter()
+        self.__setChange(utils.list_to_dict(
+            list(self._Fit.get_Param().keys()), result['mean']))
+        self._Dusty.change_parameter()
         self._Dusty.LunchDusty()
         self._Dusty.MakeSED(distance=self._Dusty.get_Model().get_Distance())
         SED = self._Dusty.GetSED()
-        utils.Plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit)
+        utils.Plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
+                   xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit)
         if self._Data.get_yerr() is not None:
-            utils.ErrorPlot(self._Data.get_ydata(), self._Data.get_xdata(), self._Data.get_yerr(), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data)
+            utils.error_plot(self._Data.get_ydata(), self._Data.get_xdata(), self._Data.get_yerr(
+            ), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data)
         else:
             if 'fmt' in kwargs_data.keys():
                 marker = kwargs_data['fmt']
                 kwargs_data.pop('fmt')
                 kwargs_data.update({'marker': marker})
-            utils.ScatterPlot(self._Data.get_ydata(), self._Data.get_xdata(), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data)
+            utils.scatter_plot(self._Data.get_ydata(), self._Data.get_xdata(
+            ), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data)
         plt.show()

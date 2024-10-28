@@ -5,7 +5,7 @@ from . import Data as Data
 import numpy as np
 
 
-class Fit():
+class fit():
     """
     Class representing a fitting procedure using MCMC.
 
@@ -33,13 +33,13 @@ class Fit():
             Model = pymcmcstat.MCMC.MCMC()
         if ParamFit is None:
             ParamFit = {
-                        'nsimu': 10000,
-                        'updatesigma': True,
-                        'method': 'dram',
-                        'adaptint': 100,
-                        'verbosity': 0,
-                        'waitbar': True,
-                    }
+                'nsimu': 10000,
+                'updatesigma': True,
+                'method': 'dram',
+                'adaptint': 100,
+                'verbosity': 0,
+                'waitbar': True,
+            }
         if Param is None:
             Param = {}
 
@@ -49,7 +49,7 @@ class Fit():
         self._Param = Param
         self._Results = {}
 
-    def set_Data(self, Data:Data.Data = None) -> None:
+    def set_Data(self, Data: Data.Data = None) -> None:
         """
         Sets the data to fit.
 
@@ -73,11 +73,12 @@ class Fit():
         """
         Sets the MCMC model parameters and simulation options.
 
-        Utilizes the utility function `SetMCMCParam` to set the model parameters and
+        Utilizes the utility function `set_mcmc_param` to set the model parameters and
         defines the simulation options using the fitting parameters.
         """
-        utils.SetMCMCParam(self._Model, self._Param)
-        self._Model.simulation_options.define_simulation_options(**self._ParamFit)
+        utils.set_mcmc_param(self._Model, self._Param)
+        self._Model.simulation_options.define_simulation_options(
+            **self._ParamFit)
 
     def get_Model(self) -> pymcmcstat.MCMC.MCMC:
         """
@@ -115,7 +116,7 @@ class Fit():
         dict: The fitting parameters.
         """
         return self._ParamFit
-        
+
     def set_Param(self, Param: dict) -> None:
         """
         Sets the model parameters for the MCMC model.
@@ -136,7 +137,7 @@ class Fit():
         """
         return self._Param
 
-    def set_Chi2Func(self, func: function) -> None:
+    def set_Chi2Func(self, func=None) -> None:
         """
         Sets the chi-squared function for the MCMC model.
 
@@ -156,12 +157,12 @@ class Fit():
         """
         return self._Results
 
-    def Fit(self, Chi2: function = utils.Chi2) -> None:
+    def fit(self, Chi2=utils.chi2) -> None:
         """
         Performs the fitting procedure using the provided chi-squared function.
 
         Parameters:
-        Chi2 (function, optional): The chi-squared function to be used for the fitting procedure. Defaults to utils.Chi2.
+        Chi2 (function, optional): The chi-squared function to be used for the fitting procedure. Defaults to utils.chi2.
         """
         y = self._Data.get_ydata()
         x = self._Data.get_xdata()
@@ -176,7 +177,7 @@ class Fit():
 
         self._Results = results
 
-    def PrintResults(self) -> None:
+    def print_results(self) -> None:
         """
         Prints the results of the fitting procedure, including chain statistics.
         """
@@ -184,15 +185,14 @@ class Fit():
         burnin = int(self._Results['nsimu'] / 2)
         self._Model.chainstats(chain[burnin:, :], self._Results)
 
-    def PredictionModel(self) -> None:
-        """
-        Sets up the prediction model for calculating prediction intervals.
-        """
-        nds = len(self._Data.get_xdata())
-        print(nds)
+    # def PredictionModel(self) -> None:
+    #     """
+    #     Sets up the prediction model for calculating prediction intervals.
+    #     """
+    #     nds = len(self._Data.get_xdata())
+    #     print(nds)
 
-        def pred_modelfun(preddata, theta):
-            return utils.model(theta[:2], preddata.xdata[0], preddata.ydata[0]).reshape(nds,)
+    #     def pred_modelfun(preddata, theta):
+    #         return utils.model(theta[:2], preddata.xdata[0], preddata.ydata[0]).reshape(nds,)
 
-        self._Model.PI.setup_prediction_interval_calculation(pred_modelfun)
-    
+    #     self._Model.PI.setup_prediction_interval_calculation(pred_modelfun)
