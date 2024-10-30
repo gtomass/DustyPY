@@ -216,7 +216,7 @@ class Data():
         """
         if target is None:
             raise ValueError('target must be specified')
-        return utils.vizier_query(radius, target)
+        return utils.querry_vizier_data(radius, target)
 
     def set_vizier_data(self, table) -> None:
         """
