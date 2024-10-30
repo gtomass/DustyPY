@@ -574,7 +574,7 @@ def unred(Wavelength, Flux, EBV, Rv=3.1):
 #     return L == 1
 
 
-def vizier_query(radius, target):
+def querry_vizier_data(radius, target):
     """
     Interroge Vizier pour obtenir des données.
 
