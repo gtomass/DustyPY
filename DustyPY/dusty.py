@@ -41,9 +41,15 @@ class Dusty():
                                 'BB': 'Number of BB',
                                 'Temperature': 'Temperature',
                                 'Luminosities': 'Luminosities',
-                                'Opacity': 'tau(min)',
+                                'Absorption': 'SiO absorption depth',
+                                'Optical properties': 'optical properties index',
                                 'Composition': 'Number of additional components',
-                                'Abundances': 'Abundances for these components'}
+                                'Abundances': 'Abundances for these components',
+                                'Size Distribution': 'SIZE DISTRIBUTION',
+                                'Dust size': 'a(min) =',
+                                'Sublimation temperature': 'Tsub',
+                                'Opacity': 'tau(min)'
+                                }
         self._SED = SED.SED()
         self.__Check()
         self.__CreateDustyFile()
@@ -93,31 +99,11 @@ class Dusty():
         Changes the parameters of the Dusty model based on the current model settings.
         """
 
-        name = self._Model.get_Name()
-        Stars = self._Model.get_Stars()
-
-        T = [str(Star.get_Temperature()) for Star in Stars]
-        L = [str(Star.get_Luminosity())for Star in Stars]
-
-        dust = self._Model.get_Dust()
-        comp = "\n        ".join(
-            f"{f'{os.path.join('Lib_nk',comp)}'}.nk" for comp in dust.get_Composition().keys()
-        )
-        nbcomp = str(len(dust.get_Composition().keys()))
-        abondances = ", ".join(f'{ab}' for ab in dust.get_Composition().values())
-
-        change = {  'BB': f'        	Number of BB = {len(T)} \n',
-                    'Temperature': f'        	Temperature = {', '.join(T)} K \n', 
-                    'Luminosities': f'        	Luminosities = {', '.join(L)} \n',
-                    'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n' ,
-                    'Composition': f'	Number of additional components = {nbcomp} properties listed in: \n        {comp}\n',
-                    'Abundances': f'   Abundances for these components = {abondances} \n'    ,
-                }
-
-        utils.ChangeParameter(os.path.join(self._dustyPath,
-                                           name,
-                                           name+'.inp'),
-                                           change=change,car=self._DustyReconizer,nstar=int(len(T)))
+        change = utils.build_change_dict(self._Model)
+        utils.change_parameter(os.path.join(self._dustyPath,
+                                            self._Model.get_Name(),
+                                            self._Model.get_Name()+'.inp'),
+                               change=change, car=self._DustyReconizer, nstar=int(self._Model.get_NbStar()))
 
     def print_param(self) -> None:
         """
