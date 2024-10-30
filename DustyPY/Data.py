@@ -203,7 +203,7 @@ class Data():
         self._yerr = utils.jansky_to_watt(
             self._yerr, self._xdata * um) if self._yerr is not None else None
 
-    def QuerryVizierData(self, radius: float = 5, target: str = None):
+    def querry_vizier_data(self, radius: float = 5, target: str = None):
         """
         Queries Vizier for data.
 
