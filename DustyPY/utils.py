@@ -71,8 +71,8 @@ def plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='line
         fig, ax = plt.subplots()
 
     ax.plot(Wavelength, Flux, **kwargs)
-    ax.set_xlabel(f'{unit['x']}')
-    ax.set_ylabel(f'{unit['y']}')
+    ax.set_xlabel(f"{unit['x']}")
+    ax.set_ylabel(f"{unit['y']}")
 
     ax.set_yscale(scale)
 
@@ -96,8 +96,8 @@ def error_plot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None
         fig, ax = plt.subplots()
 
     ax.errorbar(Wavelength, Flux, yerr=eFlux, **kwargs)
-    ax.set_xlabel(f'{unit['x']}')
-    ax.set_ylabel(f'{unit['y']}')
+    ax.set_xlabel(f"{unit['x']}")
+    ax.set_ylabel(f"{unit['y']}")
 
     ax.set_yscale(scale)
 
