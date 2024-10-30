@@ -12,8 +12,7 @@ from pymcmcstat.MCMC import MCMC
 from PyAstronomy import pyasl
 
 
-
-def ScatterPlot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax = None, scale='linear', kwargs=None):
+def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
     """Create a scatter plot
 
     Args:
@@ -27,7 +26,7 @@ def ScatterPlot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax = None, sc
 
     """
     if unit is None:
-        unit = {'x':'Wavelength', 'y': 'Flux'}
+        unit = {'x': 'Wavelength', 'y': 'Flux'}
     if xlim is None:
         xlim = {}
     if ylim is None:
@@ -35,9 +34,9 @@ def ScatterPlot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax = None, sc
     if kwargs is None:
         kwargs = {}
     if ax is None:
-        fig,ax = plt.subplots()
+        fig, ax = plt.subplots()
 
-    ax.scatter(Wavelength,Flux,**kwargs)
+    ax.scatter(Wavelength, Flux, **kwargs)
     ax.set_xlabel(unit['x'])
     ax.set_ylabel(unit['y'])
 
@@ -46,7 +45,8 @@ def ScatterPlot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax = None, sc
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
 
-def Plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+
+def plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
     """Create a scatter plot
 
     Args:
@@ -60,7 +60,7 @@ def Plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='line
 
     """
     if unit is None:
-        unit = {'x':'Wavelength', 'y': 'Flux'}
+        unit = {'x': 'Wavelength', 'y': 'Flux'}
     if xlim is None:
         xlim = {}
     if ylim is None:
@@ -68,9 +68,9 @@ def Plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='line
     if kwargs is None:
         kwargs = {}
     if ax is None:
-        fig,ax = plt.subplots()
+        fig, ax = plt.subplots()
 
-    ax.plot(Wavelength,Flux,**kwargs)
+    ax.plot(Wavelength, Flux, **kwargs)
     ax.set_xlabel(f'{unit['x']}')
     ax.set_ylabel(f'{unit['y']}')
 
@@ -79,12 +79,13 @@ def Plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='line
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
 
-def ErrorPlot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+
+def error_plot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
     """Create a scatter plot
     """
 
     if unit is None:
-        unit = {'x':'Wavelength', 'y': 'Flux'}
+        unit = {'x': 'Wavelength', 'y': 'Flux'}
     if xlim is None:
         xlim = {}
     if ylim is None:
@@ -92,9 +93,9 @@ def ErrorPlot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None,
     if kwargs is None:
         kwargs = {}
     if ax is None:
-        fig,ax = plt.subplots()
+        fig, ax = plt.subplots()
 
-    ax.errorbar(Wavelength,Flux,yerr=eFlux,**kwargs)
+    ax.errorbar(Wavelength, Flux, yerr=eFlux, **kwargs)
     ax.set_xlabel(f'{unit['x']}')
     ax.set_ylabel(f'{unit['y']}')
 
@@ -104,19 +105,20 @@ def ErrorPlot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None,
     ax.set_ylim(*ylim)
 
 
-def PrintFile(file, stop=-1):
+def print_file(file, stop=-1):
     """Print a file
 
     Args:
         file (string): Path to the file
         stop (int, optional): line where to stop printing. Defaults to -1.
     """
-    with open(file , 'r') as f:
-            lines = f.readlines()
-            for line in lines[:stop]:
-                print(line)
+    with open(file, 'r') as f:
+        lines = f.readlines()
+        for line in lines[:stop]:
+            print(line)
 
-def LoadFile(Path):
+
+def load_file(Path, header: int = 0):
     """Load a file in an array
 
     Args:
@@ -126,10 +128,11 @@ def LoadFile(Path):
         array: array containing the lines of the file
     """
 
-    with open(Path , 'r') as f:
-        return f.readlines()
-    
-def LoadCSV(Path, sep=','):
+    with open(Path, 'r') as f:
+        return f.readlines()[header:]
+
+
+def load_csv(Path, sep=','):
     """Load a csv file
 
     Args:
@@ -140,7 +143,8 @@ def LoadCSV(Path, sep=','):
     """
     return pd.read_csv(Path, sep=sep)
 
-def LoadFits(Path):
+
+def load_fits(Path):
     """Load a fits file
 
     Args:
@@ -149,10 +153,10 @@ def LoadFits(Path):
     Returns:
         array: array containing the file
     """
-    return fits.open(Path)[0].data 
+    return fits.open(Path)[0].data
 
 
-def SearchLine(file, line):
+def search_line(file, line):
     """
     Searches for a specific line in a given file and returns the index of the line if found.
 
@@ -166,48 +170,94 @@ def SearchLine(file, line):
     Raises:
         Exception: If the specified line does not exist in the file.
     """
-    for i,lines in enumerate(file):
+    for i, lines in enumerate(file):
         if line in lines:
-            return i 
+            return i
     raise Exception(f'This line does dot exist: {line}')
 
-def DeleteLine(file, line):
+# def delete_line(file, line):
+#     """
+#     Deletes a specific line in a given file.
+
+#     Args:
+#         file (iterable): An iterable object representing the file, where each element is a line in the file.
+#         line (str): The line to delete within the file.
+
+#     Returns:
+#         iterable: The file with the specified line removed.
+
+#     Raises:
+#         Exception: If the specified line does not exist in the file.
+#     """
+#     for i,lines in enumerate(file):
+#         if line in lines:
+#             del file[i]
+#             return file
+#     raise Exception(f'This line does dot exist: {line}')
+
+
+def save_file(Path, file):
     """
-    Deletes a specific line in a given file.
+    Save the given content to a file at the specified path.
 
     Args:
-        file (iterable): An iterable object representing the file, where each element is a line in the file.
-        line (str): The line to delete within the file.
+        Path (str): The path where the file will be saved.
+        file (list of str): The content to be written to the file, provided as a list of strings.
 
     Returns:
-        iterable: The file with the specified line removed.
-
-    Raises:
-        Exception: If the specified line does not exist in the file.
+        None
     """
-    for i,lines in enumerate(file):
-        if line in lines:
-            del file[i]
-            return file
-    raise Exception(f'This line does dot exist: {line}')
+    with open(Path, 'w') as f:
+        f.write("".join(file))
+
+# def change_car_line(line, change,reconizer):
+
+#     line_split = line.split(reconizer)
+#     for i in range(1, len(line_split)):
+#         line_split[i] = change + ' '+' '.join(line_split[i].split(' ')[1:])+' '
+#     line = reconizer.join(line_split)
+#     return line
 
 
-def SaveFile(Path,file):
-    def SaveFile(Path, file):
-        """
-        Save the given content to a file at the specified path.
+def build_change_dict(model):
+    """
+    Build a dictionary with various parameters extracted from the model.
 
-        Args:
-            Path (str): The path where the file will be saved.
-            file (list of str): The content to be written to the file, provided as a list of strings.
+    Args:
+        model: The model object containing the necessary data.
 
-        Returns:
-            None
-        """
-    with open(Path , 'w') as f:
-            f.write("".join(file))
+    Returns:
+        dict: A dictionary with the extracted parameters.
+    """
+    stars = model.get_Stars()
+    dust = model.get_Dust()
+    composition = dust.get_Composition()
 
-def ChangeParameter(Path, change, car, nstar):
+    temperatures = ", ".join(str(star.get_Temperature()) for star in stars)
+    luminosities = ", ".join(str(star.get_Luminosity()) for star in stars)
+    composition_files = "\n        ".join(
+        f"{os.path.join('data', 'Lib_nk', comp)}.nk" for comp in composition.keys())
+    abundances = ", ".join(str(ab) for ab in composition.values())
+
+    return {
+        'Spectral': f'      	        Spectral shape = {model.get_Spectral()} \n' if model.get_Spectral() in ['black_body', 'engelke_marengo'] else
+        f'      	        Spectral shape = {model.get_Spectral()} \n \t\t{
+            model.get_SpectralFile()} \n',
+        'BB': f'        	Number of BB = {len(stars)} \n',
+        'Temperature': f'        	Temperature = {temperatures} K \n',
+        'Luminosities': f'        	Luminosities = {luminosities} \n',
+        'Absorption': f'        SiO absorption depth = {model.get_SiOAbsorption()}  percents\n',
+        'Optical properties': f'        optical properties index = {dust.get_Properties()} \n',
+        'Composition': f'	Number of additional components = {len(composition)} properties listed files \n        {composition_files}\n',
+        'Abundances': f'   Abundances for these components = {abundances} \n',
+        'Size Distribution': f'        SIZE DISTRIBUTION = {dust.get_DustSize()["Distribution"]} \n',
+        'Dust size': f'        q = 3.5, a(min) = {dust.get_DustSize()["amin"]} micron, a(max) = {dust.get_DustSize()["amax"]} micron \n',
+        'Sublimation temperature': f'        Tsub = {dust.get_Sublimation()} K \n',
+        'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n',
+    }
+
+
+def change_parameter(Path, change, car, nstar):
     """
     Modify specific parameters in a file by removing certain lines and updating others.
     Args:
@@ -218,23 +268,46 @@ def ChangeParameter(Path, change, car, nstar):
     Returns:
         None
     """
-    file = LoadFile(Path)
-    
+    file = load_file(Path)
+
     # Remove all lines containing '.nk'
-    file = [line for line in file if ('.nk' not in line)] 
-    
+    file = [line for line in file if ('.nk' not in line)]
+
+    # cannot have multiple stars with engelke_marengo
+    if 'engelke_marengo' in change['Spectral']:
+        change.pop('BB')
+        change.pop('Luminosities')
+        file = [line for line in file if ('Number of BB' not in line)]
+
+    elif 'black_body' in change['Spectral']:
+        change.pop('Absorption')
+        file = [line for line in file if ('SiO absorption depth' not in line)]
+
+    else:
+        change.pop('BB')
+        change.pop('Absorption')
+        change.pop('Luminosities')
+        change.pop('Temperature')
+        file = [line for line in file if all(param not in line for param in [
+                                             'Number of BB', 'SiO absorption depth', 'Luminosities', 'Temperature'])]
+
+    if ('MRN' in change['Size Distribution']) and ('MODIFIED_MRN' not in change['Size Distribution']):
+        change.pop('Dust size')
+        file = [line for line in file if ('q = 3.5' not in line)]
+
+    if nstar == 1 and 'Luminosities' in change.keys():
+        file = [line for line in file if ('Luminosities' not in line)]
+        change.pop('Luminosities')
+
     for param in change.keys():
-        if nstar == 1 and car[param]=='Luminosities':
-            file = [line for line in file if ('Luminosities' not in line)] 
-            pass
-        else:
-            line = SearchLine(file, car[param])
-            new_line = change[param]
-            file[line] = new_line
+        line = search_line(file, car[param])
+        new_line = change[param]
+        file[line] = new_line
 
-    SaveFile(Path, file)
+    save_file(Path, file)
 
-def ListToDict(keys,values):
+
+def list_to_dict(keys, values):
     """
     Convert two lists into a dictionary.
 
@@ -252,13 +325,36 @@ def ListToDict(keys,values):
     Example:
     >>> keys = ['a', 'b', 'c']
     >>> values = [1, 2, 3]
-    >>> ListToDict(keys, values)
+    >>> list_to_dict(keys, values)
     {'a': 1, 'b': 2, 'c': 3}
     """
     key_value_pairs = zip(keys, values)
     return dict(key_value_pairs)
 
-def SuppCarList(list,car):
+
+def str_to_data(data=list) -> np.array:
+    """
+    Convert a list of strings into a numpy array.
+
+    This function takes a list of strings and converts it into a numpy array.
+
+    Parameters:
+    data (list): A list of strings.
+
+    Returns:
+    np.array: A numpy array containing the data from the input list.
+
+    Example:
+    >>> data = ['1 2 3', '4 5 6', '7 8 9']
+    >>> str_to_data(data)
+    array([[1, 2, 3],
+           [4, 5, 6],
+           [7, 8, 9]])
+    """
+    return np.array([list(map(float, line.split())) for line in data])
+
+
+def supp_car_list(list, car):
     """
     Filters out elements from the input list that are present in the car list and removes newline characters.
 
@@ -272,7 +368,8 @@ def SuppCarList(list,car):
     """
     return [el.split('\n')[0] for el in list if el not in car]
 
-def GetColumnSpectrum(file, index, index_header=0):
+
+def get_column_spectum(file, index, index_header=0):
     """
     Extrait une colonne spécifique d'un fichier.
 
@@ -287,7 +384,8 @@ def GetColumnSpectrum(file, index, index_header=0):
     array = np.asarray(file[index_header:])
     return np.array([el.split('  ')[1:-1] for el in array], dtype=float).T[index]
 
-def WattToJansky(Flux, Wavelength):
+
+def watt_to_jansky(Flux, Wavelength):
     """
     Convertit le flux de Watts par mètre carré en Jansky.
 
@@ -300,7 +398,8 @@ def WattToJansky(Flux, Wavelength):
     """
     return (Flux * u.W/u.m**2).to(u.Jy, equivalencies=u.spectral_density(Wavelength * u.um)).value
 
-def JanskyToWatt(Flux, Wavelength):
+
+def jansky_to_watt(Flux, Wavelength):
     """
     Convertit le flux de Jansky en Watts par mètre carré.
 
@@ -313,7 +412,8 @@ def JanskyToWatt(Flux, Wavelength):
     """
     return (Flux * u.Jy).to(u.W/u.m**2, equivalencies=u.spectral_density(Wavelength * u.um)).value
 
-def UmToMeter(Wavelength):
+
+def um_to_meter(Wavelength):
     """
     Convertit la longueur d'onde de micromètres en mètres.
 
@@ -325,7 +425,8 @@ def UmToMeter(Wavelength):
     """
     return (Wavelength * u.um).to(u.m).value
 
-def CalculRayonVrai(results, L):
+
+def calcul_rayon_vrai(results, L):
     """
     Calcule le rayon réel en fonction des résultats et de la luminosité.
 
@@ -338,7 +439,8 @@ def CalculRayonVrai(results, L):
     """
     return results['r1(cm)'] * np.sqrt(L / 1e4) * 1e-2
 
-def CalculFluxTotal(F, r_vrai, distance):
+
+def calcul_flux_total(F, r_vrai, distance):
     """
     Calcule le flux total en fonction du flux, du rayon réel et de la distance.
 
@@ -352,7 +454,8 @@ def CalculFluxTotal(F, r_vrai, distance):
     """
     return F * (4 * np.pi * r_vrai**2) / (4 * np.pi * distance**2)
 
-def Interpolate(Wavelength, Flux, order=3):
+
+def interpolate(Wavelength, Flux, order=3):
     """
     Interpole les données de flux en fonction de la longueur d'onde.
 
@@ -365,6 +468,7 @@ def Interpolate(Wavelength, Flux, order=3):
     function: Une fonction d'interpolation spline.
     """
     return make_interp_spline(Wavelength, Flux, order)
+
 
 def model(q, xdata, xdusty, ydusty):
     """
@@ -381,11 +485,12 @@ def model(q, xdata, xdusty, ydusty):
     """
     I = q
     try:
-        return I * Interpolate(np.asarray(xdusty).flatten(), np.asarray(ydusty).flatten())(np.asarray(xdata).flatten())
+        return I * interpolate(np.asarray(xdusty).flatten(), np.asarray(ydusty).flatten())(np.asarray(xdata).flatten())
     except Exception:
-        return I * Interpolate(xdusty, ydusty)(xdusty)
+        return I * interpolate(xdusty, ydusty)(xdusty)
 
-def Chi2(theta, data):
+
+def chi2(theta, data):
     """
     Calcule le chi2 entre les données observées et le modèle.
 
@@ -405,7 +510,8 @@ def Chi2(theta, data):
     ymodel = model(theta, xdata, ydata).reshape(ydata.shape)
     return np.nansum((ymodel - ydata)**2)
 
-def SetMCMCParam(mc=MCMC, param=None):
+
+def set_mcmc_param(mc=MCMC, param=None):
     """
     Définit les paramètres du modèle pour l'objet MCMC.
 
@@ -421,22 +527,22 @@ def SetMCMCParam(mc=MCMC, param=None):
                                           minimum=param[par]['minimum'],
                                           maximum=param[par]['maximum'])
 
-def SetMCMC(mc=MCMC, param=None):
-    """
-    Définit les options de simulation pour l'objet MCMC.
+# def set_mcmc(mc=MCMC, param=None):
+#     """
+#     Définit les options de simulation pour l'objet MCMC.
 
-    Paramètres:
-    mc (MCMC object): L'objet MCMC.
-    param (dict, optional): Un dictionnaire contenant les options de simulation. Par défaut à None.
-    """
-    mc.simulation_options.define_simulation_options(nsimu=param['nsimu'],
-                                                    updatesigma=param['updatesigma'],
-                                                    method=param['method'],
-                                                    adaptint=param['adaptint'],
-                                                    verbosity=param['verbosity'])
+#     Paramètres:
+#     mc (MCMC object): L'objet MCMC.
+#     param (dict, optional): Un dictionnaire contenant les options de simulation. Par défaut à None.
+#     """
+#     mc.simulation_options.define_simulation_options(nsimu=param['nsimu'],
+#                                                     updatesigma=param['updatesigma'],
+#                                                     method=param['method'],
+#                                                     adaptint=param['adaptint'],
+#                                                     verbosity=param['verbosity'])
 
 
-def Unred(Wavelength, Flux, EBV, Rv=3.1):
+def unred(Wavelength, Flux, EBV, Rv=3.1):
     """
     Applique une correction de déreddening aux flux observés.
 
@@ -451,23 +557,24 @@ def Unred(Wavelength, Flux, EBV, Rv=3.1):
     """
     return pyasl.unred(Wavelength, Flux, ebv=EBV, R_V=Rv)
 
-def Check(change):
-    """
-    Vérifie si la somme des changements de luminosité est égale à 1.
+# def check(change):
+#     """
+#     Vérifie si la somme des changements de luminosité est égale à 1.
 
-    Paramètres:
-    change (dict): Un dictionnaire contenant les changements de paramètres.
+#     Paramètres:
+#     change (dict): Un dictionnaire contenant les changements de paramètres.
 
-    Retourne:
-    bool: True si la somme des changements de luminosité est égale à 1, sinon False.
-    """
-    L = 0
-    for key in change.keys():
-        if 'Lum' in key:
-            L += change[key]
-    return L == 1
+#     Retourne:
+#     bool: True si la somme des changements de luminosité est égale à 1, sinon False.
+#     """
+#     L = 0
+#     for key in change.keys():
+#         if 'Lum' in key:
+#             L += change[key]
+#     return L == 1
 
-def VizierQuery(radius, target):
+
+def querry_vizier_data(radius, target):
     """
     Interroge Vizier pour obtenir des données.
 
@@ -482,6 +589,52 @@ def VizierQuery(radius, target):
     return Table.read(f"https://vizier.cds.unistra.fr/viz-bin/sed?-c={target}&-c.rs={radius}")
 
 
+def log_space(start, stop, num):
+    """
+    Crée un tableau de valeurs espacées logarithmiquement.
 
-if __name__=="__main__":
-     pass
+    Paramètres:
+    start (float): La valeur de départ.
+    stop (float): La valeur de fin.
+    num (int): Le nombre de valeurs.
+
+    Retourne:
+    array-like: Un tableau de valeurs espacées logarithmiquement.
+    """
+    return np.logspace(start, stop, num)
+
+
+def write_wavelength(Path, Wavelength):
+    """
+    Écrit les longueurs d'onde dans un fichier.
+
+    Paramètres:
+    Path (str): Le chemin du fichier.
+    Wavelength (array-like): Les longueurs d'onde à écrire.
+
+    Retourne:
+    None
+    """
+    header = []
+
+    with open(Path, 'r') as f:
+        lines = f.readlines()
+        for i, line in enumerate(lines):
+            if '# nL =' in line:
+                line = f'# nL = {len(Wavelength)}\n'
+                header.append(line)
+            elif '#' in line:
+                header.append(line)
+                pass
+            else:
+                break
+
+    with open(Path, 'w') as f:
+        for line in header:
+            f.write(line)
+        for w in Wavelength:
+            f.write(f"{w}\n")
+
+
+if __name__ == "__main__":
+    pass

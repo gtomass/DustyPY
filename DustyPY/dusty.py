@@ -3,9 +3,8 @@ import glob
 from . import utils as utils
 from .stars import Model as Model
 from . import SED as SED
-from . import constants 
+from . import constants
 import os
-
 
 
 class Dusty():
@@ -20,7 +19,7 @@ class Dusty():
     _SED (SED): The Spectral Energy Distribution (SED) associated with the Dusty model.
     """
 
-    def __init__(self, PATH='', Model=Model(), Lestimation=1e4):
+    def __init__(self, Model: Model = None, PATH: str = None, Lestimation: float = 1e4) -> None:
         """
         Initializes an instance of the Dusty class.
 
@@ -29,22 +28,27 @@ class Dusty():
         Model (Model, optional): The model used in the Dusty simulation. Defaults to an instance of Model.
         Lestimation (float, optional): The luminosity estimation. Defaults to 1e4.
         """
+
+        if PATH is None:
+            PATH = ''
+        if Model is None:
+            Model = Model()
+
         self._dustyPath = PATH
         self._Model = Model
         self._Lest = Lestimation
-        self._DustyReconizer = {'BB': 'Number of BB',
-                                'Temperature': 'Temperature', 
+        self._DustyReconizer = {'Spectral': 'Spectral shape',
+                                'BB': 'Number of BB',
+                                'Temperature': 'Temperature',
                                 'Luminosities': 'Luminosities',
                                 'Opacity': 'tau(min)',
-                                'Dust size': 'a(min) =',
                                 'Composition': 'Number of additional components',
-                                'Abundances': 'Abundances for these components'
-                                }
+                                'Abundances': 'Abundances for these components'}
         self._SED = SED.SED()
         self.__Check()
         self.__CreateDustyFile()
 
-    def set_Model(self, Model):
+    def set_Model(self, Model: Model) -> None:
         """
         Sets the model used in the Dusty simulation.
 
@@ -54,7 +58,7 @@ class Dusty():
         self._Model = Model
         self.__Check()
 
-    def get_Model(self):
+    def get_Model(self) -> Model:
         """
         Returns the model used in the Dusty simulation.
 
@@ -63,7 +67,7 @@ class Dusty():
         """
         return self._Model
 
-    def set_PATH(self, Path):
+    def set_PATH(self, Path: str) -> None:
         """
         Sets the path to the Dusty model files.
 
@@ -72,7 +76,7 @@ class Dusty():
         """
         self._dustyPath = Path
 
-    def AvailableComposition(self):
+    def get_available_composition(self) -> list:
         """
         Returns a list of available compositions for the Dusty model.
 
@@ -81,11 +85,10 @@ class Dusty():
         """
         return [
             file.split('/')[-1].split('.')[0]
-            for file in glob.glob(f'{os.path.join(self._dustyPath,'Lib_nk','*.nk')}')
+            for file in glob.glob(f'{os.path.join(self._dustyPath, 'data', 'Lib_nk', '*.nk')}')
         ]
-        
 
-    def ChangeParameter(self):
+    def change_parameter(self) -> None:
         """
         Changes the parameters of the Dusty model based on the current model settings.
         """
@@ -107,7 +110,6 @@ class Dusty():
                     'Temperature': f'        	Temperature = {', '.join(T)} K \n', 
                     'Luminosities': f'        	Luminosities = {', '.join(L)} \n',
                     'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n' ,
-                    'Dust size': f'        q = 3.5, a(min) = {dust.get_DustSize()["amin"]} micron, a(max) = {dust.get_DustSize()["amax"]} micron \n',
                     'Composition': f'	Number of additional components = {nbcomp} properties listed in: \n        {comp}\n',
                     'Abundances': f'   Abundances for these components = {abondances} \n'    ,
                 }
@@ -117,41 +119,46 @@ class Dusty():
                                            name+'.inp'),
                                            change=change,car=self._DustyReconizer,nstar=int(len(T)))
 
-    def PrintParam(self):
+    def print_param(self) -> None:
         """
         Prints the current parameters of the Dusty model.
         """
 
         name = self._Model.get_Name()
-        utils.PrintFile(os.path.join(self._dustyPath,name,name+'.inp'),stop=73)
+        utils.print_file(os.path.join(
+            self._dustyPath, name, name+'.inp'), stop=73)
 
-    def LunchDusty(self):
+    def lunch_dusty(self, verbose: str = 2) -> None:
         """
         Runs the Dusty simulation with the current model settings.
         """
-        subprocess.check_call(['./dusty'],cwd=self._dustyPath)
+        if verbose not in [0, 1, 2]:
+            raise ValueError('The verbose parameter must be 0, 1 or 2')
+        subprocess.check_call(
+            [f'./dusty model.mas {verbose}'], cwd=self._dustyPath, shell=True)
 
-
-    def GetResults(self):
+    def get_results(self) -> dict:
         """
         Retrieves the results of the Dusty simulation.
 
         Returns:
         dict: A dictionary containing the results of the Dusty simulation.
         """
-         
-        result_file = utils.LoadFile(os.path.join(self._dustyPath+self._Model.get_Name(),self._Model.get_Name()+'.out'))
-        line = result_file[utils.SearchLine(result_file,'tau0')].split(' ')
-        keys = utils.SuppCarList(line, ['###','','\n'])
-        line = result_file[utils.SearchLine(result_file,'tau0') + 3].split(' ')
-        values = [float(el) for el in utils.SuppCarList(line,['','1','\n'])]
-        return utils.ListToDict(keys,values)
-    
-    def MakeSED(self,distance, Jansky = True , um = True):
-        
+
+        result_file = utils.load_file(os.path.join(
+            self._dustyPath, self._Model.get_Name(), self._Model.get_Name()+'.out'))
+        line = result_file[utils.search_line(result_file, 'tau0')].split(' ')
+        keys = utils.supp_car_list(line, ['###', '', '\n'])
+        line = result_file[utils.search_line(
+            result_file, 'tau0') + 3].split(' ')
+        values = [float(el)
+                  for el in utils.supp_car_list(line, ['', '1', '\n'])]
+        return utils.list_to_dict(keys, values)
+
+    def make_SED(self, distance, Jansky: bool = True, um: bool = True) -> None:
         """
         Generates the Spectral Energy Distribution (SED) for the given distance.
-        
+
         Parameters:
         distance (float): The distance in parsec to the object for which the SED is being generated.
         Jansky (bool, optional): If True, converts the flux to Jansky. Defaults to True.
@@ -160,24 +167,26 @@ class Dusty():
 
         distance = distance * constants.pc
 
-        results = self.GetResults()
+        results = self.get_results()
 
-        r_vrai = utils.CalculRayonVrai(results,self._Lest)
-        FTot = utils.CalculFluxTotal(results['F1(W/m2)'],r_vrai,distance)
+        r_vrai = utils.calcul_rayon_vrai(results, self._Lest)
+        FTot = utils.calcul_flux_total(results['Fi(W/m2)'], r_vrai, distance)
 
-        SED_file = utils.LoadFile(os.path.join(self._dustyPath+self._Model.get_Name(),self._Model.get_Name()+'.stb'))
-        Wavelengths = utils.GetColumnSpectrum(SED_file,index = 0, index_header=4)
-        Flux = FTot*utils.GetColumnSpectrum(SED_file,index=1,index_header=4)
+        SED_file = utils.load_file(os.path.join(
+            self._dustyPath, self._Model.get_Name(), self._Model.get_Name()+'.stb'))
+        Wavelengths = utils.get_column_spectum(
+            SED_file, index=0, index_header=6)
+        Flux = FTot*utils.get_column_spectum(SED_file, index=1, index_header=6)
 
         if Jansky:
-            Flux = utils.WattToJansky(Flux,Wavelengths)
+            Flux = utils.watt_to_jansky(Flux, Wavelengths)
         if not um:
             Wavelengths = utils.UmToMeter(Wavelengths)
 
         self._SED.set_Wavelength(wavelength=Wavelengths)
         self._SED.set_Flux(Flux=Flux)
 
-    def GetSED(self):
+    def get_SED(self) -> SED:
         """
         Returns the Spectral Energy Distribution (SED) of the Dusty model.
 
@@ -186,8 +195,25 @@ class Dusty():
         """
 
         return self._SED
-    
-    def PlotSED(self, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+
+    def make_wavelength(self, number_of_wavelength: int = 200) -> None:
+        """
+        Generates a list of wavelengths for the Dusty model.
+
+        Parameters:
+        number_of_wavelength (int, optional): The number of wavelengths to generate. Defaults to 200.
+        """
+
+        wavelengths = utils.log_space(-2, 4, number_of_wavelength)
+        check = [wavelengths[i+1]/wavelengths[i] <
+                 1.5 for i in range(len(wavelengths)-1)]
+        if all(check):
+            utils.write_wavelength(os.path.join(
+                self._dustyPath, 'data', 'lambda_grid.dat'), wavelengths)
+        else:
+            raise ValueError('Not all wavelengths are spaced by less than 50%')
+
+    def plot_SED(self, unit: str = None, xlim: tuple = None, ylim: tuple = None, ax=None, scale: str = 'linear', kwargs: dict = None) -> None:
         """
         Plots the Spectral Energy Distribution (SED) of the Dusty model.
 
@@ -200,40 +226,35 @@ class Dusty():
         kwargs (dict, optional): Additional arguments for the plot function. Defaults to None.
         """
 
-        self._SED.PlotSED(unit=unit,xlim=xlim,ylim=ylim,ax=ax,scale=scale,kwargs=kwargs)
-    
+        self._SED.plot_SED(unit=unit, xlim=xlim, ylim=ylim,
+                           ax=ax, scale=scale, kwargs=kwargs)
 
-    def __Check(self):
+    def __Check(self) -> None:
         """
         Checks the consistency of the Dusty model's attributes.
         """
-         
-        for species in self._Model.get_Dust().get_Composition():
-            if species not in self.AvailableComposition():
-                raise ValueError(f'The following species does not exist: {species}')
 
-    def __CreateDustyFile(self):
+        for species in self._Model.get_Dust().get_Composition():
+            if species not in self.get_available_composition():
+                raise ValueError(
+                    f'The following species does not exist: {species}')
+
+    def __CreateDustyFile(self) -> None:
         """
         Creates the necessary Dusty model files based on the current model settings.
         """
-        os.makedirs(os.path.join(self._dustyPath,self._Model.get_Name()), exist_ok=True)
+        os.makedirs(os.path.join(self._dustyPath,
+                    self._Model.get_Name()), exist_ok=True)
+        # print(os.path.join(os.path.dirname(__file__),'Mod.inp'))
+
         subprocess.call(
-            [   
-                f"cp {os.path.join(os.path.dirname(__file__),'Mod.inp')} {os.path.join(self._dustyPath ,self._Model.get_Name(), self._Model.get_Name()+'.inp')}"
+            [
+                f"cp {os.path.join(os.path.dirname(__file__), 'Mod.inp')} {os.path.join(
+                    self._dustyPath, self._Model.get_Name(), self._Model.get_Name()+'.inp')}"
             ],
-            shell=True,
+            shell=True
         )
 
-        file = utils.LoadFile(self._dustyPath + 'dusty.inp')
-        file = [line if '%' in line else '%'+line for line in file ]
-
-        found = False
-        for i, line in enumerate(file):
-            if self._Model.get_Name() in line:
-                file[i] = line.replace('%', '')
-                found = True
-                break
-        if not found:
-            
-            file.append(f'\t{os.path.join(self._Model.get_Name(),self._Model.get_Name())}\n')
-        utils.SaveFile(self._dustyPath + 'dusty.inp',file)
+        with open(os.path.join(self._dustyPath, 'model.mas'), 'w') as file:
+            file.write(f'{os.path.join(self._Model.get_Name(),
+                       self._Model.get_Name())+'.inp'}\n')
