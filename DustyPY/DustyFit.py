@@ -268,10 +268,10 @@ class DustyFit():
         self.__setChange(utils.list_to_dict(
             list(self._Fit.get_Param().keys()), result['mean']))
         self._Dusty.change_parameter()
-        self._Dusty.LunchDusty()
-        self._Dusty.MakeSED(distance=self._Dusty.get_Model().get_Distance())
-        SED = self._Dusty.GetSED()
-        utils.Plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
+        self._Dusty.lunch_dusty()
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance())
+        SED = self._Dusty.get_SED()
+        utils.plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
                    xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit)
         if self._Data.get_yerr() is not None:
             utils.error_plot(self._Data.get_ydata(), self._Data.get_xdata(), self._Data.get_yerr(

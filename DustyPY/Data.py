@@ -165,6 +165,10 @@ class Data():
         kwargs (dict, optional): Additional arguments for the plot function. Defaults to None.
         """
         if self._yerr is None:
+            marker = kwargs['fmt'] if 'fmt' in kwargs else '+'
+            kwargs.pop('fmt', None)
+            kwargs.update({'marker': marker})
+            
             utils.scatter_plot(self._ydata, self._xdata, unit=unit,
                                xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs)
         else:
