@@ -121,7 +121,7 @@ class Dusty():
         if verbose not in [0, 1, 2]:
             raise ValueError('The verbose parameter must be 0, 1 or 2')
         subprocess.check_call(
-            [f'./dusty model.mas {verbose}'], cwd=self._dustyPath, shell=True)
+            [f'./dusty model.mas {verbose if verbose != None else ''}'], cwd=self._dustyPath, shell=True)
 
     def get_results(self) -> dict:
         """
