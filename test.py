@@ -47,35 +47,35 @@ if __name__ == '__main__':
 
     # Dat.unred_data(EBV=0.4042)
 
-    dustyMod.change_parameter()
-    dustyMod.lunch_dusty(verbose=0)
+    # dustyMod.change_parameter()
+    # dustyMod.lunch_dusty(verbose=0)
 
-    dustyMod.make_SED(distance=197)
-    dustyMod.plot_SED(xlim=(0, 10), ylim=(0, 30000),
-                      ax=ax, kwargs=kwargs_dusty)
-    ax.plot(x, np.asarray(y)*2*1.8e6)
-    # Dat.scatter_data(xlim=(0,20), ax=ax, kwargs=kwargs_data)
-    plt.show()
+    # dustyMod.make_SED(distance=197)
+    # dustyMod.plot_SED(xlim=(0, 10), ylim=(0, 30000),
+    #                   ax=ax, kwargs=kwargs_dusty)
+    # ax.plot(x, np.asarray(y)*2*1.8e6)
+    # # Dat.scatter_data(xlim=(0,20), ax=ax, kwargs=kwargs_data)
+    # plt.show()
 
-    # fit = DustyFit.DustyFit(dustyMod, Data=Dat)
+    fit = DustyFit.DustyFit(dustyMod, data=Dat)
 
-    # Param = {'Temp1':{'theta0':3500,'minimum':2000,'maximum':4000},
-    #      'Opacity':{'theta0':1,'minimum':0.1,'maximum':4},
-    #      'Lest':{'theta0':1,'minimum':0,'maximum':10}, #Mandatory, fit the Lestimation (Luminosity = Lest*Lestimation)
-    # }
+    Param = {'Temp1':{'theta0':3500,'minimum':2000,'maximum':4000},
+         'Opacity':{'theta0':1,'minimum':0.1,'maximum':4},
+         'Lest':{'theta0':1,'minimum':0,'maximum':10}, #Mandatory, fit the Lestimation (Luminosity = Lest*Lestimation)
+    }
 
-    # #Initialize the parameter of the MCMC
-    # ParamFit = {
-    #                         'nsimu': 1000,         #Number of iteration (larger is better but slow due to the dusty runtime)
-    #                         'updatesigma': True,  #Update the sigma of the likelihood function
-    #                         'method': 'dram',     #Sampling method
-    #                         'adaptint': 100,      #Number of interates between adaptation.
-    #                         'verbosity': 0,       #0=No output, 1=Output
-    #                         'waitbar': True,      #Display a waitbar
-    #                     }
-    # fit.set_Param(Param)
-    # fit.set_ParamFit(ParamFit)
+    #Initialize the parameter of the MCMC
+    ParamFit = {
+                            'nsimu': 100,         #Number of iteration (larger is better but slow due to the dusty runtime)
+                            'updatesigma': True,  #Update the sigma of the likelihood function
+                            'method': 'dram',     #Sampling method
+                            'adaptint': 100,      #Number of interates between adaptation.
+                            'verbosity': 0,       #0=No output, 1=Output
+                            'waitbar': True,      #Display a waitbar
+                        }
+    fit.set_Param(Param)
+    fit.set_ParamFit(ParamFit)
 
-    # fit.LunchFit()
-    # fit.get_Fit().PrintResults()
-    # fit.plot_results(xlim=(0,5), ax=ax, kwargs_fit=kwargs_dusty, kwargs_data=kwargs_data)
+    fit.lunch_fit()
+    fit.get_Fit().PrintResults()
+    fit.plot_results(xlim=(0,5), ax=ax, kwargs_fit=kwargs_dusty, kwargs_data=kwargs_data)

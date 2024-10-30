@@ -19,22 +19,25 @@ class DustyFit():
     _Fit (fit): The fitting object.
     """
 
-    def __init__(self, Dusty: dusty.Dusty, Data: Data.Data, ParamFit: dict = None, Param: dict = None, fit: MCfit.fit = None) -> None:
+    def __init__(self, Dusty: dusty.Dusty, data: Data.Data, ParamFit: dict = None, Param: dict = None, fit: MCfit.fit = None) -> None:
         """
         Initializes an instance of the DustyFit class.
 
         Parameters:
         Dusty (Dusty): The Dusty model to be fitted.
-        Data (Data): The data to fit.
+        data (Data): The data to fit.
         ParamFit (dict, optional): The fitting parameters. Defaults to None.
         Param (dict, optional): The model parameters. Defaults to None.
         fit (fit, optional): The fitting object. Defaults to an instance of MCfit.fit.
         """
         if fit is None:
             fit = MCfit.fit()
+        if data is None:
+            data = Data.Data()
+        
 
         self._Dusty = Dusty
-        self._Data = Data
+        self._Data = data
         self._ParamFit = ParamFit
         self._Param = Param
         self._Fit = fit
@@ -43,7 +46,7 @@ class DustyFit():
         """
         Initializes the fitting object with the data, fitting parameters, and model parameters.
         """
-        self._Fit.set_Data(Data=self._Data)
+        self._Fit.set_Data(data=self._Data)
         self._Fit.set_ParamFit(ParamFit=self._ParamFit)
         self._Fit.set_Param(Param=self._Param)
 
@@ -197,8 +200,8 @@ class DustyFit():
         self.__setChange(change)
 
         self._Dusty.change_parameter()
-        self._Dusty.LunchDusty(verbose=0)
-        self._Dusty.MakeSED(distance=self._Dusty.get_Model().get_Distance())
+        self._Dusty.lunch_dusty(verbose=0)
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance())
 
         try:
             xdata = data.xdata[0]
@@ -206,7 +209,7 @@ class DustyFit():
         except AttributeError:
             xdata, ydata = data.get_xdata(), data.get_ydata()
 
-        ymodel = utils.model(theta[-1], xdata, self._Dusty.GetSED().get_Wavelength(), self._Dusty.GetSED().get_Flux()
+        ymodel = utils.model(theta[-1], xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
                              ).reshape(ydata.shape)
 
         subprocess.call('clear', shell=True)

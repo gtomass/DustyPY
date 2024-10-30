@@ -17,7 +17,7 @@ class fit():
     _Results (dict): The results of the fitting procedure.
     """
 
-    def __init__(self, Data: Data.Data = None, Model: pymcmcstat.MCMC.MCMC = None, ParamFit: dict = None, Param: dict = None) -> None:
+    def __init__(self, data: Data.Data = None, Model: pymcmcstat.MCMC.MCMC = None, ParamFit: dict = None, Param: dict = None) -> None:
         """
         Initializes an instance of the Fit class.
 
@@ -27,8 +27,8 @@ class fit():
         ParamFit (dict, optional): The fitting parameters. Defaults to a predefined dictionary.
         Param (dict, optional): The model parameters. Defaults to an empty dictionary.
         """
-        if Data is None:
-            Data = Data.Data()
+        if data is None:
+            data = Data.Data()
         if Model is None:
             Model = pymcmcstat.MCMC.MCMC()
         if ParamFit is None:
@@ -44,21 +44,21 @@ class fit():
             Param = {}
 
         self._Model = Model
-        self._Data = Data
+        self._Data = data
         self._ParamFit = ParamFit
         self._Param = Param
         self._Results = {}
 
-    def set_Data(self, Data: Data.Data = None) -> None:
+    def set_Data(self, data: Data.Data = None) -> None:
         """
         Sets the data to fit.
 
         Parameters:
         Data (Data, optional): The data to fit. Defaults to None.
         """
-        if Data is None:
-            Data = Data.Data()
-        self._Data = Data
+        if data is None:
+            data = Data.Data()
+        self._Data = data
 
     def get_Data(self) -> Data.Data:
         """
