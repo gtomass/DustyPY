@@ -13,6 +13,7 @@ II. PHYSICAL PARAMETERS
 				Number of BB = 1
                 Temperature = 5800 K
 				SiO absorption depth = 10 percents
+				Luminosities = 
 
      1.2) Scale: %(available options: flux\Lum_r1\energy_den\dilutn_fac\T1)
         
