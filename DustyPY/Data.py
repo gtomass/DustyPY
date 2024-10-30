@@ -146,7 +146,7 @@ class Data():
         """
         return utils.str_to_data(data)
 
-    def ScatterData(self,
+    def scatter_data(self,
                     unit: str = None,
                     xlim: tuple = None,
                     ylim: tuple = None,
