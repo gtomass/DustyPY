@@ -267,7 +267,7 @@ class Model():
     def __init__(self, Name: str = '',
                  NbStar: int = 0,
                  Stars: list = None,
-                 Dust: Dust = None,
+                 dust: Dust = None,
                  distance: float = 1,
                  Spectral: str = 'black_body',
                  SiOAbsorption: float = 10,
@@ -284,15 +284,15 @@ class Model():
         """
         if Stars is None:
             Stars = []
-        if Dust is None:
-            Dust = Dust()
+        if dust is None:
+            dust = Dust()
         if SpectralFile is None:
             SpectralFile = ''
 
         self._Name = Name
         self._NbStar = NbStar
         self._Stars = Stars
-        self._Dust = Dust
+        self._Dust = dust
         self._distance = distance
         self._Spectral = Spectral
         self._SiOAbsorption = SiOAbsorption
@@ -357,16 +357,16 @@ class Model():
         """
         return self._Stars
 
-    def set_Dust(self, Dust: Dust = None) -> None:
+    def set_Dust(self, dust: Dust = None) -> None:
         """
         Sets the dust in the model.
 
         Parameters:
         Dust (Dust, optional): An instance of the Dust class representing the dust in the model. Defaults to a new Dust instance.
         """
-        if Dust is None:
+        if dust is None:
             raise ValueError("Dust cannot be None")
-        self._Dust = Dust
+        self._Dust = dust
 
     def get_Dust(self) -> Dust:
         """
