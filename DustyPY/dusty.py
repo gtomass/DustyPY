@@ -41,6 +41,7 @@ class Dusty():
                                 'BB': 'Number of BB',
                                 'Temperature': 'Temperature',
                                 'Luminosities': 'Luminosities',
+                                'Dust Temperature': 'type of entry',
                                 'Absorption': 'SiO absorption depth',
                                 'Optical properties': 'optical properties index',
                                 'Composition': 'Number of additional components',
@@ -141,7 +142,7 @@ class Dusty():
                   for el in utils.supp_car_list(line, ['', '1', '\n'])]
         return utils.list_to_dict(keys, values)
 
-    def make_SED(self, distance, Jansky: bool = True, um: bool = True) -> None:
+    def make_SED(self, distance, Jansky: bool = True, um: bool = True, normalize: bool = False) -> None:
         """
         Generates the Spectral Energy Distribution (SED) for the given distance.
 
@@ -162,12 +163,12 @@ class Dusty():
             self._dustyPath, self._Model.get_Name(), self._Model.get_Name()+'.stb'))
         Wavelengths = utils.get_column_spectum(
             SED_file, index=0, index_header=6)
-        Flux = FTot*utils.get_column_spectum(SED_file, index=1, index_header=6)
+        Flux = FTot*utils.get_column_spectum(SED_file, index=1, index_header=6) if not normalize else utils.get_column_spectum(SED_file, index=1, index_header=6)
 
-        if Jansky:
+        if Jansky and not normalize:
             Flux = utils.watt_to_jansky(Flux, Wavelengths)
         if not um:
-            Wavelengths = utils.UmToMeter(Wavelengths)
+            Wavelengths = utils.um_to_meter(Wavelengths)
 
         self._SED.set_Wavelength(wavelength=Wavelengths)
         self._SED.set_Flux(Flux=Flux)
@@ -182,24 +183,25 @@ class Dusty():
 
         return self._SED
 
-    def make_wavelength(self, number_of_wavelength: int = 200) -> None:
+    def make_wavelength(self, intervals: list = [(1e-2, 1e0, 50), (1e0, 1e2, 100), (1e2, 1e4, 50)]) -> None:
         """
-        Generates a list of wavelengths for the Dusty model.
+        Generates a list of wavelengths for the Dusty model based on specified intervals.
 
         Parameters:
-        number_of_wavelength (int, optional): The number of wavelengths to generate. Defaults to 200.
+        intervals (list, optional): A list of tuples where each tuple contains the start, end, and number of wavelengths for that interval. Defaults to [(1e-2, 1e0, 50), (1e0, 1e2, 100), (1e2, 1e4, 50)].
         """
 
-        wavelengths = utils.log_space(-2, 4, number_of_wavelength)
-        check = [wavelengths[i+1]/wavelengths[i] <
-                 1.5 for i in range(len(wavelengths)-1)]
-        if all(check):
-            utils.write_wavelength(os.path.join(
-                self._dustyPath, 'data', 'lambda_grid.dat'), wavelengths)
-        else:
-            raise ValueError('Not all wavelengths are spaced by less than 50%')
+        wavelengths = []
+        for start, end, num in intervals:
+            wavelengths.extend(utils.log_space(start, end, num))
 
-    def plot_SED(self, unit: str = None, xlim: tuple = None, ylim: tuple = None, ax=None, scale: str = 'linear', kwargs: dict = None) -> None:
+        check = [wavelengths[i+1]/wavelengths[i] < 1.5 for i in range(len(wavelengths)-1)]
+        if all(check):
+            utils.write_wavelength(os.path.join(self._dustyPath, 'data', 'lambda_grid.dat'), wavelengths)
+        else:
+            raise ValueError(f'Not all wavelengths are spaced by less than 50% {check.index(False)}')
+
+    def plot_SED(self, unit: str = None, xlim: tuple = None, ylim: tuple = None, ax=None, scale: str = 'linear', kwargs: dict = None, normalize: bool = False) -> None:
         """
         Plots the Spectral Energy Distribution (SED) of the Dusty model.
 
@@ -213,7 +215,7 @@ class Dusty():
         """
 
         self._SED.plot_SED(unit=unit, xlim=xlim, ylim=ylim,
-                           ax=ax, scale=scale, kwargs=kwargs)
+                           ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
 
     def __Check(self) -> None:
         """

@@ -152,7 +152,8 @@ class Data():
                     ylim: tuple = None,
                     ax=None,
                     scale: str = 'linear',
-                    kwargs: dict = None) -> None:
+                    kwargs: dict = None,
+                    normalize: bool = False) -> None:
         """
         Plots the data as a scatter plot or error plot.
 
@@ -170,10 +171,10 @@ class Data():
             kwargs.update({'marker': marker})
             
             utils.scatter_plot(self._ydata, self._xdata, unit=unit,
-                               xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs)
+                               xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
         else:
             utils.error_plot(self._ydata, self._xdata, self._yerr, unit=unit,
-                             xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs)
+                             xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
 
     def unred_data(self, EBV: float, Rv: float = 3.1) -> None:
         """

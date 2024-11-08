@@ -12,7 +12,7 @@ from pymcmcstat.MCMC import MCMC
 from PyAstronomy import pyasl
 
 
-def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None, normalize: bool = False):
     """Create a scatter plot
 
     Args:
@@ -35,6 +35,13 @@ def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, sca
         kwargs = {}
     if ax is None:
         fig, ax = plt.subplots()
+
+    if normalize:
+        if xlim != {}:
+            mask = (Wavelength >= xlim[0]) & (Wavelength <= xlim[1])
+            Flux = Flux / np.max(Flux[mask])
+        else:
+            Flux = Flux / np.max(Flux)
 
     ax.scatter(Wavelength, Flux, **kwargs)
     ax.set_xlabel(unit['x'])
@@ -42,11 +49,11 @@ def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, sca
 
     ax.set_yscale(scale)
 
-    ax.set_xlim(*xlim)
-    ax.set_ylim(*ylim)
+    ax.set_xlim(*xlim, fontsize=15)
+    ax.set_ylim(*ylim, fontsize=15)
 
 
-def plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+def plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None, normalize: bool = False):
     """Create a scatter plot
 
     Args:
@@ -69,6 +76,13 @@ def plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='line
         kwargs = {}
     if ax is None:
         fig, ax = plt.subplots()
+
+    if normalize:
+        if xlim != {}:
+            mask = (Wavelength >= xlim[0]) & (Wavelength <= xlim[1])
+            Flux = Flux / np.max(Flux[mask])
+        else:
+            Flux = Flux / np.max(Flux)
 
     ax.plot(Wavelength, Flux, **kwargs)
     ax.set_xlabel(f"{unit['x']}")
@@ -80,7 +94,7 @@ def plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='line
     ax.set_ylim(*ylim)
 
 
-def error_plot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None):
+def error_plot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None, normalize: bool = False):
     """Create a scatter plot
     """
 
@@ -94,6 +108,13 @@ def error_plot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None
         kwargs = {}
     if ax is None:
         fig, ax = plt.subplots()
+
+    if normalize:
+        if xlim != {}:
+            mask = (Wavelength >= xlim[0]) & (Wavelength <= xlim[1])
+            Flux = Flux / np.max(Flux[mask])
+        else:
+            Flux = Flux / np.max(Flux)
 
     ax.errorbar(Wavelength, Flux, yerr=eFlux, **kwargs)
     ax.set_xlabel(f"{unit['x']}")
@@ -246,6 +267,7 @@ def build_change_dict(model):
         'BB': f'        	Number of BB = {len(stars)} \n',
         'Temperature': f'        	Temperature = {temperatures} K \n',
         'Luminosities': f'        	Luminosities = {luminosities} \n',
+        'Dust Temperature': f'        		Scale:    type of entry = T1\n  \t\t\t Td = {dust.get_Temperature()} K',
         'Absorption': f'        SiO absorption depth = {model.get_SiOAbsorption()}  percents\n',
         'Optical properties': f'        optical properties index = {dust.get_Properties()} \n',
         'Composition': f'	Number of additional components = {len(composition)} properties listed files \n        {composition_files}\n',
@@ -272,6 +294,7 @@ def change_parameter(Path, change, car, nstar):
 
     # Remove all lines containing '.nk'
     file = [line for line in file if ('.nk' not in line)]
+    file = [line for line in file if ('Td' not in line)]
 
     # cannot have multiple stars with engelke_marengo
     if 'engelke_marengo' in change['Spectral']:
@@ -601,7 +624,7 @@ def log_space(start, stop, num):
     Retourne:
     array-like: Un tableau de valeurs espacées logarithmiquement.
     """
-    return np.logspace(start, stop, num)
+    return np.logspace(np.log10(start), np.log10(stop), num)
 
 
 def write_wavelength(Path, Wavelength):

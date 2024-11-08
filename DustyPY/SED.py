@@ -57,7 +57,7 @@ class SED():
         """
         return self._Wavelength
 
-    def plot_SED(self, unit: str = None, xlim: tuple = None, ylim: tuple = None, ax=None, scale: str = 'linear', kwargs: dict = None) -> None:
+    def plot_SED(self, unit: str = None, xlim: tuple = None, ylim: tuple = None, ax=None, scale: str = 'linear', kwargs: dict = None, normalize: bool = False) -> None:
         """
         plots the SED using the fluxes and wavelengths.
 
@@ -70,4 +70,4 @@ class SED():
         kwargs (dict, optional): Additional arguments for the plot function. Defaults to None.
         """
         utils.plot(self._Flux, self._Wavelength, unit=unit, xlim=xlim,
-                   ylim=ylim, ax=ax, scale=scale, kwargs=kwargs)
+                   ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)

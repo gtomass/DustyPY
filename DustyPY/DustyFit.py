@@ -245,7 +245,8 @@ class DustyFit():
                      ax: plt.Axes = None,
                      scale: str = 'linear',
                      kwargs_fit: dict = None,
-                     kwargs_data: dict = None) -> None:
+                     kwargs_data: dict = None,
+                     normalize: bool = False) -> None:
         """
         Plots the results of the fitting procedure along with the data.
 
@@ -272,15 +273,15 @@ class DustyFit():
         self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance())
         SED = self._Dusty.get_SED()
         utils.plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
-                   xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit)
+                   xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit, normalize=normalize)
         if self._Data.get_yerr() is not None:
             utils.error_plot(self._Data.get_ydata(), self._Data.get_xdata(), self._Data.get_yerr(
-            ), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data)
+            ), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data, normalize=normalize)
         else:
             if 'fmt' in kwargs_data.keys():
                 marker = kwargs_data['fmt']
                 kwargs_data.pop('fmt')
                 kwargs_data.update({'marker': marker})
             utils.scatter_plot(self._Data.get_ydata(), self._Data.get_xdata(
-            ), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data)
+            ), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data, normalize=normalize)
         plt.show()
