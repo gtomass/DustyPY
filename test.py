@@ -38,13 +38,13 @@ if __name__ == '__main__':
     dust = stars.Dust(Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=800)
 
     mod = stars.Model('test', NbStar=1, Stars=[S1],
-                        Dust=dust, distance=1000,
+                        dust=dust, distance=1000,
                         Spectral='FILE_F_LAMBDA',
                         SpectralFile='/Users/gabriel/Documents/These/Recherche/data/flux_4000_25000_1.000_0.000.dat',
                         SiOAbsorption=10)
 
     dustyMod = dusty.Dusty(PATH='/Users/gabriel/Documents/These/Recherche/lib/dusty',
-                            Model=mod, Lestimation=1e3/3)
+                            model=mod, Lestimation=1e3/3)
 
     dustyMod.make_wavelength(intervals=[(1e-2,np.min(data_copie[0]), 50), (np.min(data_copie[0]),np.max(data_copie[0]), nL), (np.max(data_copie[0]),1e2, 100)])
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     # Dat.unred_data(EBV=1.07)
 
     dustyMod.change_parameter()
-    dustyMod.lunch_dusty(verbose=0)
+    dustyMod.lunch_dusty(verbose=0, logfile=True)
 
     ax.plot(data_copie[0][::space], F/np.max(F) , **kwargs_data)
     dustyMod.make_SED(distance=197, normalize=True)

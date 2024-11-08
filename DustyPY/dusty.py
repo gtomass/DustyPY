@@ -115,14 +115,14 @@ class Dusty():
         utils.print_file(os.path.join(
             self._dustyPath, name, name+'.inp'), stop=73)
 
-    def lunch_dusty(self, verbose: str = 2) -> None:
+    def lunch_dusty(self, verbose: str = 2, logfile: bool = False) -> None:
         """
         Runs the Dusty simulation with the current model settings.
         """
         if verbose not in [0, 1, 2]:
             raise ValueError('The verbose parameter must be 0, 1 or 2')
         subprocess.check_call(
-            [f'./dusty model.mas {verbose if verbose != None else ''}'], cwd=self._dustyPath, shell=True)
+            [f'./dusty model.mas {verbose if verbose != None else ''} {f'> {os.path.join(self._Model.get_Name(),'log.txt')}' if logfile else ''}'], cwd=self._dustyPath, shell=True)
 
     def get_results(self) -> dict:
         """
