@@ -270,7 +270,7 @@ def build_change_dict(model):
         'Dust Temperature': f'        		Scale:    type of entry = T1\n  \t\t\t Td = {dust.get_Temperature()} K',
         'Absorption': f'        SiO absorption depth = {model.get_SiOAbsorption()}  percents\n',
         'Optical properties': f'        optical properties index = {dust.get_Properties()} \n',
-        'Composition': f'	Number of additional components = {len(composition)} properties listed files \n        {composition_files}\n',
+        'Composition': f'	Number of additional components = {len(composition)}, properties listed files \n        {composition_files}\n',
         'Abundances': f'   Abundances for these components = {abundances} \n',
         'Size Distribution': f'        SIZE DISTRIBUTION = {dust.get_DustSize()["Distribution"]} \n',
         'Dust size': f'        q = 3.5, a(min) = {dust.get_DustSize()["amin"]} micron, a(max) = {dust.get_DustSize()["amax"]} micron \n',
