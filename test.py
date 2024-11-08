@@ -1,6 +1,7 @@
 import DustyPY.stars as stars
 import DustyPY.dusty as dusty
 import DustyPY.Data as Data
+import DustyPY.DustyFit as DustyFit
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import simpson

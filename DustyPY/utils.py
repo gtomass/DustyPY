@@ -267,7 +267,7 @@ def build_change_dict(model):
         'BB': f'        	Number of BB = {len(stars)} \n',
         'Temperature': f'        	Temperature = {temperatures} K \n',
         'Luminosities': f'        	Luminosities = {luminosities} \n',
-        'Dust Temperature': f'        		Scale:    type of entry = T1\n  \t\t\t Td = {dust.get_Temperature()} K',
+        'Dust Temperature': f'        		Scale:    type of entry = T1\n  \t\t\t Td = {dust.get_Temperature()} K \n',
         'Absorption': f'        SiO absorption depth = {model.get_SiOAbsorption()}  percents\n',
         'Optical properties': f'        optical properties index = {dust.get_Properties()} \n',
         'Composition': f'	Number of additional components = {len(composition)}, properties listed files \n        {composition_files}\n',
