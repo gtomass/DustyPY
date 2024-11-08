@@ -19,7 +19,7 @@ class Dusty():
     _SED (SED): The Spectral Energy Distribution (SED) associated with the Dusty model.
     """
 
-    def __init__(self, Model: Model = None, PATH: str = None, Lestimation: float = 1e4) -> None:
+    def __init__(self, model: Model = None, PATH: str = None, Lestimation: float = 1e4) -> None:
         """
         Initializes an instance of the Dusty class.
 
@@ -31,11 +31,11 @@ class Dusty():
 
         if PATH is None:
             PATH = ''
-        if Model is None:
-            Model = Model()
+        if model is None:
+            model = Model()
 
         self._dustyPath = PATH
-        self._Model = Model
+        self._Model = model
         self._Lest = Lestimation
         self._DustyReconizer = {'Spectral': 'Spectral shape',
                                 'BB': 'Number of BB',
@@ -55,14 +55,14 @@ class Dusty():
         self.__Check()
         self.__CreateDustyFile()
 
-    def set_Model(self, Model: Model) -> None:
+    def set_Model(self, model: Model) -> None:
         """
         Sets the model used in the Dusty simulation.
 
         Parameters:
         Model (Model): The model to be used in the Dusty simulation.
         """
-        self._Model = Model
+        self._Model = model
         self.__Check()
 
     def get_Model(self) -> Model:
