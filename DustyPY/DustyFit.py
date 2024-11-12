@@ -147,7 +147,7 @@ class DustyFit():
         NotImplementedError: If an attempt is made to change the dust size, which is not yet fittable.
         """
         for key in change.keys():
-            if 'Temp' in key:
+            if 'Temp' in key and key != 'Temperature':
                 self._Dusty.get_Model().get_Stars()[int(
                     key.split('Temp')[-1])-1].set_Temperature(change[key])
             elif 'Lum' in key:
@@ -167,6 +167,8 @@ class DustyFit():
                     change[key])
             elif key in ['Absorption']:
                 self._Dusty.get_Model().set_SiOAbsorption(change[key])
+            elif key in ['Temperature']:
+                self._Dusty.get_Model().get_Dust().set_Temperature(change[key])
 
             elif key == 'Lest':
                 pass
