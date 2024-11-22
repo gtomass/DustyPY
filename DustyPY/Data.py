@@ -118,12 +118,14 @@ class Data():
         """
         return self._yerr
 
-    def import_data(self, Path: str, header: int = 0) -> np.array:
+    def import_data(self, Path: str, header: int = 0, delimiter: str = ' ') -> np.array:
         """
         Imports data from a specified file path.
 
         Parameters:
         Path (str): The file path to import data from.
+        header (int, optional): The number of header lines to skip. Defaults to 0.
+        delimiter (str, optional): The delimiter of the data. Defaults to ' '.
 
         Returns:
         array-like: The imported data.
@@ -131,7 +133,7 @@ class Data():
         extention = Path.split('.')[-1]
 
         if extention == 'csv':
-            return utils.load_csv(Path)
+            return utils.load_csv(Path, sep=delimiter)
         elif extention in ['fits', 'fit']:
             return utils.load_fits(Path)
         else:
@@ -259,3 +261,35 @@ class Data():
             self._ydata = self._ydata[restriction]
             self._xerr = self._xerr[restriction] if self._xerr is not None else None
             self._yerr = self._yerr[restriction] if self._yerr is not None else None
+
+    def add_data(self, xdata: np.array, ydata: np.array, xerr: np.array = None, yerr: np.array = None) -> None:
+        """
+        Adds new data to the existing data.
+
+        Parameters:
+        xdata (array-like): The new x data values.
+        ydata (array-like): The new y data values.
+        xerr (array-like, optional): The new errors in the x data values. Defaults to None.
+        yerr (array-like, optional): The new errors in the y data values. Defaults to None.
+        """
+        if self._xdata is None:
+            self._xdata = xdata
+        else:
+            self._xdata = np.concatenate((self._xdata, xdata))
+
+        if self._ydata is None:
+            self._ydata = ydata
+        else:
+            self._ydata = np.concatenate((self._ydata, ydata))
+
+        if xerr is not None:
+            if self._xerr is None:
+                self._xerr = xerr
+            else:
+                self._xerr = np.concatenate((self._xerr, xerr))
+
+        if yerr is not None:
+            if self._yerr is None:
+                self._yerr = yerr
+            else:
+                self._yerr = np.concatenate((self._yerr, yerr))

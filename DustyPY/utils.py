@@ -273,7 +273,7 @@ def build_change_dict(model):
         'Composition': f'	Number of additional components = {len(composition)}, properties listed files \n        {composition_files}\n',
         'Abundances': f'   Abundances for these components = {abundances} \n',
         'Size Distribution': f'        SIZE DISTRIBUTION = {dust.get_DustSize()["Distribution"]} \n',
-        'Dust size': f'        q = 3.5, a(min) = {dust.get_DustSize()["amin"]} micron, a(max) = {dust.get_DustSize()["amax"]} micron \n',
+        'Dust size': f'        q = {dust.get_DustSize()["q"]}, a(min) = {dust.get_DustSize()["amin"]} micron, a(max) = {dust.get_DustSize()["amax"]} micron \n',
         'Sublimation temperature': f'        Tsub = {dust.get_Sublimation()} K \n',
         'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n',
     }

@@ -19,7 +19,6 @@ if __name__ == '__main__':
             data_copie[i][j] = float('E'.join(data[i][j].split('D'))) if 'D' in line[j] else float(line[j])
 
     nL = len(data_copie[0][::space])
-    print(nL)
     F = data_copie[1][::space]
 
     Fbol = simpson(y = data_copie[1][::space], x = data_copie[0][::space])
@@ -35,43 +34,47 @@ if __name__ == '__main__':
                     'H2Oice':0.05,
                     'MgFeSiO4':0.65}
 
-    dust = stars.Dust(Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=800)
+    dust = stars.Dust(DustSize={'Distribution':'MODIFIED_MRN', 'q':2},Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=800)
 
     mod = stars.Model('test', NbStar=1, Stars=[S1],
                         dust=dust, distance=1000,
-                        Spectral='FILE_F_LAMBDA',
+                        Spectral='black_body',
                         SpectralFile='/Users/gabriel/Documents/These/Recherche/data/flux_4000_25000_1.000_0.000.dat',
                         SiOAbsorption=10)
 
     dustyMod = dusty.Dusty(PATH='/Users/gabriel/Documents/These/Recherche/lib/dusty',
                             model=mod, Lestimation=1e3/3)
 
-    dustyMod.make_wavelength(intervals=[(1e-2,np.min(data_copie[0]), 50), (np.min(data_copie[0]),np.max(data_copie[0]), nL), (np.max(data_copie[0]),1e2, 100)])
+    dustyMod.make_wavelength(intervals=[(1e-2,0.8, 50), (0.8001, 30, 1000), (30.001,1e2, 100)])
 
     fig, ax = plt.subplots()
-    kwargs_data = {'color': 'r', 'label': 'input', 'linewidth': 0.5}
-    kwargs_dusty = {'color': 'k', 'label': 'output','linewidth': 0.5}
+    kwargs_data = {'fmt': '.r', 'markersize':2,'label': 'Data'}
+    kwargs_dusty = {'color': 'k', 'label': 'Dusty','linewidth': 0.8}
 
     
 
-    # Dat = Data.Data()
+    Dat = Data.Data()
+
+    ISO = Dat.import_data('/Users/gabriel/Documents/Stage/data/spectre_ISO.txt', delimiter=';', header=3)
 
 
-    # table = Dat.querry_vizier_data(radius = 5, target='AFGL4106')
-    # Dat.set_vizier_data(table)
-    # Dat.restrict_data(['yerr != 0.'])
 
-    # Dat.unred_data(EBV=1.07)
+    table = Dat.querry_vizier_data(radius = 5, target='AFGL4106')
+    Dat.set_vizier_data(table)
+    Dat.add_data(xdata = ISO[:,0], ydata = ISO[:,1], yerr = ISO[:,2])
+    Dat.restrict_data(['yerr != 0.'])
+
+    Dat.unred_data(EBV=1.07)
 
     dustyMod.change_parameter()
     dustyMod.lunch_dusty(verbose=0, logfile=True)
 
-    ax.plot(data_copie[0][::space], F/np.max(F) , **kwargs_data)
-    dustyMod.make_SED(distance=197, normalize=True)
-    dustyMod.plot_SED(xlim = (0.2,5),ylim = (-0.1,1.1),ax=ax, kwargs=kwargs_dusty, normalize=True, unit={'x': r'Wavelength ($\mu$m)', 'y': 'Normalized Flux'})
+    #ax.plot(data_copie[0][::space], F/np.max(F) , **kwargs_data)
+    dustyMod.make_SED(distance=197, normalize=False)
+    dustyMod.plot_SED(xlim = (0.2,10),ax=ax, kwargs=kwargs_dusty, normalize=False, unit={'x': r'Wavelength ($\mu$m)', 'y': 'Normalized Flux'})
     
    
-    # Dat.scatter_data(xlim=(0,10), ax=ax, kwargs=kwargs_data)
+    Dat.scatter_data(xlim=(0,10), ax=ax, kwargs=kwargs_data)
     ax.legend()
     #plt.savefig('/Users/gabriel/Documents/These/Recherche/Plot/CO5BOLT_dusty.png', dpi=300)
     plt.show()
