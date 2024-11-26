@@ -257,7 +257,7 @@ class DustyFit():
         except AttributeError:
             xdata, ydata = data.get_xdata(), data.get_ydata()
 
-        fdata_ks = ymodel[np.argmin(abs(xdata-2.190))]
+        fdata_ks = ydata[np.argmin(abs(xdata-2.190))]
 
         ymodel = utils.model(theta[-1], xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
                              ).reshape(ydata.shape)
