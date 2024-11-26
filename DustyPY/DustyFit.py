@@ -257,12 +257,19 @@ class DustyFit():
         except AttributeError:
             xdata, ydata = data.get_xdata(), data.get_ydata()
 
+        fdata_ks = ymodel[np.argmin(abs(xdata-2.190))]
+
         ymodel = utils.model(theta[-1], xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
                              ).reshape(ydata.shape)
+        
+        fmodel_ks = ymodel[np.argmin(abs(xdata-2.190))]
 
         subprocess.call('clear', shell=True)
 
-        return 1/(len(ydata)-len(theta)-1)*np.nansum((1-(ymodel/ydata)**2)/(ymodel/ydata))
+        ymodel_norm = ymodel/fmodel_ks
+        ydata_norm = ydata/fdata_ks
+
+        return 1/(len(ydata)-len(theta)-1)*np.nansum((1-(ymodel_norm/ydata_norm)**2)/(ymodel_norm/ydata_norm))
 
     def lunch_fit(self, chi2: str = 'Chi2') -> None:
         """
