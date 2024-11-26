@@ -220,8 +220,51 @@ class DustyFit():
             return np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2)
         else:
             return np.nansum((ymodel - ydata)**2)
+        
+    def __Chi2Dusty_modified(self, theta, data) -> float:
+        """
+        Calculate the chi-squared value for the Dusty model fit.
+        This method updates the Dusty model parameters based on the provided 
+        theta values, runs the Dusty model, and computes the chi-squared value 
+        between the model's spectral energy distribution (SED) and the observed data.
+        Parameters:
+        -----------
+        theta : list or array-like
+            A list or array of parameter values to update the Dusty model.
+        data : object
+            An object containing the observed data with attributes `xdata` and `ydata`.
+            If `xdata` and `ydata` are not attributes, the object should have methods 
+            `get_xdata()` and `get_ydata()` to retrieve the data.
+        Returns:
+        --------
+        float
+            The chi-squared value representing the goodness of fit between the model 
+            SED and the observed data. If observational errors (`yerr`) are available, 
+            they are used in the chi-squared calculation.
+        """
 
-    def lunch_fit(self) -> None:
+        change = utils.list_to_dict(list(self._Fit.get_Param().keys()), theta)
+
+        self.__setChange(change)
+
+        self._Dusty.change_parameter()
+        self._Dusty.lunch_dusty(verbose=0)
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance())
+
+        try:
+            xdata = data.xdata[0]
+            ydata = data.ydata[0]
+        except AttributeError:
+            xdata, ydata = data.get_xdata(), data.get_ydata()
+
+        ymodel = utils.model(theta[-1], xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
+                             ).reshape(ydata.shape)
+
+        subprocess.call('clear', shell=True)
+
+        return 1/(len(ydata)-len(theta)-1)*np.nansum((1-(ymodel/ydata)**2)/(ymodel/ydata))
+
+    def lunch_fit(self, chi2: str = 'Chi2') -> None:
         """
         Initializes the fitting procedure and performs the fit using the chi-squared function.
 
@@ -230,7 +273,12 @@ class DustyFit():
         if list(self._Param.keys())[-1] != 'Lest':
             raise Exception('The last parameter must be Lest')
         self.__InitFit()
-        self._Fit.fit(Chi2=self.__Chi2Dusty)
+        if chi2 == 'Chi2':
+            self._Fit.fit(Chi2=self.__Chi2Dusty)
+        elif chi2 == 'Chi2_modified':
+            self._Fit.fit(Chi2=self.__Chi2Dusty_modified)
+        else:
+            raise Exception('The chi2 function is not recognized')
 
     def print_results(self) -> None:
         """
