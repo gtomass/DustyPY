@@ -185,6 +185,26 @@ class fit():
         burnin = int(self._Results['nsimu'] / 2)
         self._Model.chainstats(chain[burnin:, :], self._Results)
 
+    def plot_stats(self) -> None:
+        """
+        Plots the statistics of the fitting procedure.
+
+        Parameters:
+        ax (matplotlib.axes.Axes): The axes to plot the statistics on.
+        """
+        chain = self.get_Results()['chain']
+        burnin = int(self.get_Results()['nsimu'] / 2)
+        names = self.get_Results()['names']
+        s2chain = self.get_Results()['s2chain']
+        
+        result = self.get_Model().chainstats(
+            chain[burnin:, :], self.get_Results(), returnstats=True)
+        mcpl = pymcmcstat.mcmcplot # initialize plotting methods
+        mcpl.plot_density_panel(chain[burnin:,:], names);
+        mcpl.plot_chain_panel(chain[burnin:,:], names);
+        mcpl.plot_density_panel(np.sqrt(s2chain[burnin:,:]), ['$\\sigma_1$', '$\\sigma_2$'])
+
+
     # def PredictionModel(self) -> None:
     #     """
     #     Sets up the prediction model for calculating prediction intervals.

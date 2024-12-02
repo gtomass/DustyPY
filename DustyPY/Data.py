@@ -9,6 +9,8 @@ except ImportError:
     import utils as utils
     from constants import *
 import numpy as np
+import astropy.units as u
+from astropy.table import unique
 
 
 class Data():
@@ -16,7 +18,7 @@ class Data():
     Class representing data with x and y values and their respective errors.
     """
 
-    def __init__(self, xdata: np.array = None, ydata: np.array = None, xerr: np.array = None, yerr: np.array = None) -> None:
+    def __init__(self, xdata: np.array = None, ydata: np.array = None, xerr: np.array = None, yerr: np.array = None, table = None) -> None:
         """
         Initializes an instance of the Data class.
 
@@ -30,8 +32,9 @@ class Data():
         self._ydata = ydata
         self._xerr = xerr
         self._yerr = yerr
+        self._table = table
 
-    def set_data(self, xdata: np.array = None, ydata: np.array = None, xerr: np.array = None, yerr: np.array = None) -> None:
+    def set_data(self, xdata: np.array = None, ydata: np.array = None, xerr: np.array = None, yerr: np.array = None, table = None) -> None:
         """
         Sets the data values.
 
@@ -45,6 +48,7 @@ class Data():
         self._ydata = ydata
         self._xerr = xerr
         self._yerr = yerr
+        self._table = table
 
     def set_xdata(self, xdata: np.array = None) -> None:
         """
@@ -117,6 +121,15 @@ class Data():
         array-like: The errors in the y data values.
         """
         return self._yerr
+    
+    def get_table(self):
+        """
+        Retrieve the table data.
+        Returns:
+            object: The table data stored in the instance.
+        """
+
+        return self._table
 
     def import_data(self, Path: str, header: int = 0, delimiter: str = ' ') -> np.array:
         """
@@ -224,6 +237,36 @@ class Data():
         if target is None:
             raise ValueError('target must be specified')
         return utils.querry_vizier_data(radius, target)
+    
+    def get_common_filters(self, table = None) -> dict:
+        """
+        Returns the common filters between the data and the bandpasses.
+
+        Parameters:
+        filter (array-like): The filters of the data.
+
+        Returns:
+        dict: The common filters.
+        """
+        if table is None:
+            table = self._table
+        bandpass_name = utils.get_bandpass_name()
+        filter = np.unique(table['sed_filter'].data)
+        return utils.get_common_filters(filter, bandpass_name)
+    
+    def restrict_data_vizier(self, table):
+        """
+        Restricts the data from a Vizier query based on the common bandpasses.
+
+        Parameters:
+        table (array-like): The data from the Vizier query.
+        bandpass_name (list[str]): The names of the common bandpasses.
+        """
+        bandpass_name = utils.get_bandpass_name()
+        filter, number = np.unique(table['sed_filter'].data, return_counts=True)
+        common_filters = utils.get_common_filters(filter, bandpass_name)
+        table = table[np.isin(table['sed_filter'].data, [f for f in common_filters.keys()])]
+        return table
 
     def set_vizier_data(self, table) -> None:
         """
@@ -232,10 +275,11 @@ class Data():
         Parameters:
         table (array-like): The data from the Vizier query.
         """
-        self._xdata = np.nan_to_num(np.asarray(
-            c / (table['sed_freq'] * Ghz) * 1/um), nan=0.)
-        self._ydata = np.nan_to_num(np.asarray(table['sed_flux']), nan=0.)
-        self._yerr = np.nan_to_num(np.asarray(table['sed_eflux']), nan=0.)
+        self._xdata = (1e9*table['sed_freq']*u.Hz).to(u.um, equivalencies=u.spectral()).value
+        self._ydata = utils.mean_flux(self._xdata,np.nan_to_num(np.asarray(table['sed_flux']), nan=0.))
+        self._yerr = utils.mean_flux(self._xdata,np.nan_to_num(np.asarray(table['sed_eflux']), nan=0.))
+        self._xdata = np.unique(self._xdata)
+        self._table = unique(table, keys='sed_freq')
 
     def restrict_data(self, ListOfCondition=list[str]):
         """
@@ -261,6 +305,17 @@ class Data():
             self._ydata = self._ydata[restriction]
             self._xerr = self._xerr[restriction] if self._xerr is not None else None
             self._yerr = self._yerr[restriction] if self._yerr is not None else None
+            
+            if 'yerr' in condition:
+                self._table = self._table[eval(condition.replace('yerr', "table['sed_eflux']"))] if self._table is not None else None
+            if 'ydata' in condition:
+                self._table = self._table[eval(condition.replace('ydata', "table['sed_flux']"))] if self._table is not None else None
+            if 'xdata' in condition:
+                if self._table is not None:
+                    xdata_um = (1e9 * self._table['sed_freq'].value * u.Hz).to(u.um, equivalencies=u.spectral()).value
+                    self._table = self._table[np.isin(xdata_um, self._xdata)]
+
+
 
     def add_data(self, xdata: np.array, ydata: np.array, xerr: np.array = None, yerr: np.array = None) -> None:
         """

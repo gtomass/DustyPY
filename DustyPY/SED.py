@@ -56,6 +56,15 @@ class SED():
         list: The wavelengths of the SED.
         """
         return self._Wavelength
+    
+    def integrate_bandpass(self, bandpass: list) -> float:
+        """
+        Integrates the SED over a bandpass.
+
+        Parameters:
+        bandpass (list): The
+        """
+        return utils.integrate_SED_bandpass(self._Wavelength, self._Flux, bandpass)
 
     def plot_SED(self, unit: str = None, xlim: tuple = None, ylim: tuple = None, ax=None, scale: str = 'linear', kwargs: dict = None, normalize: bool = False) -> None:
         """
@@ -71,3 +80,17 @@ class SED():
         """
         utils.plot(self._Flux, self._Wavelength, unit=unit, xlim=xlim,
                    ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
+        
+    def scatter_SED_bandpass(self,bandpass,unit: str = None, xlim: tuple = None, ylim: tuple = None, ax=None, scale: str = 'linear', kwargs: dict = None, normalize: bool = False) -> None:
+        """
+        Scatter the SED over a bandpass.
+
+        Parameters:
+        bandpass (list): The
+        ax (matplotlib.axes.Axes, optional): The axis on which to plot. Defaults to None.
+        kwargs (dict, optional): Additional arguments for the scatter function. Defaults to None.
+        """
+        central =[utils.get_central_wavelegnth(utils.get_bandpass(f))/10000 for f in bandpass.values()]
+        utils.scatter_plot(self.integrate_bandpass(bandpass),central, unit=unit, xlim=xlim,
+                   ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
+

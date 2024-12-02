@@ -91,7 +91,8 @@ class Dust():
                  Temperature: float = 800,
                  Sublimation: float = 1200,
                  Composition: dict = None,
-                 Properties: str = 'common_grain_composite') -> None:
+                 Properties: str = 'common_grain_composite',
+                 Density: dict = None) -> None:
         """
         Initializes an instance of the Dust class.
 
@@ -115,6 +116,12 @@ class Dust():
 
         if Composition is None:
             Composition = {}
+        if Density is None:
+            Density = {'density type':'POWD',
+                        'number of powers':'1',             
+                        "shell":'1000.',
+                        'power':'2.'
+                        }
 
         self._tau = tau
         self._DustSize = DustSize
@@ -122,6 +129,7 @@ class Dust():
         self._Sublimation = Sublimation
         self._Composition = Composition
         self._Properties = Properties
+        self._Density = Density
         self.__Check()
 
     def set_tau(self, tau: float) -> None:
@@ -240,6 +248,24 @@ class Dust():
         str: The properties of the dust.
         """
         return self._Properties
+    
+    def set_Density(self, Density: dict) -> None:
+        """
+        Sets the density of the dust.
+
+        Parameters:
+        Density (dict): A dictionary representing the density of the dust.
+        """
+        self._Density = Density
+
+    def get_Density(self) -> dict:
+        """
+        Returns the density of the dust.
+
+        Returns:
+        dict: A dictionary representing the density of the dust.
+        """
+        return self._Density
 
     def __Check(self) -> None:
         """

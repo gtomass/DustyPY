@@ -4,7 +4,9 @@ from . import Data
 from . import utils as utils
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 import subprocess
+import time
 
 
 class DustyFit():
@@ -203,7 +205,7 @@ class DustyFit():
 
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose=0)
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance())
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=theta[-1])
 
         try:
             xdata = data.xdata[0]
@@ -211,10 +213,22 @@ class DustyFit():
         except AttributeError:
             xdata, ydata = data.get_xdata(), data.get_ydata()
 
-        ymodel = utils.model(theta[-1], xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
+        if self._Data.get_table() is not None:
+
+            bandpass = self._Data.get_common_filters(self._Data.get_table())
+            
+            ymodel  =  self._Dusty.get_SED().integrate_bandpass(bandpass=bandpass).reshape(ydata.shape)
+
+            subprocess.call('clear', shell=True)
+
+            central_wavelength = [utils.get_central_wavelegnth(utils.get_bandpass(f)) for f in bandpass.values()]
+            index = np.argsort(central_wavelength)
+            ymodel = ymodel[index]
+
+        else:
+            ymodel = utils.model(xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
                              ).reshape(ydata.shape)
 
-        subprocess.call('clear', shell=True)
 
         if self._Data.get_yerr() is not None:
             return np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2)
@@ -249,7 +263,7 @@ class DustyFit():
 
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose=0)
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance())
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=theta[-1])
 
         try:
             xdata = data.xdata[0]
@@ -259,17 +273,33 @@ class DustyFit():
 
         fdata_ks = ydata[np.argmin(abs(xdata-2.190))]
 
-        ymodel = utils.model(theta[-1], xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
+        if self._Data.get_table() is not None:
+
+            bandpass = self._Data.get_common_filters(self._Data.get_table())
+            central_wavelength = [utils.get_central_wavelegnth(utils.get_bandpass(f))/10000 for f in bandpass.values()]
+            index = np.argsort(central_wavelength)
+            central_wavelength = np.array(central_wavelength)[index]
+            
+            ymodel  =  self._Dusty.get_SED().integrate_bandpass(bandpass=bandpass).reshape(ydata.shape)
+
+            subprocess.call('clear', shell=True)
+
+            
+            index = np.argsort(central_wavelength)
+            ymodel = ymodel[index]
+
+        else:
+            ymodel = utils.model(xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
                              ).reshape(ydata.shape)
         
-        fmodel_ks = ymodel[np.argmin(abs(xdata-2.190))]
 
         subprocess.call('clear', shell=True)
 
+        fmodel_ks = ymodel[np.argmin(abs(xdata-2.190))]
         ymodel_norm = ymodel/fmodel_ks
         ydata_norm = ydata/fdata_ks
 
-        return 1/(len(ydata)-len(theta)-1)*np.nansum((1-(ymodel_norm/ydata_norm)**2)/(ymodel_norm/ydata_norm))
+        return 1/(len(ydata)-len(theta)-1)*np.nansum((1-(ymodel_norm/ydata_norm))**2/(ymodel_norm/ydata_norm))
 
     def lunch_fit(self, chi2: str = 'Chi2') -> None:
         """
@@ -277,6 +307,7 @@ class DustyFit():
 
         This method initializes the fitting object and then runs the fitting procedure using the chi-squared function specific to the Dusty model.
         """
+        begin = time.time()
         if list(self._Param.keys())[-1] != 'Lest':
             raise Exception('The last parameter must be Lest')
         self.__InitFit()
@@ -286,6 +317,8 @@ class DustyFit():
             self._Fit.fit(Chi2=self.__Chi2Dusty_modified)
         else:
             raise Exception('The chi2 function is not recognized')
+        
+        print(f'Fitting time: {time.time()-begin} s')
 
     def print_results(self) -> None:
         """
@@ -295,15 +328,26 @@ class DustyFit():
         """
         self._Fit.print_results()
 
+    def plot_stats(self) -> None:
+        """
+        Plots the statistics of the fitting procedure.
+
+        Parameters:
+        ax (matplotlib.axes.Axes): The axis on which to plot the statistics.
+        """
+        self._Fit.plot_stats()
+
     def plot_results(self,
-                     unit: str = None,
+                     unit: dict = None,
                      xlim: tuple = None,
                      ylim: tuple = None,
                      ax: plt.Axes = None,
                      scale: str = 'linear',
                      kwargs_fit: dict = None,
                      kwargs_data: dict = None,
-                     normalize: bool = False) -> None:
+                     normalize: bool = False,
+                     SED_band: bool = False,
+                     save: bool = False) -> None:
         """
         Plots the results of the fitting procedure along with the data.
 
@@ -327,10 +371,13 @@ class DustyFit():
             list(self._Fit.get_Param().keys()), result['mean']))
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty()
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance())
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=result['mean'][-1])
         SED = self._Dusty.get_SED()
         utils.plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
                    xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit, normalize=normalize)
+        if SED_band:
+            SED.scatter_SED_bandpass(self._Data.get_common_filters(self._Data.get_table()), ax=ax, kwargs={
+                                     'marker': '.', 'color': 'b', 'label': 'SED'}, normalize=normalize)
         if self._Data.get_yerr() is not None:
             utils.error_plot(self._Data.get_ydata(), self._Data.get_xdata(), self._Data.get_yerr(
             ), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data, normalize=normalize)
@@ -341,4 +388,9 @@ class DustyFit():
                 kwargs_data.update({'marker': marker})
             utils.scatter_plot(self._Data.get_ydata(), self._Data.get_xdata(
             ), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data, normalize=normalize)
+
+        if save:
+            plt.savefig(os.path.join(self._Dusty.get_PATH(), self._Dusty.get_Model().get_Name(),'SED.png'), dpi=300)
+
+        plt.legend()
         plt.show()

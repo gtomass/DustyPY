@@ -49,6 +49,7 @@ class Dusty():
                                 'Size Distribution': 'SIZE DISTRIBUTION',
                                 'Dust size': 'a(min) =',
                                 'Sublimation temperature': 'Tsub',
+                                'Density Distribution': 'density type',
                                 'Opacity': 'tau(min)'
                                 }
         self._SED = SED.SED()
@@ -82,6 +83,15 @@ class Dusty():
         Path (str): The path to the Dusty model files.
         """
         self._dustyPath = Path
+
+    def get_PATH(self) -> str:
+        """
+        Returns the path to the Dusty model files.
+
+        Returns:
+        str: The path to the Dusty model files.
+        """
+        return self._dustyPath
 
     def get_available_composition(self) -> list:
         """
@@ -142,7 +152,7 @@ class Dusty():
                   for el in utils.supp_car_list(line, ['', '1', '\n'])]
         return utils.list_to_dict(keys, values)
 
-    def make_SED(self, distance, Jansky: bool = True, um: bool = True, normalize: bool = False) -> None:
+    def make_SED(self, distance, luminosity: float = 1, Jansky: bool = True, um: bool = True, normalize: bool = False) -> None:
         """
         Generates the Spectral Energy Distribution (SED) for the given distance.
 
@@ -157,7 +167,7 @@ class Dusty():
         results = self.get_results()
 
         r_vrai = utils.calcul_rayon_vrai(results, self._Lest)
-        FTot = utils.calcul_flux_total(results['Fi(W/m2)'], r_vrai, distance)
+        FTot = luminosity*utils.calcul_flux_total(results['Fi(W/m2)'], r_vrai, distance)
 
         SED_file = utils.load_file(os.path.join(
             self._dustyPath, self._Model.get_Name(), self._Model.get_Name()+'.stb'))

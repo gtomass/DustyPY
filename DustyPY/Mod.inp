@@ -63,8 +63,8 @@ II. PHYSICAL PARAMETERS
                                                                         
   III. NUMERICS                                                           
       
-     - accuracy for flux conservation = 0.1
- 
+    - accuracy for flux conservation = 0.1
+
   ----------------------------------------------------------------------
                                                                         
   IV. OUTPUT PARAMETERS                                                 
@@ -88,7 +88,7 @@ II. PHYSICAL PARAMETERS
        - images at specified wavelengths;           fname.i### = 0
        - en.density at specified radii;             fname.j### = 0
        - radial profiles for each model;            fname.r### = 0
-       - detailed run-time messages;                fname.m### = 0
+       - detailed run-time messages;                fname.m### = 1
        ------------------------------------------------------------- 
  
 

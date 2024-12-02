@@ -8,8 +8,10 @@ import astropy.units as u
 from astropy.table import Table
 from astropy.io import fits
 from scipy.interpolate import make_interp_spline
+from scipy.integrate import simpson as simps
 from pymcmcstat.MCMC import MCMC
 from PyAstronomy import pyasl
+from synphot import SpectralElement
 
 
 def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None, normalize: bool = False):
@@ -43,14 +45,16 @@ def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, sca
         else:
             Flux = Flux / np.max(Flux)
 
+    np.asarray(Wavelength) if type(Wavelength) == list else Wavelength
+
     ax.scatter(Wavelength, Flux, **kwargs)
-    ax.set_xlabel(unit['x'])
-    ax.set_ylabel(unit['y'])
+    ax.set_xlabel(unit['x'], fontsize=15)
+    ax.set_ylabel(unit['y'], fontsize=15)
 
     ax.set_yscale(scale)
 
-    ax.set_xlim(*xlim, fontsize=15)
-    ax.set_ylim(*ylim, fontsize=15)
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
 
 
 def plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None, normalize: bool = False):
@@ -260,6 +264,15 @@ def build_change_dict(model):
         f"{os.path.join('data', 'Lib_nk', comp)}.nk" for comp in composition.keys())
     abundances = ", ".join(str(ab) for ab in composition.values())
 
+    if dust.get_Density()['density type'] == 'POWD':
+        density = f"\t\t density type = {dust.get_Density()['density type']}\n \t\t number of powers = {dust.get_Density()['number of powers']}\n \t\t shell's relative thickness = {dust.get_Density()['shell']}\n \t\t power = {dust.get_Density()['power']}\n"
+    elif dust.get_Density()['density type'] == 'RDWA':
+        density = f"\t\t density type = {dust.get_Density()['density type']} ;\n \t\t Y = {dust.get_Density()['shell']}\n"
+    elif dust.get_Density()['density type'] == 'RDW':
+        density = f"\t\t density type = {dust.get_Density()['density type']} ;\n \t\t  Y = {dust.get_Density()['shell']}\n"
+    else:
+        raise NotImplementedError(f'This density type is not implemented: {dust.get_Density()["density type"]}')
+
     return {
         'Spectral': f'      	        Spectral shape = {model.get_Spectral()} \n' if model.get_Spectral() in ['black_body', 'engelke_marengo'] else
         f'      	        Spectral shape = {model.get_Spectral()} \n \t\t{
@@ -275,6 +288,7 @@ def build_change_dict(model):
         'Size Distribution': f'        SIZE DISTRIBUTION = {dust.get_DustSize()["Distribution"]} \n',
         'Dust size': f'        q = {dust.get_DustSize()["q"]}, a(min) = {dust.get_DustSize()["amin"]} micron, a(max) = {dust.get_DustSize()["amax"]} micron \n',
         'Sublimation temperature': f'        Tsub = {dust.get_Sublimation()} K \n',
+        'Density Distribution': density,
         'Opacity': f'        - tau(min) = {dust.get_tau()}; tau(max) = {dust.get_tau()}  % for the visual wavelength \n',
     }
 
@@ -295,6 +309,7 @@ def change_parameter(Path, change, car, nstar):
     # Remove all lines containing '.nk'
     file = [line for line in file if ('.nk' not in line)]
     file = [line for line in file if ('Td' not in line)]
+    file = [line for line in file if all(param not in line for param in ['number of powers', 'power =', 'shell', 'Y ='])]
 
     # cannot have multiple stars with engelke_marengo
     if 'engelke_marengo' in change['Spectral']:
@@ -493,7 +508,7 @@ def interpolate(Wavelength, Flux, order=3):
     return make_interp_spline(Wavelength, Flux, order)
 
 
-def model(q, xdata, xdusty, ydusty):
+def model(xdata, xdusty, ydusty):
     """
     Calcule le modèle en fonction des paramètres fournis.
 
@@ -506,11 +521,10 @@ def model(q, xdata, xdusty, ydusty):
     Retourne:
     array-like: Les valeurs du modèle interpolé.
     """
-    I = q
     try:
-        return I * interpolate(np.asarray(xdusty).flatten(), np.asarray(ydusty).flatten())(np.asarray(xdata).flatten())
+        return interpolate(np.asarray(xdusty).flatten(), np.asarray(ydusty).flatten())(np.asarray(xdata).flatten())
     except Exception:
-        return I * interpolate(xdusty, ydusty)(xdusty)
+        return interpolate(xdusty, ydusty)(xdusty)
 
 
 def chi2(theta, data):
@@ -657,6 +671,150 @@ def write_wavelength(Path, Wavelength):
             f.write(line)
         for w in Wavelength:
             f.write(f"{w}\n")
+
+def get_bandpass_name() -> list:
+    """
+    Get the name of all the available filters.
+
+    Returns:
+    list: A list of filter names.
+    """
+    path_here = os.path.dirname(__file__)
+    test = glob.glob(os.path.join(path_here,'../filter/comp/nonhst/*'))
+    return [os.path.basename(f).split('.')[0] for f in test]
+
+def get_bandpass(bandpass: str) -> SpectralElement:
+    """
+    Get the bandpass of a filter.
+
+    Parameters:
+    filter (str): The name of the filter to retrieve the bandpass for.
+
+    Returns:
+    SpectralElement: The spectral element corresponding to the filter.
+
+    Raises:
+    FileNotFoundError: If the specified filter is not found in the directory.
+    """
+    path_here = os.path.dirname(__file__)
+    test = glob.glob(os.path.join(path_here,'../filter/comp/nonhst/*'))
+    filter_path = next((f for f in test if bandpass in f), None)
+
+    if filter_path is None:
+        raise FileNotFoundError(f"Filter {bandpass} not found")
+    return SpectralElement.from_file(filter_path)
+
+def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: SpectralElement) -> float:
+    """
+    Integrate the bandpass of a given spectrum.
+
+    Parameters:
+    wavelength (np.array): Array of wavelength values.
+    flux (np.array): Array of flux values corresponding to the wavelengths.
+    filter (SpectralElement): Filter object that defines the bandpass.
+
+    Returns:
+    float: The integrated flux over the bandpass.
+    """
+    
+
+    filt = np.interp(wavelength, bandpass.waveset.value/10000, bandpass(bandpass.waveset))
+    filtSpec  = filt * flux                        #Calculate throughput
+    fl     = simps(y=filtSpec,x=wavelength) / simps(y = filt, x = wavelength)
+    return fl
+
+def get_central_wavelegnth(bandpass: SpectralElement) -> float:
+    """
+    Get the central wavelength of a bandpass.
+
+    Parameters:
+    bandpass (SpectralElement): The bandpass object.
+
+    Returns:
+    float: The central wavelength of the bandpass.
+    """
+    return bandpass.pivot().value 
+
+def mean_flux(wavelength: np.array, flux: np.array) -> float:
+    """
+    Calculate the mean flux value over a specified wavelength range.
+
+    Parameters:
+    wavelength (np.array): Array of wavelength values.
+    flux (np.array): Array of flux values corresponding to the wavelengths.
+
+    Returns:
+    float: The mean flux value over the specified wavelength range.
+    """
+    unique_wavelengths = np.unique(wavelength)
+    mean_flux_values = []
+
+    for wl in unique_wavelengths:
+        mask = (wavelength == wl)
+        mean_flux_values.append(np.mean(flux[mask]))
+
+    return np.asarray(mean_flux_values)
+
+def get_common_filters(filters: np.array, bandpass_name: np.array) -> dict:
+    """
+    Get the common filters between the filters and bandpass names.
+
+    Parameters:
+    filters (np.array): Array of filter names to check.
+    bandpass_name (np.array): Array of available bandpass names.
+
+    Returns:
+    dict: A dictionary with filter names as keys and corresponding bandpass names as values.
+    """
+    bandpass_name = ['_'.join(name.split('_')[:2]) for name in bandpass_name]
+    common_filters = {}
+    for f in filters:
+        if 'GAIA' in f:
+            gaia_filter = f.lower().replace(':', '_').replace( 'GAIA','gaia')
+            gaia_filter = gaia_filter.split('/')[1]
+            for bp in bandpass_name:
+                if gaia_filter in bp:
+                    common_filters[f] = bp
+                    break
+        else:
+            for bp in bandpass_name:
+                if f.lower().replace(':', '_') in bp:
+                    common_filters[f] = bp
+                    break
+    return common_filters
+
+def integrate_SED_bandpass(wavelength: np.array, flux: np.array, common_filter: np.array) -> np.array:
+    """
+    Integrate the bandpass of a given spectrum.
+
+    Parameters:
+    wavelength (np.array): Array of wavelength values.
+    flux (np.array): Array of flux values corresponding to the wavelengths.
+    filter (np.array): Array of filter values corresponding to the wavelengths.
+
+    Returns:
+    np.array: The integrated flux over the bandpass.
+    """
+    integrated_flux = []
+
+    for bandpass in common_filter.values():
+        filt  = get_bandpass(bandpass)
+        integrated_flux.append(intergrate_bandpass(wavelength, flux, filt))
+    
+    return np.asarray(integrated_flux)  
+
+def savefig(path: str) -> None: 
+    """
+    Save the current figure to a file.
+
+    Parameters:
+    path (str): The path to save the figure to.
+
+    Returns:
+    None
+    """
+    plt.savefig(path) 
+
 
 
 if __name__ == "__main__":
