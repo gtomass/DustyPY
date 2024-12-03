@@ -80,7 +80,6 @@ if __name__ == '__main__':
     ax.set_yscale('log')
     plt.show()
 
-    
     # fit = DustyFit.DustyFit(dustyMod, data=Dat)
 
     # Param = {'Temp1':{'theta0':3000,'minimum':2900,'maximum':3500},
