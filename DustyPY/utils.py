@@ -773,7 +773,7 @@ def get_common_filters(filters: np.array, bandpass_name: np.array) -> dict:
             gaia_filter = f.lower().replace(':', '_').replace('GAIA','gaia')
             gaia_filter = gaia_filter.split('/')[1]
             for bp in bandpass_name:
-                if gaia_filter in bp:
+                if gaia_filter == bp:
                     common_filters[f] = bp
                     break
         else:
