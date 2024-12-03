@@ -250,11 +250,16 @@ class Data():
         Returns:
         dict: The common filters.
         """
+        bandpass_name = utils.get_bandpass_name()
         if table is None:
             table = self._table
-        bandpass_name = utils.get_bandpass_name()
-        filter = np.unique(table['sed_filter'].data)
-        return utils.get_common_filters(filter, bandpass_name)
+            return utils.get_common_filters(filter, bandpass_name)
+        
+        else : 
+            table = unique(table, keys='sed_freq')
+            table.sort('sed_freq', reverse=True)
+            filter = table['sed_filter'].data
+            return utils.get_common_filters(filter, bandpass_name)
     
     def restrict_data_vizier(self, table):
         """
