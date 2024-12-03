@@ -680,7 +680,7 @@ def get_bandpass_name() -> list:
     list: A list of filter names.
     """
     path_here = os.path.dirname(__file__)
-    test = glob.glob(os.path.join(path_here,'../filter/comp/nonhst/*'))
+    test = glob.glob(os.path.join(path_here, 'filter', 'comp', 'nonhst', '*'))
     return [os.path.basename(f).split('.')[0] for f in test]
 
 def get_bandpass(bandpass: str) -> SpectralElement:
@@ -697,7 +697,7 @@ def get_bandpass(bandpass: str) -> SpectralElement:
     FileNotFoundError: If the specified filter is not found in the directory.
     """
     path_here = os.path.dirname(__file__)
-    test = glob.glob(os.path.join(path_here,'../filter/comp/nonhst/*'))
+    test = glob.glob(os.path.join(path_here, 'filter', 'comp', 'nonhst', '*'))
     filter_path = next((f for f in test if bandpass in f), None)
 
     if filter_path is None:

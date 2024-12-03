@@ -27,7 +27,4 @@ setup(
         "PyAstronomy"
     ],
     include_package_data=True,
-    package_data={
-        "": ["filter/*"],
-    },
 )

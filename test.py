@@ -27,7 +27,7 @@ if __name__ == '__main__':
     # density = {'density type':'RDWA', 'shell': 1000}
     density = None
 
-    dust = stars.Dust(DustSize={'Distribution':'MRN'},Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=300, Density=density)
+    dust = stars.Dust(DustSize={'Distribution':'MRN'},Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=350, Density=density)
 
     mod = stars.Model('AFGL4106', NbStar=2, Stars=[S1, S2],
                         dust=dust, distance=1470,
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     table = Dat.restrict_data_vizier(table)
 
     Dat.set_vizier_data(table)
-    Dat.restrict_data(['xdata <= 10'])
+    Dat.restrict_data(['xdata <= 30'])
     Dat.unred_data(EBV=1.07)
     dustyMod.change_parameter()
     dustyMod.lunch_dusty()
@@ -74,6 +74,8 @@ if __name__ == '__main__':
 
     dustyMod.plot_SED(xlim=(0.1,110), ylim=(.001,3000),scale='log', ax=ax, kwargs=kwargs_dusty)
     Dat.scatter_data(ax=ax, kwargs=kwargs_data)
+    ax.set_xscale('log')
+    ax.set_yscale('log')
     plt.show()
 
     
