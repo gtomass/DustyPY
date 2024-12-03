@@ -275,7 +275,8 @@ class Data():
         Parameters:
         table (array-like): The data from the Vizier query.
         """
-        self._table = unique(table, keys='sed_freq').sort('sed_freq', reverse=False)
+        table.sort('sed_freq', reverse=False)
+        self._table = unique(table, keys='sed_freq')
         self._xdata = (1e9*table['sed_freq']*u.Hz).to(u.um, equivalencies=u.spectral()).value
         self._ydata = utils.mean_flux(self._xdata,np.nan_to_num(np.asarray(table['sed_flux']), nan=0.))
         self._yerr = utils.mean_flux(self._xdata,np.nan_to_num(np.asarray(table['sed_eflux']), nan=0.))
