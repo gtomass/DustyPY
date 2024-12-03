@@ -90,13 +90,8 @@ class SED():
         ax (matplotlib.axes.Axes, optional): The axis on which to plot. Defaults to None.
         kwargs (dict, optional): Additional arguments for the scatter function. Defaults to None.
         """
-        try:
-            central =[utils.get_central_wavelegnth(utils.get_bandpass(f))/10000 for f in bandpass.values()]
-            utils.scatter_plot(self.integrate_bandpass(bandpass),central, unit=unit, xlim=xlim,
-                    ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
-        except:
-            central =[utils.get_central_wavelegnth(utils.get_bandpass(f))/10000 for f in bandpass]
-            utils.scatter_plot(self.integrate_bandpass(bandpass),central, unit=unit, xlim=xlim,
-                    ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
-
+        central =[utils.get_central_wavelegnth(utils.get_bandpass(f))/10000 for f in bandpass.values()]
+        f = self.integrate_bandpass(bandpass)
+        utils.scatter_plot(self.integrate_bandpass(bandpass),central, unit=unit, xlim=xlim,
+                   ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
 
