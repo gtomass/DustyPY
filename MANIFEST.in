@@ -1,2 +1,2 @@
 include DustyPY/Mod.inp
-include filter
+recursive-include filter
