@@ -236,7 +236,9 @@ class Data():
         """
         if target is None:
             raise ValueError('target must be specified')
-        return utils.querry_vizier_data(radius, target)
+        table = utils.querry_vizier_data(radius, target)
+        table.sort('sed_freq', reverse=True)
+        return table
     
     def get_common_filters(self, table = None) -> dict:
         """
@@ -263,7 +265,7 @@ class Data():
         bandpass_name (list[str]): The names of the common bandpasses.
         """
         bandpass_name = utils.get_bandpass_name()
-        filter, number = np.unique(table['sed_filter'].data, return_counts=True)
+        filter = np.unique(table['sed_filter'].data)
         common_filters = utils.get_common_filters(filter, bandpass_name)
         table = table[np.isin(table['sed_filter'].data, [f for f in common_filters.keys()])]
         return table
@@ -275,7 +277,6 @@ class Data():
         Parameters:
         table (array-like): The data from the Vizier query.
         """
-        table.sort('sed_freq', reverse=True)
         self._table = unique(table, keys='sed_freq')
         self._xdata = (1e9*table['sed_freq']*u.Hz).to(u.um, equivalencies=u.spectral()).value
         self._ydata = utils.mean_flux(self._xdata,np.nan_to_num(np.asarray(table['sed_flux']), nan=0.))
