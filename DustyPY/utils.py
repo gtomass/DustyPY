@@ -768,9 +768,10 @@ def get_common_filters(filters: np.array, bandpass_name: np.array) -> dict:
     """
     bandpass_name = ['_'.join(name.split('_')[:2]) for name in bandpass_name]
     common_filters = {}
+    print(filters)
     for f in filters:
         if 'GAIA' in f:
-            gaia_filter = f.lower().replace(':', '_').replace('GAIA', 'gaia')
+            gaia_filter = f.lower().replace(':', '_').replace('GAIA','gaia')
             gaia_filter = gaia_filter.split('/')[1]
             for bp in bandpass_name:
                 if gaia_filter in bp:
@@ -781,7 +782,7 @@ def get_common_filters(filters: np.array, bandpass_name: np.array) -> dict:
                 if f.lower().replace(':', '_') in bp:
                     common_filters[f] = bp
                     break
-    return {f: common_filters[f] for f in filters if f in common_filters}
+    return common_filters
 
 def integrate_SED_bandpass(wavelength: np.array, flux: np.array, common_filter: np.array) -> np.array:
     """
