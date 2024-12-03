@@ -253,6 +253,7 @@ class Data():
         bandpass_name = utils.get_bandpass_name()
         if table is None:
             table = self._table
+            filter = table['sed_filter'].data
             return utils.get_common_filters(filter, bandpass_name)
         
         else : 
