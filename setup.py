@@ -5,7 +5,7 @@ setup(
     version="0.1.0",
     author="Gabriel TOMASSINI",
     author_email="gabriel.tomassini@oca.eu",
-    description="SFit is a convenient Package to run and fit SED using the radiative transfer modeling code dusty",
+    description="DustyPY is a convenient Package to run and fit SED using the radiative transfer modeling code dusty",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Radron74/DustyPY.git",
@@ -26,5 +26,8 @@ setup(
         "pymcmcstat",
         "PyAstronomy"
     ],
-    include_package_data=True,  
+    include_package_data=True,
+    package_data={
+        "": ["filter/*"],
+    },
 )
