@@ -21,7 +21,7 @@ class DustyFit():
     _Fit (fit): The fitting object.
     """
 
-    def __init__(self, Dusty: dusty.Dusty, data: Data.Data, ParamFit: dict = None, Param: dict = None, fit: MCfit.fit = None) -> None:
+    def __init__(self, Dusty: dusty.Dusty, data: Data.Data, ParamFit: dict = None, Param: dict = None, fit: MCfit.fit = None, logfile: bool = False) -> None:
         """
         Initializes an instance of the DustyFit class.
 
@@ -43,6 +43,7 @@ class DustyFit():
         self._ParamFit = ParamFit
         self._Param = Param
         self._Fit = fit
+        self._logfile = logfile
 
     def __InitFit(self) -> None:
         """
@@ -204,7 +205,7 @@ class DustyFit():
         self.__setChange(change)
 
         self._Dusty.change_parameter()
-        self._Dusty.lunch_dusty(verbose=0)
+        self._Dusty.lunch_dusty(verbose=0, logfile=self._logfile)
         self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=theta[-1])
 
         try:
@@ -262,7 +263,7 @@ class DustyFit():
         self.__setChange(change)
 
         self._Dusty.change_parameter()
-        self._Dusty.lunch_dusty(verbose=0)
+        self._Dusty.lunch_dusty(verbose=0, logfile=self._logfile)
         self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=theta[-1])
 
         try:
@@ -301,12 +302,13 @@ class DustyFit():
 
         return 1/(len(ydata)-len(theta)-1)*np.nansum((1-(ymodel_norm/ydata_norm))**2/(ymodel_norm/ydata_norm))
 
-    def lunch_fit(self, chi2: str = 'Chi2') -> None:
+    def lunch_fit(self, chi2: str = 'Chi2', logfile: bool = False) -> None:
         """
         Initializes the fitting procedure and performs the fit using the chi-squared function.
 
         This method initializes the fitting object and then runs the fitting procedure using the chi-squared function specific to the Dusty model.
         """
+        self._logfile = logfile
         begin = time.time()
         if list(self._Param.keys())[-1] != 'Lest':
             raise Exception('The last parameter must be Lest')

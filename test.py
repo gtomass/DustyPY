@@ -27,7 +27,7 @@ if __name__ == '__main__':
     # density = {'density type':'RDWA', 'shell': 1000}
     density = None
 
-    dust = stars.Dust(DustSize={'Distribution':'MRN'},Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=350, Density=density)
+    dust = stars.Dust(DustSize={'Distribution':'MRN'},Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=130, Density=density)
 
     mod = stars.Model('AFGL4106', NbStar=2, Stars=[S1, S2],
                         dust=dust, distance=1470,
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     dustyMod = dusty.Dusty(PATH='/Users/gabriel/Documents/These/Recherche/lib/dusty',
                             model=mod, Lestimation=1e4)
 
-    dustyMod.make_wavelength(intervals=[(1e-2,.390,100),(.391,0.8, 500), (0.81, 30, 1000), (30.1,1e2, 100)])
+    
 
     fig, ax = plt.subplots()
     kwargs_data = {'fmt': 'dr', 'markersize':5,'label': 'Data'}
@@ -62,6 +62,8 @@ if __name__ == '__main__':
 
     for c, f, b in zip(central, fluxes, band):
         table.add_row(dict(zip(['sed_freq', 'sed_flux', 'sed_filter'], [c, f, b])))
+
+    dustyMod.make_wavelength()
 
     table = Dat.restrict_data_vizier(table)
 
