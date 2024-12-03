@@ -698,7 +698,7 @@ def get_bandpass(bandpass: str) -> SpectralElement:
     """
     path_here = os.path.dirname(__file__)
     test = glob.glob(os.path.join(path_here, 'filter', 'comp', 'nonhst', '*'))
-    filter_path = next((f for f in test if bandpass in f), None) if bandpass != 'gaia_g' else next((f for f in test if 'gaia_g.fits' in f), None)
+    filter_path = next((f for f in test if bandpass in f), None) if bandpass != 'gaia3_g' else next((f for f in test if 'gaia3_g.fits' in f), None)
 
     if filter_path is None:
         raise FileNotFoundError(f"Filter {bandpass} not found")
