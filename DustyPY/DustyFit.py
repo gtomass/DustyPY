@@ -364,16 +364,12 @@ class DustyFit():
 
         This method retrieves the fitting results, updates the Dusty model parameters, runs the Dusty simulation, and generates the Spectral Energy Distribution (SED). It then plots the SED and the data with optional error bars.
         """
-        chain = self._Fit.get_Results()['chain']
-        burnin = int(self._Fit.get_Results()['nsimu'] / 2)
-        result = self._Fit.get_Model().chainstats(
-            chain[burnin:, :], self._Fit.get_Results(), returnstats=True)
 
         self.__setChange(utils.list_to_dict(
-            list(self._Fit.get_Param().keys()), result['mean']))
+            list(self._Fit.get_Param().keys()), self._Fit.get_Stats()['mean']))
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty()
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=result['mean'][-1])
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=self._Fit.get_Stats()['mean'])
         SED = self._Dusty.get_SED()
         utils.plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
                    xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit, normalize=normalize)

@@ -198,7 +198,7 @@ class fit():
         """
         chain = self._Results['chain']
         burnin = int(self._Results['nsimu'] / 2)
-        self._Model.chainstats(chain[burnin:, :], self._Results, returnstats=True)
+        self._Model.chainstats(chain[burnin:, :], self._Results)
 
     def plot_stats(self) -> None:
         """
