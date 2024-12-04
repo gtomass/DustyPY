@@ -172,10 +172,10 @@ class fit():
         self.set_Chi2Func(Chi2)
         self._Model.run_simulation()
 
-        results = {}
-        results = self._Model.simulation_results.results.copy()
+        # results = {}
+        # results = self._Model.simulation_results.results.copy()
 
-        self._Results = results
+        # self._Results = results
 
     def print_results(self) -> None:
         """
@@ -183,7 +183,8 @@ class fit():
         """
         chain = self._Results['chain']
         burnin = int(self._Results['nsimu'] / 2)
-        self._Model.chainstats(chain[burnin:, :], self._Results)
+        results = self._Model.chainstats(chain[burnin:, :], self._Results, returnstats=True)
+        self._Results = results
 
     def plot_stats(self) -> None:
         """
@@ -197,8 +198,8 @@ class fit():
         names = self.get_Results()['names']
         s2chain = self.get_Results()['s2chain']
         
-        result = self.get_Model().chainstats(
-            chain[burnin:, :], self.get_Results(), returnstats=True)
+        self.get_Model().chainstats(
+            chain[burnin:, :], self.get_Results())
         mcpl = pymcmcstat.mcmcplot # initialize plotting methods
         mcpl.plot_density_panel(chain[burnin:,:], names);
         mcpl.plot_chain_panel(chain[burnin:,:], names);
