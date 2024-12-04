@@ -295,9 +295,9 @@ class Data():
 
         for x in unique_xdata:
             indices = np.where(self._xdata == x)
-            mean_ydata.append(np.mean(self._ydata[indices]))
+            mean_ydata.append(np.nanmean(self._ydata[indices]))
             if self._yerr is not None:
-                mean_yerr.append(np.mean(self._yerr[indices]))
+                mean_yerr.append(np.nanmean(self._yerr[indices]))
 
         self._xdata = unique_xdata
         self._ydata = np.array(mean_ydata)
