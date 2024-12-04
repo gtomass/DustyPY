@@ -177,13 +177,14 @@ class fit():
 
         self._Results = results
 
-    def print_results(self) -> None:
+    def print_results(self) -> any:
         """
         Prints the results of the fitting procedure, including chain statistics.
         """
         chain = self._Results['chain']
         burnin = int(self._Results['nsimu'] / 2)
-        self._Model.chainstats(chain[burnin:, :], self._Results)
+        bla = self._Model.chainstats(chain[burnin:, :], self._Results, returnstats=True)
+        return bla
 
     def plot_stats(self) -> None:
         """
