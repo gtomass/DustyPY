@@ -183,8 +183,7 @@ class fit():
         """
         chain = self._Results['chain']
         burnin = int(self._Results['nsimu'] / 2)
-        results = self._Model.chainstats(chain[burnin:, :], self._Results, returnstats=True)
-        self._Results = results
+        self._Model.chainstats(chain[burnin:, :], self._Results)
 
     def plot_stats(self) -> None:
         """
@@ -198,8 +197,8 @@ class fit():
         names = self.get_Results()['names']
         s2chain = self.get_Results()['s2chain']
         
-        self.get_Model().chainstats(
-            chain[burnin:, :], self.get_Results())
+        result = self.get_Model().chainstats(
+            chain[burnin:, :], self.get_Results(), returnstats=True)
         mcpl = pymcmcstat.mcmcplot # initialize plotting methods
         mcpl.plot_density_panel(chain[burnin:,:], names);
         mcpl.plot_chain_panel(chain[burnin:,:], names);
