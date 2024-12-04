@@ -5,8 +5,8 @@ import glob
 import pandas as pd
 import os
 import astropy.units as u
-from astropy.table import Table
-from astropy.io import fits
+from astropy.table import Table, Column
+from astropy.io import fits, ascii
 from scipy.interpolate import make_interp_spline
 from scipy.integrate import simpson as simps
 from pymcmcstat.MCMC import MCMC
@@ -814,6 +814,41 @@ def savefig(path: str) -> None:
     None
     """
     plt.savefig(path) 
+
+def write_table_to_latex(table, Path, columns=None, column_names=None, wavelength: bool = True) -> None:
+    """
+    Write a table to a LaTeX file.
+
+    Parameters:
+    table (DataFrame): The table to write to the file.
+    Path (str): The path to save the table to.
+    columns (list, optional): List of columns to include in the LaTeX file. Defaults to None (all columns).
+    column_names (list, optional): List of column names to use in the LaTeX file. Defaults to None (original names).
+
+    Returns:
+    None
+    """
+    if wavelength:
+        table.add_column(Column(data=table['sed_freq'].to(u.um, equivalencies=u.spectral()), name='Wavelength'),)
+    if columns is None:
+        columns = table.columns
+    if column_names is None:
+        column_names = columns
+
+    with open(Path, 'w') as f:
+        f.write('\\begin{table}[h!]\n')
+        f.write('\\centering\n')
+        f.write('\\begin{tabular}{' + 'c' * len(columns) + '}\n')
+        f.write('\\hline\n')
+        f.write(' & '.join(column_names) + ' \\\\\n')
+        f.write('\\hline\n')
+        for row in table[columns]:
+            f.write(' & '.join(f'{value:.3f}' if isinstance(value, (int, float)) and value != 0 else '-' if value == 0 else str(value) for value in row) + ' \\\\\n')
+        f.write('\\hline\n')
+        f.write('\\end{tabular}\n')
+        f.write('\\caption{Your caption here}\n')
+        f.write('\\label{table:label}\n')
+        f.write('\\end{table}\n')
 
 
 

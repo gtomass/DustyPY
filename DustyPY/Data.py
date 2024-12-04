@@ -283,10 +283,14 @@ class Data():
         Parameters:
         table (array-like): The data from the Vizier query.
         """
-        tg = table.group_by('sed_filter')
-        table = tg.groups.aggregate(np.mean)
-        #table = unique(table, keys='sed_freq', keep='first')
+        data = np.array(table['sed_eflux'])
+        has_nan = np.isnan(data)
+        table = table[~has_nan]
+
+        table.sort('sed_eflux', reverse=True)
+        table = unique(table, keys='sed_freq', keep='first')
         table.sort('sed_freq', reverse=True)
+
         self._table = table
         self._xdata = (table['sed_freq']).to(u.um, equivalencies=u.spectral()).value
         self._ydata = table['sed_flux'].value
@@ -359,3 +363,12 @@ class Data():
                 self._yerr = yerr
             else:
                 self._yerr = np.concatenate((self._yerr, yerr))
+
+    def write_table_to_latex(self, Path: str, columns: list = None, column_names: list = None, wavelength: bool = True) -> None:
+        """
+        Writes the data table to a latex file.
+
+        Parameters:
+        Path (str): The file path to write the table to.
+        """
+        utils.write_table_to_latex(self._table, Path, columns, column_names, wavelength)

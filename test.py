@@ -50,6 +50,7 @@ if __name__ == '__main__':
 
     table = Dat.querry_vizier_data(radius = 5, target='AFGL4106')
 
+
     ISO = Dat.import_data('/Users/gabriel/Documents/These/Recherche/data/24900158_sws.fit').T
     wave, flux = ISO[0], ISO[1]
 
@@ -61,23 +62,29 @@ if __name__ == '__main__':
     central = [3e8/(utils.get_central_wavelegnth(f)*1e-10) * 1e-9 for f in filters]
 
     for c, f, b in zip(central, fluxes, band):
-        table.add_row(dict(zip(['sed_freq', 'sed_flux', 'sed_filter'], [c, f, b])))
+        table.add_row(dict(zip(['_tabname','sed_freq', 'sed_flux', 'sed_filter'], ['ISO SWS',c, f, b])))
+
 
     dustyMod.make_wavelength()
 
     table = Dat.restrict_data_vizier(table)
 
     Dat.set_vizier_data(table)
-    Dat.restrict_data(['xdata <= 30'])
+    # Dat.restrict_data(['xdata <= 10'])
     Dat.unred_data(EBV=1.07)
-    dustyMod.change_parameter()
-    dustyMod.lunch_dusty()
-    dustyMod.make_SED(distance=1470)
 
-    dustyMod.plot_SED(xlim=(0.1,110), ylim=(.001,3000),scale='log', ax=ax, kwargs=kwargs_dusty)
+    Dat.write_table_to_latex(Path = '/Users/gabriel/Documents/These/Recherche/data/AFGL4106.txt', columns=['Wavelength', 'sed_flux', 'sed_eflux', '_tabname'], 
+                             column_names=['Wavelength', 'Flux', 'Error', 'Catalog'], wavelength=True)
+    # dustyMod.change_parameter()
+    # dustyMod.lunch_dusty()
+    # dustyMod.make_SED(distance=1470)
+
+    # dustyMod.plot_SED(xlim=(0.1,110), ylim=(.001,3000),scale='log', ax=ax, kwargs=kwargs_dusty)
     Dat.scatter_data(ax=ax, kwargs=kwargs_data)
     ax.set_xscale('log')
     ax.set_yscale('log')
+    ax.set_xlim(0.1,110)
+    ax.set_ylim(.1,3000)
     plt.show()
 
     # fit = DustyFit.DustyFit(dustyMod, data=Dat)
