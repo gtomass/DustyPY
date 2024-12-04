@@ -283,25 +283,14 @@ class Data():
         Parameters:
         table (array-like): The data from the Vizier query.
         """
-        table = unique(table, keys='sed_freq', keep='first')
+        tg = table.group_by('sed_filter')
+        table = tg.groups.aggregate(np.nanmean)
+        #table = unique(table, keys='sed_freq', keep='first')
         table.sort('sed_freq', reverse=True)
         self._table = table
         self._xdata = (table['sed_freq']).to(u.um, equivalencies=u.spectral()).value
         self._ydata = table['sed_flux'].value
-        self._yerr = table['sed_eflux'].value.copy()
-        unique_xdata = np.unique(self._xdata)
-        mean_ydata = []
-        mean_yerr = []
-
-        for x in unique_xdata:
-            indices = np.where(self._xdata == x)
-            mean_ydata.append(np.nanmean(self._ydata[indices]))
-            if self._yerr is not None:
-                mean_yerr.append(np.nanmean(self._yerr[indices]))
-
-        self._xdata = unique_xdata
-        self._ydata = np.array(mean_ydata)
-        self._yerr = np.array(mean_yerr).copy() if self._yerr is not None else None
+        self._yerr = table['sed_eflux'].value
 
     def restrict_data(self, ListOfCondition=list[str]):
         """
