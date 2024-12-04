@@ -288,7 +288,7 @@ class Data():
         self._table = table
         self._xdata = (table['sed_freq']).to(u.um, equivalencies=u.spectral()).value
         self._ydata = table['sed_flux'].value
-        self._yerr = table['sed_eflux'].value
+        self._yerr = table['sed_eflux'].value.copy()
         unique_xdata = np.unique(self._xdata)
         mean_ydata = []
         mean_yerr = []
@@ -301,7 +301,7 @@ class Data():
 
         self._xdata = unique_xdata
         self._ydata = np.array(mean_ydata)
-        self._yerr = np.array(mean_yerr) if self._yerr is not None else None
+        self._yerr = np.array(mean_yerr).copy() if self._yerr is not None else None
 
     def restrict_data(self, ListOfCondition=list[str]):
         """
