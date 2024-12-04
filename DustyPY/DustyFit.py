@@ -312,8 +312,8 @@ class DustyFit():
         """
         self._logfile = logfile
         begin = time.time()
-        if list(self._Param.keys())[-1] != 'Lest':
-            raise Exception('The last parameter must be Lest')
+        # if list(self._Param.keys())[-1] != 'Lest':
+        #     raise Exception('The last parameter must be Lest')
         self.__InitFit()
         if chi2 == 'Chi2':
             self._Fit.fit(Chi2=self.__Chi2Dusty)
