@@ -175,10 +175,6 @@ class fit():
         results = {}
         results = self._Model.simulation_results.results.copy()
 
-        chain = results['chain']
-        burnin = int(results['nsimu'] / 2)
-        results = self._Model.chainstats(chain[burnin:, :], results, returnstats=True)
-
         self._Results = results
 
     def print_results(self) -> None:
@@ -188,7 +184,7 @@ class fit():
         chain = self._Results['chain']
         burnin = int(self._Results['nsimu'] / 2)
         results = self._Model.chainstats(chain[burnin:, :], self._Results, returnstats=True)
-        # self._Results = results
+        self._Results = results
 
     def plot_stats(self) -> None:
         """
