@@ -289,6 +289,19 @@ class Data():
         self._xdata = (table['sed_freq']).to(u.um, equivalencies=u.spectral()).value
         self._ydata = table['sed_flux'].value
         self._yerr = table['sed_eflux'].value
+        unique_xdata = np.unique(self._xdata)
+        mean_ydata = []
+        mean_yerr = []
+
+        for x in unique_xdata:
+            indices = np.where(self._xdata == x)
+            mean_ydata.append(np.mean(self._ydata[indices]))
+            if self._yerr is not None:
+                mean_yerr.append(np.mean(self._yerr[indices]))
+
+        self._xdata = unique_xdata
+        self._ydata = np.array(mean_ydata)
+        self._yerr = np.array(mean_yerr) if self._yerr is not None else None
 
     def restrict_data(self, ListOfCondition=list[str]):
         """
