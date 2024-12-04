@@ -284,7 +284,7 @@ class Data():
         table (array-like): The data from the Vizier query.
         """
         tg = table.group_by('sed_filter')
-        table = tg.groups.aggregate(np.nanmean)
+        table = tg.groups.aggregate(np.mean)
         #table = unique(table, keys='sed_freq', keep='first')
         table.sort('sed_freq', reverse=True)
         self._table = table
