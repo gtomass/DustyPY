@@ -201,7 +201,7 @@ class DustyFit():
         """
 
         change = utils.list_to_dict(list(self._Fit.get_Param().keys()), theta)
-        Lum  = theta[-1] if 'Lest' in list(change.keys()) else self._Dusty.get_Model().get_Lestimation()
+        Lum  = theta[-1] if 'Lest' in list(change.keys()) else self._Dusty.get_Lestimation()
 
         self.__setChange(change)
 
@@ -260,7 +260,7 @@ class DustyFit():
         """
 
         change = utils.list_to_dict(list(self._Fit.get_Param().keys()), theta)
-        Lum  = theta[-1] if 'Lest' in list(change.keys()) else self._Dusty.get_Model().get_Lestimation()
+        Lum  = theta[-1] if 'Lest' in list(change.keys()) else self._Dusty.get_Lestimation()
 
         self.__setChange(change)
 
@@ -366,7 +366,7 @@ class DustyFit():
 
         This method retrieves the fitting results, updates the Dusty model parameters, runs the Dusty simulation, and generates the Spectral Energy Distribution (SED). It then plots the SED and the data with optional error bars.
         """
-        Lum = self._Fit.get_Stats()['mean'][-1] if 'Lest' in list(self._Fit.get_Param().keys()) else self._Dusty.get_Model().get_Lestimation()
+        Lum = self._Fit.get_Stats()['mean'][-1] if 'Lest' in list(self._Fit.get_Param().keys()) else self._Dusty.get_Lestimation()
 
         self.__setChange(utils.list_to_dict(
             list(self._Fit.get_Param().keys()), self._Fit.get_Stats()['mean']))
