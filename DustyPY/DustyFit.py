@@ -276,7 +276,7 @@ class DustyFit():
 
         if self._Data.get_table() is not None:
 
-            bandpass = self._Data.get_common_filters(self._Data.get_table())
+            bandpass = self._Data.get_common_filters()
             central_wavelength = [utils.get_central_wavelegnth(utils.get_bandpass(f))/10000 for f in bandpass.values()]
             index = np.argsort(central_wavelength)
             central_wavelength = np.array(central_wavelength)[index]
