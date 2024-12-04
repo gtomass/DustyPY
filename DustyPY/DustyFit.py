@@ -201,12 +201,13 @@ class DustyFit():
         """
 
         change = utils.list_to_dict(list(self._Fit.get_Param().keys()), theta)
+        Lum  = theta[-1] if 'Lest' in list(change.keys()) else self._Dusty.get_Model().get_Lestimation()
 
         self.__setChange(change)
 
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose=0, logfile=self._logfile)
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=theta[-1])
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum)
 
         try:
             xdata = data.xdata[0]
@@ -259,12 +260,13 @@ class DustyFit():
         """
 
         change = utils.list_to_dict(list(self._Fit.get_Param().keys()), theta)
+        Lum  = theta[-1] if 'Lest' in list(change.keys()) else self._Dusty.get_Model().get_Lestimation()
 
         self.__setChange(change)
 
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose=0, logfile=self._logfile)
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=theta[-1])
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum)
 
         try:
             xdata = data.xdata[0]
@@ -364,12 +366,13 @@ class DustyFit():
 
         This method retrieves the fitting results, updates the Dusty model parameters, runs the Dusty simulation, and generates the Spectral Energy Distribution (SED). It then plots the SED and the data with optional error bars.
         """
+        Lum = self._Fit.get_Stats()['mean'][-1] if 'Lest' in list(self._Fit.get_Param().keys()) else self._Dusty.get_Model().get_Lestimation()
 
         self.__setChange(utils.list_to_dict(
             list(self._Fit.get_Param().keys()), self._Fit.get_Stats()['mean']))
         self._Dusty.change_parameter()
-        self._Dusty.lunch_dusty()
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=self._Fit.get_Stats()['mean'][-1])
+        self._Dusty.lunch_dusty(verbose = 0)
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum)
         SED = self._Dusty.get_SED()
         utils.plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
                    xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit, normalize=normalize)

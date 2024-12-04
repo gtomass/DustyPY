@@ -66,6 +66,15 @@ class Dusty():
         self._Model = model
         self.__Check()
 
+    def get_Lestimation(self) -> float:
+        """
+        Returns the luminosity estimation of the Dusty model.
+
+        Returns:
+        float: The luminosity estimation of the Dusty model.
+        """
+        return self._Lest
+
     def get_Model(self) -> Model:
         """
         Returns the model used in the Dusty simulation.
