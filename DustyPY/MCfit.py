@@ -48,6 +48,7 @@ class fit():
         self._ParamFit = ParamFit
         self._Param = Param
         self._Results = {}
+        self._Stats = None
 
     def set_Data(self, data: Data.Data = None) -> None:
         """
@@ -156,6 +157,15 @@ class fit():
         dict: The results of the fitting procedure.
         """
         return self._Results
+    
+    def get_Stats(self) -> any:
+        """
+        Returns the statistics of the fitting procedure.
+
+        Returns:
+        any: The statistics of the fitting procedure.
+        """
+        return self._Stats
 
     def fit(self, Chi2=utils.chi2) -> None:
         """
@@ -175,16 +185,20 @@ class fit():
         results = {}
         results = self._Model.simulation_results.results.copy()
 
-        self._Results = results
+        chain = results['chain']
+        burnin = int(results['nsimu'] / 2)
+        stats = self._Model.chainstats(chain[burnin:, :], results=results, returnstats=True)
 
-    def print_results(self) -> any:
+        self._Results = results
+        self._Stats = stats
+
+    def print_results(self) -> None:
         """
         Prints the results of the fitting procedure, including chain statistics.
         """
         chain = self._Results['chain']
         burnin = int(self._Results['nsimu'] / 2)
-        bla = self._Model.chainstats(chain[burnin:, :], self._Results, returnstats=True)
-        return bla
+        self._Model.chainstats(chain[burnin:, :], self._Results, returnstats=True)
 
     def plot_stats(self) -> None:
         """
