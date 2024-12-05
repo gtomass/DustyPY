@@ -287,8 +287,11 @@ class DustyFit():
 
         This method retrieves the fitting results, updates the Dusty model parameters, runs the Dusty simulation, and generates the Spectral Energy Distribution (SED). It then plots the SED and the data with optional error bars.
         """
-        index = list(self._Fit.get_Param().keys()).index('Lest')
-        Lum = self._Fit.get_Stats()['mean'][index]
+        try:
+            index = [key for key, value in self._Fit.get_Param() if value['sample']].index('Lest')
+            Lum = self._Fit.get_Stats()['mean'][index]
+        except:
+            Lum = self._Fit.get_Param()['Lest']['theta0']
         
         self.__setChange(utils.list_to_dict(
             list(self._Fit.get_Param().keys()), self._Fit.get_Stats()['mean']))
