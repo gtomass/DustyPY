@@ -292,7 +292,7 @@ class DustyFit():
             Lum = self._Fit.get_Stats()['mean'][index]
         except:
             Lum = self._Fit.get_Param()['Lest']['theta0']
-        
+        print(Lum)
         self.__setChange(utils.list_to_dict(
             list(self._Fit.get_Param().keys()), self._Fit.get_Stats()['mean']))
         self._Dusty.change_parameter()
