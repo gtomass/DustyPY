@@ -262,7 +262,6 @@ class fit():
             time = self._Model.data.xdata[0]
         else:
             pdata = pymcmcstat.MCMC.MCMC()
-            print(self._UserDefinedObject)
             pdata.data.add_data_set(wavelength_dusty, wavelength_dusty, user_defined_object=self._UserDefinedObject)
             time = wavelength_dusty
         if ciset is None:
@@ -283,3 +282,12 @@ class fit():
                                                     ydata=self._Data.get_ydata(), xdata=self._Data.get_xdata(), adddata=True,
                                                     ciset=ciset, piset=piset, addprediction=addprediction)
             format_plot(fig)
+
+    def plot_pairwise_correlation(self, fig: dict = None) -> None:
+        """
+        Plots the pairwise correlation between the parameters.
+        """
+        chain = self.get_Results()['chain']
+        names = self.get_Results()['names']
+        settings = dict(fig=fig)
+        mcpl = pymcmcstat.mcmcplot.plot_pairwise_correlation_panel(chain, names, settings=settings)

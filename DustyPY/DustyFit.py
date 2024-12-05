@@ -329,17 +329,8 @@ class DustyFit():
         wavelengths = np.asarray(wavelengths)
         self._Fit.plot_prediction_interval(wavelength_dusty = wavelengths, ciset = ciset, piset = piset, fig = fig)
 
-    def get_prediction_interval(self, wavelength_intervals: list = [(1e-2, 1e0, 50), (1e0, 1e2, 100), (1e2, 1e4, 50)]) -> np.ndarray:
+    def plot_pairwise_correlation(self, fig: dict = None) -> None:
         """
-        Returns the prediction interval of the fitting procedure.
+        Plots the pairwise correlation of the fitting procedure.
         """
-        wavelengths = []
-        for start, end, num in wavelength_intervals:
-            wavelengths.extend(utils.log_space(start, end, num))
-        
-        wavelengths = np.asarray(wavelengths)
-
-        pdata = pymcmcstat.MCMC.MCMC()
-        pdata.data.add_data_set(wavelengths, wavelengths, user_defined_object=[self._Dusty, self._Data, self._Fit, self._logfile])
-
-        return self._Fit.prediction_interval(data = pdata.data)
+        self._Fit.plot_pairwise_correlation(fig = fig)

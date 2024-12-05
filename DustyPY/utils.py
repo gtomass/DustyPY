@@ -672,7 +672,8 @@ def set_mcmc_param(mc=MCMC, param=None):
         mc.parameters.add_model_parameter(name=par,
                                           theta0=param[par]['theta0'],
                                           minimum=param[par]['minimum'],
-                                          maximum=param[par]['maximum'])
+                                          maximum=param[par]['maximum'],
+                                          sample=param[par]['sample'])
 
 
 def unred(Wavelength, Flux, EBV, Rv=3.1):
@@ -918,7 +919,7 @@ def write_table_to_latex(table, Path, columns=None, column_names=None, wavelengt
     with open(Path, 'w') as f:
         f.write('\\begin{table*}[h!]\n')
         f.write('\\centering\n')
-        f.write('\\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}' + 'c' * len(columns) + '}\n')
+        f.write('\\begin{tabular*}{\\textwidth}{@{\extracolsep{\\fill}}' + 'c' * len(columns) + '}\n')
         f.write('\\hline\n')
         f.write(' & '.join(column_names) + ' \\\\\n')
         f.write('\\hline\n')
