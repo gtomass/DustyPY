@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import os
 import subprocess
 import time
+import pymcmcstat.MCMC
 
 
 class DustyFit():
@@ -49,7 +50,7 @@ class DustyFit():
         """
         Initializes the fitting object with the data, fitting parameters, and model parameters.
         """
-        self._Fit.set_Data(data=self._Data)
+        self._Fit.set_Data(data=self._Data, user_defined_object = [self._Dusty, self._Data, self._Fit, self._logfile])
         self._Fit.set_ParamFit(ParamFit=self._ParamFit)
         self._Fit.set_Param(Param=self._Param)
 
@@ -62,6 +63,7 @@ class DustyFit():
         Dusty (Dusty): The Dusty model to be fitted.
         """
         self._Dusty = Dusty
+    
 
     def set_Data(self, Data: Data.Data) -> None:
         """
@@ -149,34 +151,8 @@ class DustyFit():
         Raises:
         NotImplementedError: If an attempt is made to change the dust size, which is not yet fittable.
         """
-        for key in change.keys():
-            if 'Temp' in key and key != 'Temperature':
-                self._Dusty.get_Model().get_Stars()[int(
-                    key.split('Temp')[-1])-1].set_Temperature(change[key])
-            elif 'Lum' in key:
-                self._Dusty.get_Model().get_Stars()[int(
-                    key.split('Lum')[-1])-1].set_Luminosity(change[key])
-            elif key in ['Opacity']:
-                self._Dusty.get_Model().get_Dust().set_tau(change[key])
-            elif key in ['Composition', 'Abundances']:
-                # self._Dusty.get_Model().get_Dust().set_Composition(change[key]
-                # Composition must be fixed but abundances can be fitted
-                raise NotImplementedError(
-                    'Composition and Abundances are not yet fittable.')
-            elif key in ['DustSize']:
-                self._Dusty.get_Model().get_Dust().set_DustSize(change[key])
-            elif key in ['Sublimation']:
-                self._Dusty.get_Model().get_Dust().set_Sublimation(
-                    change[key])
-            elif key in ['Absorption']:
-                self._Dusty.get_Model().set_SiOAbsorption(change[key])
-            elif key in ['Temperature']:
-                self._Dusty.get_Model().get_Dust().set_Temperature(change[key])
-
-            elif key == 'Lest':
-                pass
-            else:
-                raise NotImplementedError(f'Parameter {key} not recognized.')
+        utils.set_change(dusty=self._Dusty,change=change)
+            
 
     def __Chi2Dusty(self, theta, data) -> float:
         """
@@ -200,37 +176,12 @@ class DustyFit():
             they are used in the chi-squared calculation.
         """
 
-        change = utils.list_to_dict(list(self._Fit.get_Param().keys()), theta)
-        Lum  = theta[-1] if 'Lest' in list(change.keys()) else self._Dusty.get_Lestimation()
-
-        self.__setChange(change)
-
-        self._Dusty.change_parameter()
-        self._Dusty.lunch_dusty(verbose=0, logfile=self._logfile)
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum)
-
         try:
-            xdata = data.xdata[0]
             ydata = data.ydata[0]
         except AttributeError:
-            xdata, ydata = data.get_xdata(), data.get_ydata()
+            ydata = data.get_ydata()
 
-        if self._Data.get_table() is not None:
-
-            bandpass = self._Data.get_common_filters(self._Data.get_table())
-            
-            ymodel  =  self._Dusty.get_SED().integrate_bandpass(bandpass=bandpass).reshape(ydata.shape)
-
-            subprocess.call('clear', shell=True)
-
-            central_wavelength = [utils.get_central_wavelegnth(utils.get_bandpass(f)) for f in bandpass.values()]
-            index = np.argsort(central_wavelength)
-            ymodel = ymodel[index]
-
-        else:
-            ymodel = utils.model(xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
-                             ).reshape(ydata.shape)
-
+        ymodel = utils.model(theta, data).reshape(ydata.shape)
 
         if self._Data.get_yerr() is not None:
             return np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2)
@@ -259,15 +210,6 @@ class DustyFit():
             they are used in the chi-squared calculation.
         """
 
-        change = utils.list_to_dict(list(self._Fit.get_Param().keys()), theta)
-        Lum  = theta[-1] if 'Lest' in list(change.keys()) else self._Dusty.get_Lestimation()
-
-        self.__setChange(change)
-
-        self._Dusty.change_parameter()
-        self._Dusty.lunch_dusty(verbose=0, logfile=self._logfile)
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum)
-
         try:
             xdata = data.xdata[0]
             ydata = data.ydata[0]
@@ -275,28 +217,7 @@ class DustyFit():
             xdata, ydata = data.get_xdata(), data.get_ydata()
 
         fdata_ks = ydata[np.argmin(abs(xdata-2.190))]
-
-        if self._Data.get_table() is not None:
-
-            bandpass = self._Data.get_common_filters()
-            central_wavelength = [utils.get_central_wavelegnth(utils.get_bandpass(f))/10000 for f in bandpass.values()]
-            index = np.argsort(central_wavelength)
-            central_wavelength = np.array(central_wavelength)[index]
-            
-            ymodel  =  self._Dusty.get_SED().integrate_bandpass(bandpass=bandpass).reshape(ydata.shape)
-
-            subprocess.call('clear', shell=True)
-
-            
-            index = np.argsort(central_wavelength)
-            ymodel = ymodel[index]
-
-        else:
-            ymodel = utils.model(xdata, self._Dusty.get_SED().get_Wavelength(), self._Dusty.get_SED().get_Flux()
-                             ).reshape(ydata.shape)
-        
-
-        subprocess.call('clear', shell=True)
+        ymodel = utils.model(theta, data).reshape(ydata.shape)
 
         fmodel_ks = ymodel[np.argmin(abs(xdata-2.190))]
         ymodel_norm = ymodel/fmodel_ks
@@ -395,3 +316,30 @@ class DustyFit():
 
         plt.legend()
         plt.show()
+
+
+    def plot_interval(self, wavelength_intervals: list = [(1e-2, 1e0, 50), (1e0, 1e2, 100), (1e2, 1e4, 50)],ciset: dict = None, piset: dict = None, fig: tuple = None) -> None:
+        """
+        Plots the interval of the fitting procedure.
+        """
+        wavelengths = []
+        for start, end, num in wavelength_intervals:
+            wavelengths.extend(utils.log_space(start, end, num))
+        
+        wavelengths = np.asarray(wavelengths)
+        self._Fit.plot_prediction_interval(wavelength_dusty = wavelengths, ciset = ciset, piset = piset, fig = fig)
+
+    def get_prediction_interval(self, wavelength_intervals: list = [(1e-2, 1e0, 50), (1e0, 1e2, 100), (1e2, 1e4, 50)]) -> np.ndarray:
+        """
+        Returns the prediction interval of the fitting procedure.
+        """
+        wavelengths = []
+        for start, end, num in wavelength_intervals:
+            wavelengths.extend(utils.log_space(start, end, num))
+        
+        wavelengths = np.asarray(wavelengths)
+
+        pdata = pymcmcstat.MCMC.MCMC()
+        pdata.data.add_data_set(wavelengths, wavelengths, user_defined_object=[self._Dusty, self._Data, self._Fit, self._logfile])
+
+        return self._Fit.prediction_interval(data = pdata.data)

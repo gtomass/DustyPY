@@ -1,8 +1,10 @@
 import pymcmcstat
 import pymcmcstat.MCMC
+import pymcmcstat.propagation
 from . import utils as utils
 from . import Data as Data
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class fit():
@@ -48,9 +50,10 @@ class fit():
         self._ParamFit = ParamFit
         self._Param = Param
         self._Results = {}
+        self._UserDefinedObject = None
         self._Stats = None
 
-    def set_Data(self, data: Data.Data = None) -> None:
+    def set_Data(self, data: Data.Data = None, user_defined_object: list = None) -> None:
         """
         Sets the data to fit.
 
@@ -59,6 +62,8 @@ class fit():
         """
         if data is None:
             data = Data.Data()
+        if user_defined_object is not None:
+            self._UserDefinedObject = user_defined_object
         self._Data = data
 
     def get_Data(self) -> Data.Data:
@@ -176,7 +181,7 @@ class fit():
         """
         y = self._Data.get_ydata()
         x = self._Data.get_xdata()
-        self._Model.data.add_data_set(x, y)
+        self._Model.data.add_data_set(x, y, user_defined_object=self._UserDefinedObject)
         self.set_Model()
 
         self.set_Chi2Func(Chi2)
@@ -220,14 +225,61 @@ class fit():
         mcpl.plot_density_panel(np.sqrt(s2chain[burnin:,:]), ['$\\sigma_1$', '$\\sigma_2$'])
 
 
-    # def PredictionModel(self) -> None:
-    #     """
-    #     Sets up the prediction model for calculating prediction intervals.
-    #     """
-    #     nds = len(self._Data.get_xdata())
-    #     print(nds)
+    def prediction_interval(self, data: any = None) -> None:
+        """
+        Sets up the prediction model for calculating prediction intervals.
+        """
+        def predmodelfun2(theta, dat):
+            p = utils.prediction_model(theta,dat)
+            return p
 
-    #     def pred_modelfun(preddata, theta):
-    #         return utils.model(theta[:2], preddata.xdata[0], preddata.ydata[0]).reshape(nds,)
+        results = self.get_Results()
+        chain = results['chain']
+        s2chain = results['s2chain']
 
-    #     self._Model.PI.setup_prediction_interval_calculation(pred_modelfun)
+        intervals = pymcmcstat.propagation.calculate_intervals(chain, results, data, predmodelfun2,
+                               s2chain=s2chain, nsample=500, waitbar=True)
+        
+        return intervals
+    
+    def plot_prediction_interval(self, wavelength_dusty: np.array = None, ciset: dict = None, piset: dict = None, fig: dict = None) -> None:
+        """
+        Plots the prediction intervals.
+
+        Parameters:
+        intervals (dict): The prediction intervals to plot.
+        """
+        def format_plot(fig):
+            plt.xscale(fig['xscale'])
+            plt.yscale(fig['yscale'])
+            plt.xlim(*fig['xlim'])
+            plt.ylim(*fig['ylim'])
+            plt.xlabel(fig['xlabel'], fontsize=15)
+            plt.ylabel(fig['ylabel'], fontsize=15)
+            plt.title(fig['title'])
+
+        if wavelength_dusty is None:
+            time = self._Model.data.xdata[0]
+        else:
+            pdata = pymcmcstat.MCMC.MCMC()
+            print(self._UserDefinedObject)
+            pdata.data.add_data_set(wavelength_dusty, wavelength_dusty, user_defined_object=self._UserDefinedObject)
+            time = wavelength_dusty
+        if ciset is None:
+            ciset = {'limits': [50, 95]}
+        if piset is None:
+            addprediction = False
+        else:
+            addprediction = True
+
+        intervals = self.prediction_interval(data=pdata.data)
+
+        if fig is None:
+            pymcmcstat.propagation.plot_intervals(intervals=intervals, time = time, 
+                                              ydata=self._Data.get_ydata(), xdata=self._Data.get_xdata(), adddata=True,
+                                              ciset=ciset, piset=piset, addprediction=addprediction)
+        else:
+            f,ax = pymcmcstat.propagation.plot_intervals(intervals=intervals, time = time, 
+                                                    ydata=self._Data.get_ydata(), xdata=self._Data.get_xdata(), adddata=True,
+                                                    ciset=ciset, piset=piset, addprediction=addprediction)
+            format_plot(fig)

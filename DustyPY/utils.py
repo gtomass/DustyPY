@@ -51,7 +51,11 @@ def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, sca
     ax.set_xlabel(unit['x'], fontsize=15)
     ax.set_ylabel(unit['y'], fontsize=15)
 
-    ax.set_yscale(scale)
+    if scale == 'log-log':
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+    else:
+        ax.set_yscale(scale)
 
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
@@ -89,10 +93,15 @@ def plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='line
             Flux = Flux / np.max(Flux)
 
     ax.plot(Wavelength, Flux, **kwargs)
-    ax.set_xlabel(f"{unit['x']}")
-    ax.set_ylabel(f"{unit['y']}")
+    ax.set_xlabel(f"{unit['x']}",fontsize=15)
+    ax.set_ylabel(f"{unit['y']}",fontsize=15)
 
-    ax.set_yscale(scale)
+    if scale == 'log-log':
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+    else:
+        ax.set_yscale(scale)
+
 
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
@@ -121,10 +130,15 @@ def error_plot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None
             Flux = Flux / np.max(Flux)
 
     ax.errorbar(Wavelength, Flux, yerr=eFlux, **kwargs)
-    ax.set_xlabel(f"{unit['x']}")
-    ax.set_ylabel(f"{unit['y']}")
+    ax.set_xlabel(f"{unit['x']}",fontsize=15)
+    ax.set_ylabel(f"{unit['y']}",fontsize=15)
 
-    ax.set_yscale(scale)
+    if scale == 'log-log':
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+    else:
+        ax.set_yscale(scale)
+
 
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
@@ -344,6 +358,45 @@ def change_parameter(Path, change, car, nstar):
 
     save_file(Path, file)
 
+def set_change(dusty, change: dict) -> None:
+    """
+    Applies changes to the Dusty model based on the provided dictionary.
+
+    Parameters:
+    change (dict): A dictionary containing the changes to be applied. The keys should specify the parameter to change (e.g., 'Temp', 'Lum', 'Opacity' for each stars of the model) and the values should be the new values for those parameters.
+
+    Raises:
+    NotImplementedError: If an attempt is made to change the dust size, which is not yet fittable.
+    """
+    for key in change.keys():
+        if 'Temp' in key and key != 'Temperature':
+            dusty.get_Model().get_Stars()[int(
+                key.split('Temp')[-1])-1].set_Temperature(change[key])
+        elif 'Lum' in key:
+            dusty.get_Model().get_Stars()[int(
+                key.split('Lum')[-1])-1].set_Luminosity(change[key])
+        elif key in ['Opacity']:
+            dusty.get_Model().get_Dust().set_tau(change[key])
+        elif key in ['Composition', 'Abundances']:
+            # self._Dusty.get_Model().get_Dust().set_Composition(change[key]
+            # Composition must be fixed but abundances can be fitted
+            raise NotImplementedError(
+                'Composition and Abundances are not yet fittable.')
+        elif key in ['DustSize']:
+            dusty.get_Model().get_Dust().set_DustSize(change[key])
+        elif key in ['Sublimation']:
+            dusty.get_Model().get_Dust().set_Sublimation(
+                change[key])
+        elif key in ['Absorption']:
+            dusty.get_Model().set_SiOAbsorption(change[key])
+        elif key in ['Temperature']:
+            dusty.get_Model().get_Dust().set_Temperature(change[key])
+
+        elif key == 'Lest':
+            pass
+        else:
+            raise NotImplementedError(f'Parameter {key} not recognized.')
+
 
 def list_to_dict(keys, values):
     """
@@ -508,7 +561,7 @@ def interpolate(Wavelength, Flux, order=3):
     return make_interp_spline(Wavelength, Flux, order)
 
 
-def model(xdata, xdusty, ydusty):
+def interpol(xdata, xdusty, ydusty):
     """
     Calcule le modèle en fonction des paramètres fournis.
 
@@ -525,6 +578,63 @@ def model(xdata, xdusty, ydusty):
         return interpolate(np.asarray(xdusty).flatten(), np.asarray(ydusty).flatten())(np.asarray(xdata).flatten())
     except Exception:
         return interpolate(xdusty, ydusty)(xdusty)
+    
+def model(theta, data)-> None:
+        
+        dusty, data_mod, fit, logfile = data.user_defined_object[0]
+
+        change = list_to_dict(list(fit.get_Param().keys()), theta)
+        Lum  = theta[-1] if 'Lest' in list(change.keys()) else dusty.get_Lestimation()
+
+        set_change(dusty,change)
+
+        dusty.change_parameter()
+        dusty.lunch_dusty(verbose=0, logfile=logfile)
+        dusty.make_SED(distance=dusty.get_Model().get_Distance(), luminosity=Lum)
+
+        if data_mod.get_table() is not None:
+
+            bandpass = data_mod.get_common_filters(data_mod.get_table())
+            
+            ymodel  =  dusty.get_SED().integrate_bandpass(bandpass=bandpass)
+
+            central_wavelength = [get_central_wavelegnth(get_bandpass(f)) for f in bandpass.values()]
+            index = np.argsort(central_wavelength)
+            ymodel = ymodel[index]
+
+        else:
+            ymodel = interpol(data.xdata, dusty.get_SED().get_Wavelength(), dusty.get_SED().get_Flux()
+                             )
+            
+        subprocess.call('clear', shell=True)
+            
+        return ymodel
+
+def prediction_model(theta, data):
+    """
+    Calcule le modèle en fonction des paramètres fournis.
+
+    Paramètres:
+    theta (array-like): Les paramètres du modèle.
+    data (tuple or object): Les données observées. Peut être un tuple (xdata, ydata) ou un objet avec des attributs xdata et ydata.
+
+    Retourne:
+    array-like: Les valeurs du modèle interpolé.
+    """
+
+    dusty, data_mod, fit, logfile = data.user_defined_object[0]
+
+    change = list_to_dict(list(fit.get_Param().keys()), theta)
+    Lum  = theta[-1] if 'Lest' in list(change.keys()) else dusty.get_Lestimation()
+
+    set_change(dusty,change)
+
+    dusty.change_parameter()
+    dusty.lunch_dusty(verbose=0, logfile=logfile)
+    dusty.make_SED(distance=dusty.get_Model().get_Distance(), luminosity=Lum)
+    subprocess.call('clear', shell=True)
+    ymodel = interpol(data.xdata, dusty.get_SED().get_Wavelength(), dusty.get_SED().get_Flux())
+    return ymodel
 
 
 def chi2(theta, data):
@@ -544,7 +654,7 @@ def chi2(theta, data):
     except AttributeError:
         xdata, ydata = data
 
-    ymodel = model(theta, xdata, ydata).reshape(ydata.shape)
+    ymodel = interpol(theta, xdata, ydata).reshape(ydata.shape)
     return np.nansum((ymodel - ydata)**2)
 
 
@@ -564,20 +674,6 @@ def set_mcmc_param(mc=MCMC, param=None):
                                           minimum=param[par]['minimum'],
                                           maximum=param[par]['maximum'])
 
-# def set_mcmc(mc=MCMC, param=None):
-#     """
-#     Définit les options de simulation pour l'objet MCMC.
-
-#     Paramètres:
-#     mc (MCMC object): L'objet MCMC.
-#     param (dict, optional): Un dictionnaire contenant les options de simulation. Par défaut à None.
-#     """
-#     mc.simulation_options.define_simulation_options(nsimu=param['nsimu'],
-#                                                     updatesigma=param['updatesigma'],
-#                                                     method=param['method'],
-#                                                     adaptint=param['adaptint'],
-#                                                     verbosity=param['verbosity'])
-
 
 def unred(Wavelength, Flux, EBV, Rv=3.1):
     """
@@ -593,22 +689,6 @@ def unred(Wavelength, Flux, EBV, Rv=3.1):
     array-like: Les flux corrigés.
     """
     return pyasl.unred(Wavelength, Flux, ebv=EBV, R_V=Rv)
-
-# def check(change):
-#     """
-#     Vérifie si la somme des changements de luminosité est égale à 1.
-
-#     Paramètres:
-#     change (dict): Un dictionnaire contenant les changements de paramètres.
-
-#     Retourne:
-#     bool: True si la somme des changements de luminosité est égale à 1, sinon False.
-#     """
-#     L = 0
-#     for key in change.keys():
-#         if 'Lum' in key:
-#             L += change[key]
-#     return L == 1
 
 
 def querry_vizier_data(radius, target):
@@ -836,19 +916,19 @@ def write_table_to_latex(table, Path, columns=None, column_names=None, wavelengt
         column_names = columns
 
     with open(Path, 'w') as f:
-        f.write('\\begin{table}[h!]\n')
+        f.write('\\begin{table*}[h!]\n')
         f.write('\\centering\n')
-        f.write('\\begin{tabular}{' + 'c' * len(columns) + '}\n')
+        f.write('\\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}' + 'c' * len(columns) + '}\n')
         f.write('\\hline\n')
         f.write(' & '.join(column_names) + ' \\\\\n')
         f.write('\\hline\n')
         for row in table[columns]:
             f.write(' & '.join(f'{value:.3f}' if isinstance(value, (int, float)) and value != 0 else '-' if value == 0 else str(value) for value in row) + ' \\\\\n')
         f.write('\\hline\n')
-        f.write('\\end{tabular}\n')
+        f.write('\\end{tabular*}\n')
         f.write('\\caption{Your caption here}\n')
         f.write('\\label{table:label}\n')
-        f.write('\\end{table}\n')
+        f.write('\\end{table*}\n')
 
 
 
