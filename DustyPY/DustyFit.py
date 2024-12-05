@@ -292,8 +292,10 @@ class DustyFit():
             Lum = self._Fit.get_Stats()['mean'][index]
         except:
             Lum = self._Fit.get_Param()['Lest']['theta0']
+
+        sampled_params = {key: value for key, value in self._Fit.get_Param().items() if value['sample']}
         self.__setChange(utils.list_to_dict(
-            [key for key, value in self._Fit.get_Param() if value['sample']], self._Fit.get_Stats()['mean']))
+            list(sampled_params.keys()), self._Fit.get_Stats()['mean']))
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose = 0)
         self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum)
@@ -317,7 +319,6 @@ class DustyFit():
         if save:
             plt.savefig(os.path.join(self._Dusty.get_PATH(), self._Dusty.get_Model().get_Name(),'SED.png'), dpi=300)
 
-        print(Lum)
         plt.legend()
         plt.show()
 
