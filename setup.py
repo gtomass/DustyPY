@@ -24,7 +24,8 @@ setup(
         "astropy",
         "scipy",
         "pymcmcstat",
-        "PyAstronomy"
+        "PyAstronomy",
+        "synphot"
     ],
     include_package_data=True,
     package_data={
