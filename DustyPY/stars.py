@@ -306,7 +306,7 @@ class Model():
         NbStar (int, optional): The number of stars in the model. Defaults to 0.
         Stars (list, optional): A list of stars in the model. Defaults to an empty list.
         Dust (Dust, optional): An instance of the Dust class representing the dust in the model. Defaults to a new Dust instance.
-        distance (float, optional): The distance of the model in arbitrary units. Defaults to 1.
+        distance (float, optional): The distance of the model in pc. Defaults to 1.
         """
         if Stars is None:
             Stars = []
@@ -408,7 +408,7 @@ class Model():
         Sets the distance of the model.
 
         Parameters:
-        distance (float): The distance of the model in arbitrary units.
+        distance (float): The distance of the model in pc.
         """
         self._distance = distance
 
@@ -417,7 +417,7 @@ class Model():
         Returns the distance of the model.
 
         Returns:
-        float: The distance of the model in arbitrary units.
+        float: The distance of the model in pc.
         """
         return self._distance
 

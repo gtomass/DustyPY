@@ -8,7 +8,16 @@ import numpy as np
 from scipy.integrate import simpson
 
 if __name__ == '__main__':
-    
+    L1 = 0.73
+    L2 = 0.65
+    T1 = 4555
+    T2 = 6630
+    T_dust = 151.78 #±7.53
+
+    Ldusty = 1e4
+    Lest = 2.17
+    Ltot = Ldusty*Lest
+    tau = 2.01 #±0.53
 
     S1 = stars.Star('E1',3400,1)
     S2 = stars.Star('E2',7000,1)
@@ -35,7 +44,7 @@ if __name__ == '__main__':
                         SpectralFile='/Users/gabriel/Documents/These/Recherche/data/flux_4000_25000_1.000_0.000.dat',
                         SiOAbsorption=10)
 
-    dustyMod = dusty.Dusty(PATH='/Users/gabriel/Documents/These/Recherche/lib/dusty',
+    dustyMod = dusty.Dusty(PATH='/Users/gtomassini/NextCloud/These/Recherche/lib/dusty',
                             model=mod, Lestimation=1e4)
 
     dustyMod.make_wavelength(intervals=[(0.01,0.8,100),(0.801,20,70),(20.01,100,50),(101,1000,10)])
@@ -52,7 +61,7 @@ if __name__ == '__main__':
     table = Dat.querry_vizier_data(radius = 5, target='AFGL4106')
 
 
-    ISO = Dat.import_data('/Users/gabriel/Documents/These/Recherche/data/24900158_sws.fit').T
+    ISO = Dat.import_data('/Users/gtomassini/NextCloud/These/Recherche/data/24900158_sws.fit').T
     wave, flux = ISO[0], ISO[1]
 
     band = utils.get_bandpass_name()
@@ -88,29 +97,32 @@ if __name__ == '__main__':
 
     fit = DustyFit.DustyFit(dustyMod, data=Dat)
 
-    Param = {'Temp1':{'theta0':3000,'minimum':2900,'maximum':3500},
-            'Temp2':{'theta0':7000,'minimum':6000,'maximum':8000},
-            'Lum1':{'theta0':1,'minimum':0,'maximum':3},
-            'Lum2':{'theta0':1,'minimum':0,'maximum':3},
-            'Opacity':{'theta0':1,'minimum':0.1,'maximum':2},
-            'Lest':{'theta0':3,'minimum':0,'maximum':7}} #Mandatory, fit the Lestimation (Luminosity = Lest*Lestimation)
+    Param = {
+        'Temp1':{'theta0':T1,'minimum':3800,'maximum':5800, 'sample':True},
+        'Temp2':{'theta0':T2,'minimum':5800,'maximum':7800, 'sample':True},
+        'Lum1':{'theta0':L1,'minimum':0.1,'maximum':1, 'sample':True},
+        'Lum2':{'theta0':L2,'minimum':0.1,'maximum':1, 'sample':True},
+        'Opacity':{'theta0':tau,'minimum':1,'maximum':3, 'sample':True},
+        'Temperature':{'theta0':T_dust,'minimum':100,'maximum':200, 'sample':False},
+        'Lest':{'theta0':Lest,'minimum':1,'maximum':10, 'sample':True}
+        } #Mandatory, fit the Lestimation (Luminosity = Lest*Lestimation)
 
     #Initialize the parameter of the MCMC
     ParamFit = {
-                            'nsimu': 100,         #Number of iteration (larger is better but slow due to the dusty runtime)
+                            'nsimu': 1000,         #Number of iteration (larger is better but slow due to the dusty runtime)
                             'updatesigma': True,  #Update the sigma of the likelihood function
                             'method': 'dram',     #Sampling method
-                            'adaptint': 50,      #Number of interates between adaptation.
+                            'adaptint': 10,      #Number of interates between adaptation.
                             'verbosity': 0,       #0=No output, 1=Output
                             'waitbar': True,      #Display a waitbar
                         }
     fit.set_Param(Param)
     fit.set_ParamFit(ParamFit)
 
-    fit.lunch_fit(chi2='Chi2_modified')
+    fit.lunch_fit(chi2='Chi2_modified', logfile=True)
     fit.get_Fit().print_results()
     fit.plot_stats()
-    fit.plot_results(xlim=(0.1,110), ylim=(.001,3000), scale='log-log', ax=ax, kwargs_fit=kwargs_dusty, kwargs_data=kwargs_data, save=True,
+    fit.plot_results(xlim=(0.1,110), ylim=(.001,3000), scale='log-log', ax=ax, kwargs_fit=kwargs_dusty, kwargs_data=kwargs_data, save=False,
                      unit={'x': r'Wavelength ($\mu$m)', 'y': 'Flux (Jy)'})
 
 

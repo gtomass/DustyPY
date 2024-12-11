@@ -175,8 +175,8 @@ class Dusty():
 
         results = self.get_results()
 
-        r_vrai = utils.calcul_rayon_vrai(results, self._Lest)
-        FTot = luminosity*utils.calcul_flux_total(results['Fi(W/m2)'], r_vrai, distance)
+        r_vrai = utils.calcul_rayon_vrai(results, luminosity*self._Lest)
+        FTot = utils.calcul_flux_total(results['Fi(W/m2)'], r_vrai, distance)
 
         SED_file = utils.load_file(os.path.join(
             self._dustyPath, self._Model.get_Name(), self._Model.get_Name()+'.stb'))

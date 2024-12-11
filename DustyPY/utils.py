@@ -584,7 +584,7 @@ def model(theta, data)-> None:
         dusty, data_mod, fit, logfile = data.user_defined_object[0]
 
         change = list_to_dict(list(fit.get_Param().keys()), theta)
-        Lum  = theta[-1] if 'Lest' in list(change.keys()) else dusty.get_Lestimation()
+        Lum  = theta[-1] 
 
         set_change(dusty,change)
 

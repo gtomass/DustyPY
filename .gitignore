@@ -123,3 +123,6 @@ cython_debug/
 
 # Visual Studio Code
 .vscode/
+
+# testing
+test.py
