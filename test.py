@@ -98,10 +98,10 @@ if __name__ == '__main__':
     fit = DustyFit.DustyFit(dustyMod, data=Dat)
 
     Param = {
-        'Temp1':{'theta0':T1,'minimum':3800,'maximum':5800, 'sample':True},
-        'Temp2':{'theta0':T2,'minimum':5800,'maximum':7800, 'sample':True},
-        'Lum1':{'theta0':L1,'minimum':0.1,'maximum':1, 'sample':True},
-        'Lum2':{'theta0':L2,'minimum':0.1,'maximum':1, 'sample':True},
+        'Temp1':{'theta0':T1,'minimum':3800,'maximum':5800, 'sample':False},
+        'Temp2':{'theta0':T2,'minimum':5800,'maximum':7800, 'sample':False},
+        'Lum1':{'theta0':L1,'minimum':0.1,'maximum':1, 'sample':False},
+        'Lum2':{'theta0':L2,'minimum':0.1,'maximum':1, 'sample':False},
         'Opacity':{'theta0':tau,'minimum':1,'maximum':3, 'sample':True},
         'Temperature':{'theta0':T_dust,'minimum':100,'maximum':200, 'sample':False},
         'amin':{'theta0':0.005,'minimum':0.001,'maximum':0.1, 'sample':True},

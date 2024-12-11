@@ -584,7 +584,8 @@ def model(theta, data)-> None:
         dusty, data_mod, fit, logfile = data.user_defined_object[0]
 
         dustsize = dusty.get_Model().get_Dust().get_DustSize()
-        p = [key for key, value in fit.get_Param().items() if value['sample']]
+        p = [key for key, value in fit.get_Param().items()]
+        print(theta)
 
         if 'amin' in p:
             dustsize['amin'] = theta[p.index('amin')]
@@ -592,6 +593,8 @@ def model(theta, data)-> None:
             dustsize['amax'] = theta[p.index('amax')]
         if 'q' in p:
             dustsize['q'] = theta[p.index('q')]
+
+        print(dustsize)
 
         change = {key: value for key, value in list_to_dict(list(fit.get_Param().keys()), theta).items() if key not in ['amin', 'amax', 'q']}
         change.update({'DustSize': dustsize})
@@ -636,7 +639,7 @@ def prediction_model(theta, data):
     dusty, data_mod, fit, logfile = data.user_defined_object[0]
 
     dustsize = dusty.get_Model().get_Dust().get_DustSize()
-    p = [key for key, value in fit.get_Param().items() if value['sample']]
+    p = [key for key, value in fit.get_Param().items()]
 
     if 'amin' in p:
         dustsize['amin'] = theta[p.index('amin')]
