@@ -294,9 +294,19 @@ class DustyFit():
             Lum = self._Fit.get_Param()['Lest']['theta0']
 
         stats_mean = self._Fit.get_Stats()['mean']
-        results_params = {key: stats_mean[i] for i, (key, value) in enumerate(self._Fit.get_Param().items()) if value['sample'] and i < len(stats_mean)}
-        self.__setChange(utils.list_to_dict(
-            list(results_params.keys()), list(results_params.values())))
+        dustsize = self._Dusty.get_Model().get_Dust().get_DustSize()
+
+        if 'amin' in sampled_params:
+            dustsize['amin'] = stats_mean[sampled_params.index('amin')]
+        if 'amax' in sampled_params:
+            dustsize['amax'] = stats_mean[sampled_params.index('amax')]
+        if 'q' in sampled_params:
+            dustsize['q'] = stats_mean[sampled_params.index('q')]
+
+        results_params = {key: stats_mean[i] for i, (key, value) in enumerate(self._Fit.get_Param().items()) if value['sample'] and key not in ['amin', 'amax', 'q'] and i < len(stats_mean)}
+        change = utils.list_to_dict(list(results_params.keys()), list(results_params.values()))
+        change.update({'DustSize':dustsize})
+        self.__setChange(change=change)
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose = 0)
         self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum)

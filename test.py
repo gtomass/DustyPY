@@ -36,7 +36,7 @@ if __name__ == '__main__':
     # density = {'density type':'RDWA', 'shell': 1000}
     density = None
 
-    dust = stars.Dust(DustSize={'Distribution':'MRN'},Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=130, Density=density)
+    dust = stars.Dust(DustSize={'Distribution':'MODIFIED_MRN'},Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=130, Density=density)
 
     mod = stars.Model('AFGL4106', NbStar=2, Stars=[S1, S2],
                         dust=dust, distance=1470,
@@ -104,12 +104,15 @@ if __name__ == '__main__':
         'Lum2':{'theta0':L2,'minimum':0.1,'maximum':1, 'sample':True},
         'Opacity':{'theta0':tau,'minimum':1,'maximum':3, 'sample':True},
         'Temperature':{'theta0':T_dust,'minimum':100,'maximum':200, 'sample':False},
+        'amin':{'theta0':0.005,'minimum':0.001,'maximum':0.1, 'sample':True},
+        'amax':{'theta0':0.25,'minimum':0.1,'maximum':0.5, 'sample':True},
+        'q':{'theta0':3.5,'minimum':3,'maximum':4, 'sample':True},
         'Lest':{'theta0':Lest,'minimum':1,'maximum':10, 'sample':True}
         } #Mandatory, fit the Lestimation (Luminosity = Lest*Lestimation)
 
     #Initialize the parameter of the MCMC
     ParamFit = {
-                            'nsimu': 1000,         #Number of iteration (larger is better but slow due to the dusty runtime)
+                            'nsimu': 100,         #Number of iteration (larger is better but slow due to the dusty runtime)
                             'updatesigma': True,  #Update the sigma of the likelihood function
                             'method': 'dram',     #Sampling method
                             'adaptint': 10,      #Number of interates between adaptation.
