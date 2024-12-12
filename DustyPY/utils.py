@@ -473,7 +473,7 @@ def get_column_spectum(file, index, index_header=0):
     numpy.ndarray: Un tableau numpy contenant les valeurs de la colonne spécifiée.
     """
     array = np.asarray(file[index_header:])
-    return np.array([el.split('  ')[1:-1] for el in array], dtype=float).T[index]
+    return np.array([[x for x in el.split('  ')[1:-1] if x != ''] for el in array], dtype=float).T[index]
 
 
 def watt_to_jansky(Flux, Wavelength):
