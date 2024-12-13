@@ -587,15 +587,16 @@ def model(theta, data)-> None:
         p = [key for key, value in fit.get_Param().items()]
 
         if 'amin' in p:
-            dustsize['amin'] = theta[p.index('amin')]
+            dustsize['amin'] = np.round(10**theta[p.index('amin')], 3)
         if 'amax' in p:
-            dustsize['amax'] = theta[p.index('amax')]
+            dustsize['amax'] =  np.round(10**theta[p.index('amax')],3)
         if 'q' in p:
             dustsize['q'] = theta[p.index('q')]
 
         change = {key: value for key, value in list_to_dict(list(fit.get_Param().keys()), theta).items() if key not in ['amin', 'amax', 'q']}
         change.update({'DustSize': dustsize})
         Lum  = theta[-1] 
+
 
         set_change(dusty,change)
 
@@ -639,9 +640,9 @@ def prediction_model(theta, data):
     p = [key for key, value in fit.get_Param().items()]
 
     if 'amin' in p:
-        dustsize['amin'] = theta[p.index('amin')]
+        dustsize['amin'] = np.round(10**theta[p.index('amin')], 3)
     if 'amax' in p:
-        dustsize['amax'] = theta[p.index('amax')]
+        dustsize['amax'] =  np.round(10**theta[p.index('amax')],3)
     if 'q' in p:
         dustsize['q'] = theta[p.index('q')]
 

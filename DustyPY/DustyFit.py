@@ -183,10 +183,10 @@ class DustyFit():
 
         ymodel = utils.model(theta, data).reshape(ydata.shape)
 
-        if self._Data.get_yerr() is not None:
-            return np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2)
-        else:
-            return np.nansum((ymodel - ydata)**2)
+        chi2 = np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2) if self._Data.get_yerr() is not None else np.nansum((ymodel - ydata)**2)
+        print(f'chi2:{chi2}')
+
+        return chi2
         
     def __Chi2Dusty_modified(self, theta, data) -> float:
         """
@@ -219,11 +219,17 @@ class DustyFit():
         fdata_ks = ydata[np.argmin(abs(xdata-2.190))]
         ymodel = utils.model(theta, data).reshape(ydata.shape)
 
+        if np.isnan(ymodel).all():
+            return np.inf
+
         fmodel_ks = ymodel[np.argmin(abs(xdata-2.190))]
         ymodel_norm = ymodel/fmodel_ks
         ydata_norm = ydata/fdata_ks
 
-        return 1/(len(ydata)-len(theta)-1)*np.nansum((1-(ymodel_norm/ydata_norm))**2/(ymodel_norm/ydata_norm))
+        chi2 = 1/(len(ydata)-len(theta)-1)*np.nansum((1-(ymodel_norm/ydata_norm))**2/(ymodel_norm/ydata_norm))
+
+
+        return chi2
 
     def lunch_fit(self, chi2: str = 'Chi2', logfile: bool = False) -> None:
         """
@@ -297,9 +303,9 @@ class DustyFit():
         dustsize = self._Dusty.get_Model().get_Dust().get_DustSize()
 
         if 'amin' in sampled_params:
-            dustsize['amin'] = stats_mean[sampled_params.index('amin')]
+            dustsize['amin'] = np.round(10**stats_mean[sampled_params.index('amin')],3)
         if 'amax' in sampled_params:
-            dustsize['amax'] = stats_mean[sampled_params.index('amax')]
+            dustsize['amax'] = np.round(10**stats_mean[sampled_params.index('amax')],3)
         if 'q' in sampled_params:
             dustsize['q'] = stats_mean[sampled_params.index('q')]
 

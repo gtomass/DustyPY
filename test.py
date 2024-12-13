@@ -33,8 +33,8 @@ if __name__ == '__main__':
     # Composition = {'sil-draine':1}
 
     
-    # density = {'density type':'RDWA', 'shell': 1000}
-    density = None
+    density = {'density type':'RDWA', 'shell': 1000}
+    #density = None
 
     dust = stars.Dust(DustSize={'Distribution':'MODIFIED_MRN'},Composition = Composition, tau = 1, Sublimation = 1500, Properties='common_and_addl_grain_composite', Temperature=130, Density=density)
 
@@ -60,7 +60,6 @@ if __name__ == '__main__':
 
     table = Dat.querry_vizier_data(radius = 5, target='AFGL4106')
 
-
     ISO = Dat.import_data('/Users/gtomassini/NextCloud/These/Recherche/data/24900158_sws.fit').T
     wave, flux = ISO[0], ISO[1]
 
@@ -74,11 +73,12 @@ if __name__ == '__main__':
     for c, f, b in zip(central, fluxes, band):
         table.add_row(dict(zip(['_tabname','sed_freq', 'sed_flux', 'sed_filter'], ['ISO SWS',c, f, b])))
 
-
     table = Dat.restrict_data_vizier(table)
-
+    table.remove_rows(np.argwhere(table['sed_filter'] == 'GAIA/GAIA3:G').flatten())
+    table.remove_rows(np.argwhere(table['sed_filter'] == 'WISE:W4').flatten())
+    table.remove_rows(np.argwhere(table['sed_filter'] == 'GAIA/GAIA3:Grp').flatten())
     Dat.set_vizier_data(table)
-    # Dat.restrict_data(['xdata <= 10'])
+    # Dat.restrict_data(['xdata <= 100'])
     Dat.unred_data(EBV=1.07)
 
     # Dat.write_table_to_latex(Path = '/Users/gabriel/Documents/These/Recherche/data/AFGL4106.txt', columns=['Wavelength', 'sed_flux', 'sed_eflux', '_tabname'], 
@@ -97,18 +97,20 @@ if __name__ == '__main__':
 
     fit = DustyFit.DustyFit(dustyMod, data=Dat)
 
+    
     Param = {
-        'Temp1':{'theta0':T1,'minimum':3800,'maximum':5800, 'sample':False},
-        'Temp2':{'theta0':T2,'minimum':5800,'maximum':7800, 'sample':False},
-        'Lum1':{'theta0':L1,'minimum':0.1,'maximum':1, 'sample':False},
-        'Lum2':{'theta0':L2,'minimum':0.1,'maximum':1, 'sample':False},
-        'Opacity':{'theta0':tau,'minimum':1,'maximum':3, 'sample':True},
-        'Temperature':{'theta0':T_dust,'minimum':100,'maximum':200, 'sample':False},
-        'amin':{'theta0':0.005,'minimum':0.001,'maximum':0.1, 'sample':True},
-        'amax':{'theta0':0.25,'minimum':0.1,'maximum':0.5, 'sample':True},
-        'q':{'theta0':3.5,'minimum':3,'maximum':4, 'sample':True},
-        'Lest':{'theta0':Lest,'minimum':1,'maximum':10, 'sample':True}
-        } #Mandatory, fit the Lestimation (Luminosity = Lest*Lestimation)
+            'Temp1':{'theta0':T1,'minimum':3800,'maximum':5800, 'sample':True},
+            'Temp2':{'theta0':T2,'minimum':5800,'maximum':7800, 'sample':True},
+            'Lum1':{'theta0':L1,'minimum':0.1,'maximum':1, 'sample':True},
+            'Lum2':{'theta0':L2,'minimum':0.1,'maximum':1, 'sample':True},
+            'Opacity':{'theta0':tau,'minimum':1,'maximum':3, 'sample':True},
+            'Temperature':{'theta0':T_dust,'minimum':120,'maximum':180, 'sample':True},
+            'amin':{'theta0':np.log10(0.05),'minimum':np.log10(0.005),'maximum':np.log10(0.4), 'sample':True},
+            'amax':{'theta0':np.log10(0.25),'minimum':np.log10(0.1),'maximum':np.log10(1), 'sample':True},
+            'q':{'theta0':3.0,'minimum':2.8,'maximum':3.5, 'sample':True},
+            'Lest':{'theta0':Lest,'minimum':.5,'maximum':5, 'sample':True}
+            } 
+    print(Param)
 
     #Initialize the parameter of the MCMC
     ParamFit = {
