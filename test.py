@@ -110,7 +110,6 @@ if __name__ == '__main__':
             'q':{'theta0':3.0,'minimum':2.8,'maximum':3.5, 'sample':True},
             'Lest':{'theta0':Lest,'minimum':.5,'maximum':5, 'sample':True}
             } 
-    print(Param)
 
     #Initialize the parameter of the MCMC
     ParamFit = {
@@ -126,6 +125,7 @@ if __name__ == '__main__':
 
     fit.lunch_fit(chi2='Chi2_modified', logfile=True)
     fit.get_Fit().print_results()
+    print(fit.get_chi2(chi2='Chi2_modified'))
     fit.plot_stats()
     fit.plot_results(xlim=(0.1,110), ylim=(.001,3000), scale='log-log', ax=ax, kwargs_fit=kwargs_dusty, kwargs_data=kwargs_data, save=False,
                      unit={'x': r'Wavelength ($\mu$m)', 'y': 'Flux (Jy)'})

@@ -251,6 +251,21 @@ class DustyFit():
         
         print(f'Fitting time: {time.time()-begin} s')
 
+    def get_chi2(self, chi2: str = 'Chi2') -> float:
+        """
+        Returns the chi-squared value of the fitting procedure.
+
+        Returns: chi2 (float): The chi-squared value of the fitting procedure.
+        """
+        pdata = pymcmcstat.MCMC.MCMC()
+        pdata.data.add_data_set(self.get_Data().get_xdata(), self.get_Data().get_ydata(), user_defined_object=[self._Dusty, self._Data, self._Fit, self._logfile])
+        if chi2 == 'Chi2':
+            return self.__Chi2Dusty(self._Fit.get_Stats()['mean'], pdata.data)
+        elif chi2 == 'Chi2_modified':
+            return self.__Chi2Dusty_modified(self._Fit.get_Stats()['mean'], pdata.data)
+        else:
+            raise Exception('The chi2 function is not recognized')
+
     def print_results(self) -> None:
         """
         Prints the results of the fitting procedure.
