@@ -593,6 +593,11 @@ def model(theta, data)-> None:
         if 'q' in p:
             dustsize['q'] = theta[p.index('q')]
 
+        if dustsize['amin'] > dustsize['amax']:
+            ymodel = np.zeros_like(data.xdata)
+            ymodel[:] = np.nan
+            return ymodel
+
         change = {key: value for key, value in list_to_dict(list(fit.get_Param().keys()), theta).items() if key not in ['amin', 'amax', 'q']}
         change.update({'DustSize': dustsize})
         Lum  = theta[-1] 
@@ -645,6 +650,11 @@ def prediction_model(theta, data):
         dustsize['amax'] =  np.round(10**theta[p.index('amax')],3)
     if 'q' in p:
         dustsize['q'] = theta[p.index('q')]
+
+    if dustsize['amin'] > dustsize['amax']:
+        ymodel = np.zeros_like(data.xdata)
+        ymodel[:] = np.nan
+        return ymodel
 
     change = {key: value for key, value in list_to_dict(list(fit.get_Param().keys()), theta).items() if key not in ['amin', 'amax', 'q']}
     change.update({'DustSize': dustsize})
