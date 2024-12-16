@@ -584,7 +584,7 @@ def model(theta, data)-> None:
         dusty, data_mod, fit, logfile = data.user_defined_object[0]
 
         dustsize = dusty.get_Model().get_Dust().get_DustSize()
-        p = [key for key, value in fit.get_Param().items()]
+        p = [key for key, value in fit.get_Param().items() if value['sample']]
 
         if 'amin' in p:
             dustsize['amin'] = np.round(10**theta[p.index('amin')], 3)
@@ -642,7 +642,7 @@ def prediction_model(theta, data):
     dusty, data_mod, fit, logfile = data.user_defined_object[0]
 
     dustsize = dusty.get_Model().get_Dust().get_DustSize()
-    p = [key for key, value in fit.get_Param().items()]
+    p = [key for key, value in fit.get_Param().items() if value['sample']]
 
     if 'amin' in p:
         dustsize['amin'] = np.round(10**theta[p.index('amin')], 3)
