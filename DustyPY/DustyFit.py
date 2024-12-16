@@ -239,8 +239,7 @@ class DustyFit():
         """
         self._logfile = logfile
         begin = time.time()
-        # if list(self._Param.keys())[-1] != 'Lest':
-        #     raise Exception('The last parameter must be Lest')
+        
         self.__InitFit()
         if chi2 == 'Chi2':
             self._Fit.fit(Chi2=self.__Chi2Dusty)
@@ -316,6 +315,7 @@ class DustyFit():
 
         stats_mean = self._Fit.get_Stats()['mean']
         dustsize = self._Dusty.get_Model().get_Dust().get_DustSize()
+        density = self._Dusty.get_Model().get_Dust().get_Density()
 
         if 'amin' in sampled_params:
             dustsize['amin'] = np.round(10**stats_mean[sampled_params.index('amin')],3)
@@ -323,10 +323,13 @@ class DustyFit():
             dustsize['amax'] = np.round(10**stats_mean[sampled_params.index('amax')],3)
         if 'q' in sampled_params:
             dustsize['q'] = stats_mean[sampled_params.index('q')]
+        if 'shell' in sampled_params:
+            density['shell'] = stats_mean[sampled_params.index('shell')]
 
-        results_params = {key: stats_mean[i] for i, (key, value) in enumerate(self._Fit.get_Param().items()) if value['sample'] and key not in ['amin', 'amax', 'q'] and i < len(stats_mean)}
+        results_params = {key: stats_mean[i] for i, (key, value) in enumerate(self._Fit.get_Param().items()) if value['sample'] and key not in ['amin', 'amax', 'q', 'shell'] and i < len(stats_mean)}
         change = utils.list_to_dict(list(results_params.keys()), list(results_params.values()))
         change.update({'DustSize':dustsize})
+        change.update({'Density':density})
         self.__setChange(change=change)
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose = 0)

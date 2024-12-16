@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
+import time
 import glob
 import pandas as pd
 import os
@@ -277,7 +278,7 @@ def build_change_dict(model):
     composition_files = "\n        ".join(
         f"{os.path.join('data', 'Lib_nk', comp)}.nk" for comp in composition.keys())
     abundances = ", ".join(str(ab) for ab in composition.values())
-
+    
     if dust.get_Density()['density type'] == 'POWD':
         density = f"\t\t density type = {dust.get_Density()['density type']}\n \t\t number of powers = {dust.get_Density()['number of powers']}\n \t\t shell's relative thickness = {dust.get_Density()['shell']}\n \t\t power = {dust.get_Density()['power']}\n"
     elif dust.get_Density()['density type'] == 'RDWA':
@@ -391,6 +392,8 @@ def set_change(dusty, change: dict) -> None:
             dusty.get_Model().set_SiOAbsorption(change[key])
         elif key in ['Temperature']:
             dusty.get_Model().get_Dust().set_Temperature(change[key])
+        elif key in ['Density']:
+            dusty.get_Model().get_Dust().set_Density(change[key])
 
         elif key == 'Lest':
             pass
@@ -584,24 +587,34 @@ def model(theta, data)-> None:
         dusty, data_mod, fit, logfile = data.user_defined_object[0]
 
         dustsize = dusty.get_Model().get_Dust().get_DustSize()
-        p = [key for key, value in fit.get_Param().items() if value['sample']]
+        density = dusty.get_Model().get_Dust().get_Density()
+        p = dict(zip(fit.get_Param().keys(), theta))
 
         if 'amin' in p:
-            dustsize['amin'] = np.round(10**theta[p.index('amin')], 3)
+            dustsize['amin'] = np.round(10**p['amin'], 3)
         if 'amax' in p:
-            dustsize['amax'] =  np.round(10**theta[p.index('amax')],3)
+            dustsize['amax'] =  np.round(10**p['amax'], 3)
         if 'q' in p:
-            dustsize['q'] = theta[p.index('q')]
+            dustsize['q'] = p['q']
+        if 'shell' in p:
+            density['shell'] = p['shell']
+
 
         if dustsize['amin'] > dustsize['amax']:
             ymodel = np.zeros_like(data.xdata)
             ymodel[:] = np.nan
             return ymodel
+        
+        if density['shell'] < 0:
+            ymodel = np.zeros_like(data.xdata)
+            ymodel[:] = np.nan
+            return ymodel
 
-        change = {key: value for key, value in list_to_dict(list(fit.get_Param().keys()), theta).items() if key not in ['amin', 'amax', 'q']}
+        change = {key: value for key, value in list_to_dict(list(fit.get_Param().keys()), theta).items() if key not in ['amin', 'amax', 'q', 'shell']}
+
         change.update({'DustSize': dustsize})
-        Lum  = theta[-1] 
-
+        change.update({'Density': density})
+        Lum  = p['Lest']
 
         set_change(dusty,change)
 
@@ -624,7 +637,7 @@ def model(theta, data)-> None:
                              )
             
         subprocess.call('clear', shell=True)
-            
+
         return ymodel
 
 def prediction_model(theta, data):
@@ -642,23 +655,33 @@ def prediction_model(theta, data):
     dusty, data_mod, fit, logfile = data.user_defined_object[0]
 
     dustsize = dusty.get_Model().get_Dust().get_DustSize()
-    p = [key for key, value in fit.get_Param().items() if value['sample']]
+    density = dusty.get_Model().get_Dust().get_Density()
+    p = dict(zip(fit.get_Param().keys(), theta))
 
     if 'amin' in p:
-        dustsize['amin'] = np.round(10**theta[p.index('amin')], 3)
+        dustsize['amin'] = np.round(10**p['amin'], 3)
     if 'amax' in p:
-        dustsize['amax'] =  np.round(10**theta[p.index('amax')],3)
+        dustsize['amax'] =  np.round(10**p['amax'], 3)
     if 'q' in p:
-        dustsize['q'] = theta[p.index('q')]
+        dustsize['q'] = p['q']
+    if 'shell' in p:
+        density['shell'] = p['shell']
 
     if dustsize['amin'] > dustsize['amax']:
         ymodel = np.zeros_like(data.xdata)
         ymodel[:] = np.nan
         return ymodel
+    
+    if density['shell'] < 0:
+        ymodel = np.zeros_like(data.xdata)
+        ymodel[:] = np.nan
+        return ymodel
 
-    change = {key: value for key, value in list_to_dict(list(fit.get_Param().keys()), theta).items() if key not in ['amin', 'amax', 'q']}
+
+    change = {key: value for key, value in list_to_dict(list(fit.get_Param().keys()), theta).items() if key not in ['amin', 'amax', 'q', 'shell']}
     change.update({'DustSize': dustsize})
-    Lum  = theta[-1] 
+    change.update({'Density': density})
+    Lum  =  p['Lest']
 
     set_change(dusty,change)
 

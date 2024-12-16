@@ -105,10 +105,12 @@ if __name__ == '__main__':
             'Lum2':{'theta0':L2,'minimum':0.1,'maximum':1, 'sample':True},
             'Opacity':{'theta0':tau,'minimum':1,'maximum':3, 'sample':True},
             'Temperature':{'theta0':T_dust,'minimum':120,'maximum':180, 'sample':True},
-            'amin':{'theta0':np.log10(0.05),'minimum':np.log10(0.005),'maximum':np.log10(0.4), 'sample':True},
-            'amax':{'theta0':np.log10(0.25),'minimum':np.log10(0.1),'maximum':np.log10(1), 'sample':True},
-            'q':{'theta0':3.0,'minimum':2.8,'maximum':3.5, 'sample':True},
-            'Lest':{'theta0':Lest,'minimum':.5,'maximum':5, 'sample':True}
+            'shell':{'theta0':50,'minimum': 10,'maximum':100, 'sample':True},
+            'Lest':{'theta0':Lest,'minimum':.5,'maximum':5, 'sample':True},
+            'amin':{'theta0':np.log10(0.005),'minimum':np.log10(0.005),'maximum':np.log10(0.4), 'sample':False},
+            'amax':{'theta0':np.log10(0.25),'minimum':np.log10(0.1),'maximum':np.log10(1), 'sample':False},
+            'q':{'theta0':3.5,'minimum':2.8,'maximum':3.5, 'sample':False}
+            
             } 
 
     #Initialize the parameter of the MCMC
