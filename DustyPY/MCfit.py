@@ -273,8 +273,6 @@ class fit():
 
         intervals = self.prediction_interval(data=pdata.data)
 
-        if not self._UserDefinedObject[-1]:
-            self._Data.convert_to_watt()
 
         if fig is None:
             pymcmcstat.propagation.plot_intervals(intervals=intervals, time = time, 
@@ -286,8 +284,6 @@ class fit():
                                                     ciset=ciset, piset=piset, addprediction=addprediction)
             format_plot(fig)
         
-        if not self._UserDefinedObject[-1]:
-            self._Data.convert_to_jansky()
 
     def plot_pairwise_correlation(self, fig: dict = None) -> None:
         """

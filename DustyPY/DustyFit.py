@@ -342,8 +342,6 @@ class DustyFit():
         utils.plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
                    xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit, normalize=normalize)
         
-        if not Jansky:
-            self._Data.convert_to_watt()
         if SED_band:
             SED.scatter_SED_bandpass(self._Data.get_common_filters(self._Data.get_table()), ax=ax, kwargs={
                                      'marker': '.', 'color': 'b', 'label': 'SED'}, normalize=normalize)
@@ -361,8 +359,6 @@ class DustyFit():
         if save:
             plt.savefig(os.path.join(self._Dusty.get_PATH(), self._Dusty.get_Model().get_Name(),'SED.png'), dpi=300)
 
-        if not Jansky:
-            self._Data.convert_to_jansky()
         plt.legend()
         plt.show()
 
