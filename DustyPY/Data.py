@@ -211,17 +211,17 @@ class Data():
         """
         Converts the y data and its errors from Watts per square meter to Jansky.
         """
-        self._ydata = utils.watt_to_jansky(self._ydata, self._xdata * um)
+        self._ydata = utils.watt_to_jansky(self._ydata, self._xdata)
         self._yerr = utils.watt_to_jansky(
-            self._yerr, self._xdata * um) if self._yerr is not None else None
+            self._yerr, self._xdata) if self._yerr is not None else None
 
     def convert_to_watt(self) -> None:
         """
         Converts the y data and its errors from Jansky to Watts per square meter.
         """
-        self._ydata = utils.jansky_to_watt(self._ydata, self._xdata * um)
+        self._ydata = utils.jansky_to_watt(self._ydata, self._xdata)
         self._yerr = utils.jansky_to_watt(
-            self._yerr, self._xdata * um) if self._yerr is not None else None
+            self._yerr, self._xdata) if self._yerr is not None else None
 
     def querry_vizier_data(self, radius: float = 5, target: str = None):
         """

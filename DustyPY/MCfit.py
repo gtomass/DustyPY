@@ -273,6 +273,9 @@ class fit():
 
         intervals = self.prediction_interval(data=pdata.data)
 
+        if not self._UserDefinedObject[-1]:
+            self._Data.convert_to_watt()
+
         if fig is None:
             pymcmcstat.propagation.plot_intervals(intervals=intervals, time = time, 
                                               ydata=self._Data.get_ydata(), xdata=self._Data.get_xdata(), adddata=True,
@@ -282,6 +285,9 @@ class fit():
                                                     ydata=self._Data.get_ydata(), xdata=self._Data.get_xdata(), adddata=True,
                                                     ciset=ciset, piset=piset, addprediction=addprediction)
             format_plot(fig)
+        
+        if not self._UserDefinedObject[-1]:
+            self._Data.convert_to_jansky()
 
     def plot_pairwise_correlation(self, fig: dict = None) -> None:
         """

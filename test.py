@@ -128,12 +128,12 @@ if __name__ == '__main__':
     fit.set_Param(Param)
     fit.set_ParamFit(ParamFit)
 
-    fit.lunch_fit(chi2='Chi2_modified', logfile=True)
+    fit.lunch_fit(chi2='Chi2_modified', logfile=True, Jansky=False)
     fit.get_Fit().print_results()
-    print(fit.get_chi2(chi2='Chi2_modified'))
+    print(fit.get_chi2(chi2='Chi2_modified', Jansky=False))
     fit.plot_stats()
     fit.plot_results(xlim=(0.1,110), ylim=(.001,3000), scale='log-log', ax=ax, kwargs_fit=kwargs_dusty, kwargs_data=kwargs_data, save=False,
-                     unit={'x': r'Wavelength ($\mu$m)', 'y': 'Flux (Jy)'})
+                     unit={'x': r'Wavelength ($\mu$m)', 'y': 'Flux (Jy)'}, Jansky=False)
 
 
     fig = {'xscale': 'log',

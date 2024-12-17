@@ -46,11 +46,11 @@ class DustyFit():
         self._Fit = fit
         self._logfile = logfile
 
-    def __InitFit(self) -> None:
+    def __InitFit(self, Jansky: bool = True) -> None:
         """
         Initializes the fitting object with the data, fitting parameters, and model parameters.
         """
-        self._Fit.set_Data(data=self._Data, user_defined_object = [self._Dusty, self._Data, self._Fit, self._logfile])
+        self._Fit.set_Data(data=self._Data, user_defined_object = [self._Dusty, self._Data, self._Fit, self._logfile, Jansky])
         self._Fit.set_ParamFit(ParamFit=self._ParamFit)
         self._Fit.set_Param(Param=self._Param)
 
@@ -231,7 +231,7 @@ class DustyFit():
 
         return chi2
 
-    def lunch_fit(self, chi2: str = 'Chi2', logfile: bool = False) -> None:
+    def lunch_fit(self, chi2: str = 'Chi2', logfile: bool = False, Jansky: bool = True) -> None:
         """
         Initializes the fitting procedure and performs the fit using the chi-squared function.
 
@@ -240,7 +240,7 @@ class DustyFit():
         self._logfile = logfile
         begin = time.time()
 
-        self.__InitFit()
+        self.__InitFit(Jansky=Jansky)
         if chi2 == 'Chi2':
             self._Fit.fit(Chi2=self.__Chi2Dusty)
         elif chi2 == 'Chi2_modified':
@@ -250,14 +250,14 @@ class DustyFit():
         
         print(f'Fitting time: {time.time()-begin} s')
 
-    def get_chi2(self, chi2: str = 'Chi2') -> float:
+    def get_chi2(self, chi2: str = 'Chi2', Jansky: bool = True) -> float:
         """
         Returns the chi-squared value of the fitting procedure.
 
         Returns: chi2 (float): The chi-squared value of the fitting procedure.
         """
         pdata = pymcmcstat.MCMC.MCMC()
-        pdata.data.add_data_set(self.get_Data().get_xdata(), self.get_Data().get_ydata(), user_defined_object=[self._Dusty, self._Data, self._Fit, self._logfile])
+        pdata.data.add_data_set(self.get_Data().get_xdata(), self.get_Data().get_ydata(), user_defined_object=[self._Dusty, self._Data, self._Fit, self._logfile, Jansky])
 
         p = [key for key, value in self.get_Param().items() if value['sample']]
         stats = [self._Fit.get_Stats()['mean'][p.index(key)] if value['sample'] else value['theta0'] for i, (key, value) in enumerate(self.get_Param().items())]
@@ -291,6 +291,7 @@ class DustyFit():
                      ylim: tuple = None,
                      ax: plt.Axes = None,
                      scale: str = 'linear',
+                     Jansky: bool = True,
                      kwargs_fit: dict = None,
                      kwargs_data: dict = None,
                      normalize: bool = False,
@@ -336,10 +337,13 @@ class DustyFit():
         self.__setChange(change=change)
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose = 0)
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum)
+        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum, Jansky=Jansky)
         SED = self._Dusty.get_SED()
         utils.plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
                    xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit, normalize=normalize)
+        
+        if not Jansky:
+            self._Data.convert_to_watt()
         if SED_band:
             SED.scatter_SED_bandpass(self._Data.get_common_filters(self._Data.get_table()), ax=ax, kwargs={
                                      'marker': '.', 'color': 'b', 'label': 'SED'}, normalize=normalize)
@@ -357,6 +361,8 @@ class DustyFit():
         if save:
             plt.savefig(os.path.join(self._Dusty.get_PATH(), self._Dusty.get_Model().get_Name(),'SED.png'), dpi=300)
 
+        if not Jansky:
+            self._Data.convert_to_jansky()
         plt.legend()
         plt.show()
 
