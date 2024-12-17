@@ -239,7 +239,7 @@ class DustyFit():
         """
         self._logfile = logfile
         begin = time.time()
-        
+
         self.__InitFit()
         if chi2 == 'Chi2':
             self._Fit.fit(Chi2=self.__Chi2Dusty)
@@ -258,10 +258,13 @@ class DustyFit():
         """
         pdata = pymcmcstat.MCMC.MCMC()
         pdata.data.add_data_set(self.get_Data().get_xdata(), self.get_Data().get_ydata(), user_defined_object=[self._Dusty, self._Data, self._Fit, self._logfile])
+
+        p = [key for key, value in self.get_Param().items() if value['sample']]
+        stats = [self._Fit.get_Stats()['mean'][p.index(key)] if value['sample'] else value['theta0'] for i, (key, value) in enumerate(self.get_Param().items())]
         if chi2 == 'Chi2':
-            return self.__Chi2Dusty(self._Fit.get_Stats()['mean'], pdata.data)
+            return self.__Chi2Dusty(stats, pdata.data)
         elif chi2 == 'Chi2_modified':
-            return self.__Chi2Dusty_modified(self._Fit.get_Stats()['mean'], pdata.data)
+            return self.__Chi2Dusty_modified(stats, pdata.data)
         else:
             raise Exception('The chi2 function is not recognized')
 
