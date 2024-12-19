@@ -184,7 +184,6 @@ class DustyFit():
         ymodel = utils.model(theta, data).reshape(ydata.shape)
 
         chi2 = np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2) if self._Data.get_yerr() is not None else np.nansum((ymodel - ydata)**2)
-        print(f'chi2:{chi2}')
 
         return chi2
         
