@@ -329,11 +329,14 @@ class DustyFit():
         if 'shell' in sampled_params:
             density['shell'] = stats_mean[sampled_params.index('shell')]
 
-        results_params = {key: stats_mean[i] for i, (key, value) in enumerate(self._Fit.get_Param().items()) if value['sample'] and key not in ['amin', 'amax', 'q', 'shell'] and i < len(stats_mean)}
-        change = utils.list_to_dict(list(results_params.keys()), list(results_params.values()))
-        change.update({'DustSize':dustsize})
-        change.update({'Density':density})
-        self.__setChange(change=change)
+        results_params = dict(zip(sampled_params, stats_mean))
+        for param in ['amin', 'amax', 'q', 'shell']:
+            if param in results_params.keys():
+                results_params.pop(param, None)        
+                
+        results_params.update({'DustSize':dustsize})
+        results_params.update({'Density':density})
+        self.__setChange(change=results_params)
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose = 0)
         self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum, Jansky=Jansky)
