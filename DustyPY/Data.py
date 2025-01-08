@@ -372,3 +372,11 @@ class Data():
         Path (str): The file path to write the table to.
         """
         utils.write_table_to_latex(self._table, Path, columns, column_names, wavelength)
+
+    def __str__(self):
+        table_str = "Data Table:\n"
+        table_str += f"{'xdata':<20}{'ydata':<20}{'xerr':<20}{'yerr':<20}\n"
+        table_str += "-"*80 + "\n"
+        for i in range(len(self._xdata)):
+            table_str += f"{str(self._xdata[i]):<20}{str(self._ydata[i]):<20}{str(self._xerr[i] if self._xerr is not None else 'None'):<20}{str(self._yerr[i] if self._yerr is not None else 'None'):<20}\n"
+        return table_str
