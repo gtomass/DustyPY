@@ -1,8 +1,8 @@
+import sys
 try:
     from . import utils as utils
     from .constants import *
 except ImportError:
-    import sys
     import os
     sys.path.append(os.path.abspath(os.path.join(
         os.path.dirname(__file__), os.path.pardir)))
@@ -11,6 +11,7 @@ except ImportError:
 import numpy as np
 import astropy.units as u
 from astropy.table import unique
+from io import StringIO
 
 
 class Data():
@@ -285,7 +286,7 @@ class Data():
         """
         data = np.array(table['sed_eflux'])
         has_nan = np.isnan(data)
-        table = table[~has_nan]
+        table[has_nan]['sed_eflux'] = 0
 
         table.sort('sed_eflux', reverse=True)
         table = unique(table, keys='sed_freq', keep='first')
@@ -374,9 +375,16 @@ class Data():
         utils.write_table_to_latex(self._table, Path, columns, column_names, wavelength)
 
     def __str__(self):
+
+        # if self._table is not None:
+        #     old_stdout = sys.stdout
+        #     sys.stdout = mystdout = StringIO()
+        #     self._table[['_RAJ2000','_DEJ2000', '_tabname', 'sed_freq', 'sed_flux', 'sed_eflux', 'sed_filter']].pprint(max_lines=-1, max_width=-1)
+        #     sys.stdout = old_stdout
+        #     return mystdout.getvalue()
         table_str = "Data Table:\n"
-        table_str += f"{'xdata':<20}{'ydata':<20}{'xerr':<20}{'yerr':<20}\n"
-        table_str += "-"*80 + "\n"
+        table_str += f"{'xdata':<20} {'ydata':<20} {'xerr':<20} {'yerr':<20} {'filter':<20}\n"
+        table_str += "-"*90 + "\n"
         for i in range(len(self._xdata)):
-            table_str += f"{str(self._xdata[i]):<20}{str(self._ydata[i]):<20}{str(self._xerr[i] if self._xerr is not None else 'None'):<20}{str(self._yerr[i] if self._yerr is not None else 'None'):<20}\n"
+            table_str += f"{str(self._xdata[i]):<20} {str(self._ydata[i]):<20} {str(self._xerr[i] if self._xerr is not None else 'None'):<20} {str(self._yerr[i] if self._yerr is not None else 'None'):<20} {str(self._table['sed_filter'][i]) if self._table is not None else 'None'}\n"
         return table_str

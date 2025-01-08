@@ -906,18 +906,10 @@ def get_common_filters(filters: np.array, bandpass_name: np.array) -> dict:
     bandpass_name = ['_'.join(name.split('_')[:2]) for name in bandpass_name]
     common_filters = {}
     for f in filters:
-        if 'GAIA' in f:
-            gaia_filter = f.lower().replace(':', '_').replace('GAIA','gaia')
-            gaia_filter = gaia_filter.split('/')[1]
-            for bp in bandpass_name:
-                if gaia_filter == bp:
-                    common_filters[f] = bp
-                    break
-        else:
-            for bp in bandpass_name:
-                if f.lower().replace(':', '_') in bp:
-                    common_filters[f] = bp
-                    break
+        for bp in bandpass_name:
+            if bp in f.lower().replace(':', '_'):
+                common_filters[f] = bp
+                break
     return common_filters
 
 def integrate_SED_bandpass(wavelength: np.array, flux: np.array, common_filter: np.array) -> np.array:
