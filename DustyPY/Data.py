@@ -386,5 +386,5 @@ class Data():
         table_str += f"{'xdata':<20} {'ydata':<20} {'xerr':<20} {'yerr':<20} {'filter':<20}\n"
         table_str += "-"*90 + "\n"
         for i in range(len(self._xdata)):
-            table_str += f"{str(np.round(self._xdata[i],3)):<20} {str(np.round(self._ydata[i],3)):<20} {str(np.round(self._xerr[i],3)) if self._xerr is not None else 'None':<20} {str(np.round(self._yerr[i],3)) if self._yerr is not None else 'None':<20} {str(self._table['sed_filter'][i]) if self._table is not None else 'None'}\n"
+            table_str += f"{format(self._xdata[i],'.3f'):<20} {format(self._ydata[i], '.3e'):<20} {format(self._xerr[i], '.3e') if self._xerr is not None else 'None':<20} {format(self._yerr[i], '.3e') if self._yerr is not None else 'None':<20} {str(self._table['sed_filter'][i]) if self._table is not None else 'None'}\n"
         return table_str
