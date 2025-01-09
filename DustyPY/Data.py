@@ -327,9 +327,19 @@ class Data():
             if 'ydata' in condition:
                 self._table = self._table[eval(condition.replace('ydata', "table['sed_flux']"))] if self._table is not None else None
             if 'xdata' in condition:
-                if self._table is not None:
-                    xdata_um = (1e9 * self._table['sed_freq'].value * u.Hz).to(u.um, equivalencies=u.spectral()).value
-                    self._table = self._table[np.isin(xdata_um, self._xdata)]
+                condition = condition.replace('xdata', "table['sed_freq']")
+                if '>' in condition and '=' not in condition:
+                    condition = condition.replace('>', '<')
+                elif '<' in condition and '=' not in condition:
+                    condition = condition.replace('<', '>')
+                elif '>=' in condition:
+                    condition = condition.replace('>=', '<=')
+                elif '<=' in condition:
+                    condition = condition.replace('<=', '>=')
+                limit = condition.split('>')[-1] if '>' in condition else condition.split('<')[-1]
+                limit_value = (float(limit.strip('=<> ')) * u.um).to(u.GHz, equivalencies=u.spectral()).value
+                condition = condition.replace(limit, str(limit_value))
+                self._table = self._table[eval(condition)] if self._table is not None else None
 
 
 
@@ -385,6 +395,6 @@ class Data():
         table_str = "Data Table:\n"
         table_str += f"{'xdata':<20} {'ydata':<20} {'xerr':<20} {'yerr':<20} {'filter':<20}\n"
         table_str += "-"*90 + "\n"
-        for i in range(len(self._xdata)):
-            table_str += f"{format(self._xdata[i],'.3f'):<20} {format(self._ydata[i], '.3e'):<20} {format(self._xerr[i], '.3e') if self._xerr is not None else 'None':<20} {format(self._yerr[i], '.3e') if self._yerr is not None else 'None':<20} {str(self._table['sed_filter'][i]) if self._table is not None else 'None'}\n"
+        for i, x in enumerate(self._xdata):
+            table_str += f"{format(x,'.3f'):<20} {format(self._ydata[i], '.3e'):<20} {format(self._xerr[i], '.3e') if self._xerr is not None else 'None':<20} {format(self._yerr[i], '.3e') if self._yerr is not None else 'None':<20} {str(self._table['sed_filter'][i]) if self._table is not None else 'None'}\n"
         return table_str

@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # table.remove_rows(np.argwhere(table['sed_filter'] == 'WISE:W4').flatten())
     # table.remove_rows(np.argwhere(table['sed_filter'] == 'GAIA/GAIA3:Grp').flatten())
     Dat.set_vizier_data(table)
-    # Dat.restrict_data(['xdata <= 100'])
+    Dat.restrict_data(['xdata > 120'])
     Dat.unred_data(EBV=.07)
     print(Dat)
 
