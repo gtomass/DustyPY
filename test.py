@@ -6,6 +6,7 @@ import DustyPY.utils as utils
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import simpson
+import astropy.units as u
 
 if __name__ == '__main__':
     L1 = 0.73
@@ -82,7 +83,7 @@ if __name__ == '__main__':
     # table.remove_rows(np.argwhere(table['sed_filter'] == 'WISE:W4').flatten())
     # table.remove_rows(np.argwhere(table['sed_filter'] == 'GAIA/GAIA3:Grp').flatten())
     Dat.set_vizier_data(table)
-    Dat.restrict_data(['xdata > 120'])
+    Dat.restrict_data(['xdata < 120'])
     Dat.unred_data(EBV=.07)
     print(Dat)
 
@@ -94,6 +95,7 @@ if __name__ == '__main__':
 
     # # dustyMod.plot_SED(xlim=(0.1,110), ylim=(.001,3000),scale='log', ax=ax, kwargs=kwargs_dusty)
     Dat.scatter_data(ax=ax, kwargs=kwargs_data)
+    # ax.scatter((table['sed_freq'].value*u.GHz).to(u.um, equivalencies=u.spectral()), table['sed_flux'], color='b', label='Data')
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlim(0.1,110)

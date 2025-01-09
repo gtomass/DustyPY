@@ -288,8 +288,10 @@ class Data():
         has_nan = np.isnan(data)
         table[has_nan]['sed_eflux'] = 0.0
 
-        table.sort('sed_eflux', reverse=True)
-        table = unique(table, keys='sed_freq', keep='first')
+        #table.sort('sed_eflux', reverse=True)
+        #table = unique(table, keys='sed_freq', keep='first')
+        grouped_table = table.group_by('sed_filter')
+        table = grouped_table.groups.aggregate(np.mean)
         table.sort('sed_freq', reverse=True)
 
         self._table = table
