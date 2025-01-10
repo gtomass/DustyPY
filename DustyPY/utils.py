@@ -855,9 +855,9 @@ def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: Spectral
     """
     
 
-    filt = np.interp(wavelength, bandpass.waveset.value/10000, bandpass(bandpass.waveset))
-    filtSpec  = filt * flux                        #Calculate throughput
-    fl     = simps(y=filtSpec,x=wavelength) / simps(y = filt, x = wavelength)
+    flux_interp = np.interp(bandpass.waveset.value / 10000, wavelength, flux)
+    filtSpec = bandpass(bandpass.waveset) * flux_interp  # Calculate throughput
+    fl = simps(y=filtSpec, x=bandpass.waveset.value / 10000) / simps(y=bandpass(bandpass.waveset), x=bandpass.waveset.value / 10000)
     return fl
 
 def get_central_wavelegnth(bandpass: SpectralElement) -> float:
