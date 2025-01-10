@@ -274,7 +274,8 @@ class Data():
         bandpass_name = utils.get_bandpass_name()
         filter = np.unique(table['sed_filter'].data)
         common_filters = utils.get_common_filters(filter, bandpass_name)
-        table = table[np.isin(table['sed_filter'].data, [f for f in common_filters.keys()])]
+        mask = np.isin(table['sed_filter'].data, list(common_filters.keys()))
+        table = table[mask]
         return table
 
     def set_vizier_data(self, table) -> None:
@@ -288,8 +289,6 @@ class Data():
         has_nan = np.isnan(data)
         table[has_nan]['sed_eflux'] = 0.0
 
-        #table.sort('sed_eflux', reverse=True)
-        #table = unique(table, keys='sed_freq', keep='first')
         grouped_table = table.group_by('sed_filter')
         table = grouped_table.groups.aggregate(np.mean)
         table.sort('sed_freq', reverse=True)

@@ -638,6 +638,8 @@ def model(theta, data)-> None:
             
         subprocess.call('clear', shell=True)
 
+        print(np.asarray(central_wavelength)/10000, len(central_wavelength))
+
         return ymodel
 
 def prediction_model(theta, data):
@@ -835,7 +837,7 @@ def get_bandpass(bandpass: str) -> SpectralElement:
     """
     path_here = os.path.dirname(__file__)
     test = glob.glob(os.path.join(path_here, 'filter', 'comp', 'nonhst', '*'))
-    filter_path = next((f for f in test if bandpass in f), None) if bandpass != 'gaia3_g' else next((f for f in test if 'gaia3_g.fits' in f), None)
+    filter_path = next((f for f in test if f.endswith(f'{bandpass}.fits')), None)
 
     if filter_path is None:
         raise FileNotFoundError(f"Filter {bandpass} not found")
@@ -907,7 +909,7 @@ def get_common_filters(filters: np.array, bandpass_name: np.array) -> dict:
     common_filters = {}
     for f in filters:
         for bp in bandpass_name:
-            if bp in f.lower().replace(':', '_'):
+            if bp in f.lower().replace(':', '_') and bp not in common_filters.values():
                 common_filters[f] = bp
                 break
     return common_filters
