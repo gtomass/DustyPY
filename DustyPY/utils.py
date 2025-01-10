@@ -638,8 +638,6 @@ def model(theta, data)-> None:
             
         subprocess.call('clear', shell=True)
 
-        print(np.asarray(central_wavelength)/10000, len(central_wavelength))
-
         return ymodel
 
 def prediction_model(theta, data):
