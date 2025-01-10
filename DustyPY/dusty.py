@@ -161,7 +161,7 @@ class Dusty():
                   for el in utils.supp_car_list(line, ['', '1', '\n'])]
         return utils.list_to_dict(keys, values)
 
-    def make_SED(self, distance, luminosity: float = 1, Jansky: bool = True, um: bool = True, normalize: bool = False) -> None:
+    def make_SED(self, luminosity: float = 1, Jansky: bool = True, um: bool = True, normalize: bool = False) -> None:
         """
         Generates the Spectral Energy Distribution (SED) for the given distance.
 
@@ -171,7 +171,7 @@ class Dusty():
         um (bool, optional): If True, keeps the wavelength in micrometers. If False, converts to meters. Defaults to True.
         """
 
-        distance = distance * constants.pc
+        distance = self._Model.get_Distance() * constants.pc
 
         results = self.get_results()
 

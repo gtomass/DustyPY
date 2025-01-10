@@ -339,7 +339,7 @@ class DustyFit():
         self.__setChange(change=results_params)
         self._Dusty.change_parameter()
         self._Dusty.lunch_dusty(verbose = 0)
-        self._Dusty.make_SED(distance=self._Dusty.get_Model().get_Distance(), luminosity=Lum, Jansky=Jansky)
+        self._Dusty.make_SED(luminosity=Lum, Jansky=Jansky)
         SED = self._Dusty.get_SED()
         utils.plot(SED.get_Flux(), SED.get_Wavelength(), unit=unit,
                    xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_fit, normalize=normalize)

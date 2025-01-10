@@ -620,7 +620,7 @@ def model(theta, data)-> None:
 
         dusty.change_parameter()
         dusty.lunch_dusty(verbose=0, logfile=logfile)
-        dusty.make_SED(distance=dusty.get_Model().get_Distance(), luminosity=Lum, Jansky=Jansky)
+        dusty.make_SED(luminosity=Lum, Jansky=Jansky)
 
         if data_mod.get_table() is not None:
 
@@ -687,7 +687,7 @@ def prediction_model(theta, data):
 
     dusty.change_parameter()
     dusty.lunch_dusty(verbose=0, logfile=logfile)
-    dusty.make_SED(distance=dusty.get_Model().get_Distance(), luminosity=Lum, Jansky=Jansky)
+    dusty.make_SED(luminosity=Lum, Jansky=Jansky)
     subprocess.call('clear', shell=True)
     ymodel = interpol(data.xdata, dusty.get_SED().get_Wavelength(), dusty.get_SED().get_Flux())
     return ymodel
