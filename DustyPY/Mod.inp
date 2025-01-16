@@ -87,7 +87,7 @@ II. PHYSICAL PARAMETERS
        - detailed spectra for each model;           fname.s### = 1
        - images at specified wavelengths;           fname.i### = 0
        - en.density at specified radii;             fname.j### = 0
-       - radial profiles for each model;            fname.r### = 0
+       - radial profiles for each model;            fname.r### = 1
        - detailed run-time messages;                fname.m### = 1
        ------------------------------------------------------------- 
  
