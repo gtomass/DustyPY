@@ -59,6 +59,10 @@ II. PHYSICAL PARAMETERS
         	 tau(min) = .1; tau(max) = .1 
         	 number of models = 1
 
+	imaging tables (all models in one file) = 1
+	number of wavelengths = 9
+	wavelengths = 0.55, 0.626 ,1.0, 2.2, 4, 10, 50, 100, 1000 micron
+
   ----------------------------------------------------------------------
                                                                         
   III. NUMERICS                                                           
@@ -85,7 +89,7 @@ II. PHYSICAL PARAMETERS
         FILE DESCRIPTION                               FLAG        
        ------------------------------------------------------------     
        - detailed spectra for each model;           fname.s### = 1
-       - images at specified wavelengths;           fname.i### = 0
+       - images at specified wavelengths;           fname.i### = 1
        - en.density at specified radii;             fname.j### = 0
        - radial profiles for each model;            fname.r### = 1
        - detailed run-time messages;                fname.m### = 1
