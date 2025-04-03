@@ -994,7 +994,7 @@ def get_photometry(Wavelength, Flux, bandpass_name: str) -> tuple:
     """
     bandpass = get_bandpass(bandpass_name)
     integrated_flux = intergrate_bandpass(Wavelength, Flux, bandpass)    
-    return get_central_wavelegnth(bandpass),integrated_flux
+    return get_central_wavelegnth(bandpass)/1000,integrated_flux
 
 
 
