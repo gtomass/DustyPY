@@ -979,6 +979,23 @@ def write_table_to_latex(table, Path, columns=None, column_names=None, wavelengt
         f.write('\\label{table:label}\n')
         f.write('\\end{table*}\n')
 
+def get_photometry(Wavelength, Flux, bandpass_name: str) -> tuple:
+    """
+    Get the photometry of a given spectrum.
+
+    Parameters:
+    Wavelength (np.array): Array of wavelength values.
+    Flux (np.array): Array of flux values corresponding to the wavelengths.
+    eFlux (np.array): Array of error flux values corresponding to the wavelengths.
+    bandpass_name (str): The name of the bandpass to use.
+
+    Returns:
+    tuple: A tuple containing the integrated flux and its error.
+    """
+    bandpass = get_bandpass(bandpass_name)
+    integrated_flux = intergrate_bandpass(Wavelength, Flux, bandpass)    
+    return get_central_wavelegnth(bandpass),integrated_flux
+
 
 
 if __name__ == "__main__":
