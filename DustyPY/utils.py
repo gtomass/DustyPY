@@ -214,26 +214,6 @@ def search_line(file, line):
             return i
     raise Exception(f'This line does dot exist: {line}')
 
-# def delete_line(file, line):
-#     """
-#     Deletes a specific line in a given file.
-
-#     Args:
-#         file (iterable): An iterable object representing the file, where each element is a line in the file.
-#         line (str): The line to delete within the file.
-
-#     Returns:
-#         iterable: The file with the specified line removed.
-
-#     Raises:
-#         Exception: If the specified line does not exist in the file.
-#     """
-#     for i,lines in enumerate(file):
-#         if line in lines:
-#             del file[i]
-#             return file
-#     raise Exception(f'This line does dot exist: {line}')
-
 
 def save_file(Path, file):
     """
@@ -248,14 +228,6 @@ def save_file(Path, file):
     """
     with open(Path, 'w') as f:
         f.write("".join(file))
-
-# def change_car_line(line, change,reconizer):
-
-#     line_split = line.split(reconizer)
-#     for i in range(1, len(line_split)):
-#         line_split[i] = change + ' '+' '.join(line_split[i].split(' ')[1:])+' '
-#     line = reconizer.join(line_split)
-#     return line
 
 
 def build_change_dict(model):
@@ -445,21 +417,6 @@ def str_to_data(data=list) -> np.array:
            [7, 8, 9]])
     """
     return np.array([list(map(float, line.split())) for line in data])
-
-
-def supp_car_list(list, car):
-    """
-    Filters out elements from the input list that are present in the car list and removes newline characters.
-
-    Args:
-        list (list of str): The input list of strings to be filtered.
-        car (list of str): The list of strings to be excluded from the input list.
-
-    Returns:
-        list of str: A new list with elements from the input list that are not in the car list, 
-                        with newline characters removed.
-    """
-    return [el.split('\n')[0] for el in list if el not in car]
 
 
 def get_column_spectum(file, index, index_header=0):
@@ -771,6 +728,7 @@ def unred(Wavelength, Flux, EBV, Rv=3.1, LMC2=False, AVGLMC=False) -> np.array:
     xcutuv = 10000.0 / 2700.0
     iuv = np.where(x >= xcutuv)[0]
     xuv = np.concatenate(([10000.0 / 2700.0, 10000.0 / 2600.0], x[iuv])) if len(iuv) > 0 else [10000.0 / 2700.0, 10000.0 / 2600.0]
+    xuv = np.array(xuv)  # Ensure xuv is a NumPy array
     yuv = params["c1"] + params["c2"] * xuv + params["c3"] * xuv**2 / ((xuv**2 - params["x0"]**2)**2 + (xuv * params["gamma"])**2)
     yuv += params["c4"] * (0.5392 * (np.maximum(xuv, 5.9) - 5.9)**2 + 0.05644 * (np.maximum(xuv, 5.9) - 5.9)**3) + Rv
     if len(iuv) > 0:
