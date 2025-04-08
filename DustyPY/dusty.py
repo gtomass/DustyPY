@@ -52,7 +52,7 @@ class Dusty():
                                 'Density Distribution': 'density type',
                                 'Opacity': 'tau(min)'
                                 }
-        self._SED = SED.SED()
+        self._SED = SED()
         self.__Check()
         self.__CreateDustyFile()
 

@@ -22,7 +22,7 @@ class DustyFit():
     _Fit (fit): The fitting object.
     """
 
-    def __init__(self, Dusty: dusty.Dusty, data: Data.Data, ParamFit: dict = None, Param: dict = None, fit: MCfit.fit = None, logfile: bool = False) -> None:
+    def __init__(self, Dusty: dusty.Dusty, data: Data, ParamFit: dict = None, Param: dict = None, fit: MCfit.fit = None, logfile: bool = False) -> None:
         """
         Initializes an instance of the DustyFit class.
 
@@ -36,7 +36,7 @@ class DustyFit():
         if fit is None:
             fit = MCfit.fit()
         if data is None:
-            data = Data.Data()
+            data = Data()
         
 
         self._Dusty = Dusty
@@ -65,7 +65,7 @@ class DustyFit():
         self._Dusty = Dusty
     
 
-    def set_Data(self, Data: Data.Data) -> None:
+    def set_Data(self, Data: Data) -> None:
         """
         Sets the data to fit.
 
@@ -105,7 +105,7 @@ class DustyFit():
         """
         return self._Dusty
 
-    def get_Data(self) -> Data.Data:
+    def get_Data(self) -> Data:
         """
         Returns the data to fit.
 
