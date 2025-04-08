@@ -1,17 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
-import time
 import glob
 import pandas as pd
 import os
 import astropy.units as u
 from astropy.table import Table, Column
-from astropy.io import fits, ascii
+from astropy.io import fits
 from scipy.interpolate import make_interp_spline
+import scipy.interpolate as interpolate
 from scipy.integrate import simpson as simps
 from pymcmcstat.MCMC import MCMC
-from PyAstronomy import pyasl
 from synphot import SpectralElement
 
 
@@ -549,7 +548,7 @@ def calcul_flux_total(F, r_vrai, distance):
     return F * (4 * np.pi * r_vrai**2) / (4 * np.pi * distance**2)
 
 
-def interpolate(Wavelength, Flux, order=3):
+def interpolate_spline(Wavelength, Flux, order=3):
     """
     Interpole les données de flux en fonction de la longueur d'onde.
 
@@ -578,9 +577,9 @@ def interpol(xdata, xdusty, ydusty):
     array-like: Les valeurs du modèle interpolé.
     """
     try:
-        return interpolate(np.asarray(xdusty).flatten(), np.asarray(ydusty).flatten())(np.asarray(xdata).flatten())
+        return interpolate_spline(np.asarray(xdusty).flatten(), np.asarray(ydusty).flatten())(np.asarray(xdata).flatten())
     except Exception:
-        return interpolate(xdusty, ydusty)(xdusty)
+        return interpolate_spline(xdusty, ydusty)(xdusty)
     
 def model(theta, data)-> None:
         
@@ -732,20 +731,63 @@ def set_mcmc_param(mc=MCMC, param=None):
                                           sample=param[par]['sample'])
 
 
-def unred(Wavelength, Flux, EBV, Rv=3.1):
+def unred(Wavelength, Flux, EBV, Rv=3.1, LMC2=False, AVGLMC=False) -> np.array:
     """
-    Applique une correction de déreddening aux flux observés.
+    Corrects flux for interstellar extinction using Fitzpatrick (1999) extinction curve.
 
-    Paramètres:
-    Wavelength (array-like): Les longueurs d'onde des observations.
-    Flux (array-like): Les flux observés.
-    EBV (float): La valeur de E(B-V) pour la correction.
-    Rv (float, optional): Le rapport de la loi d'extinction. Par défaut à 3.1.
+    Parameters:
+    Wavelength : array-like
+        Wavelengths in Angstroms.
+    Flux : array-like
+        Flux values corresponding to the input wavelengths.
+    EBV : float
+        Color excess E(B-V).
+    Rv : float, optional
+        Total-to-selective extinction ratio (default 3.1).
+    LMC2 : bool, optional
+        Use LMC2 extinction curve (default False).
+    AVGLMC : bool, optional
+        Use average LMC extinction curve (default False).
 
-    Retourne:
-    array-like: Les flux corrigés.
+    Returns:
+    array-like
+        Flux values corrected for interstellar extinction.
     """
-    return pyasl.unred(Wavelength, Flux, ebv=EBV, R_V=Rv)
+    x = 10000. / Wavelength  # Convert to inverse microns
+    curve = np.zeros_like(x)
+
+    # Default parameters
+    params = {
+        "x0": 4.596, "gamma": 0.99, "c3": 3.23, "c4": 0.41,
+        "c2": -0.824 + 4.717 / Rv, "c1": 2.030 - 3.007 * (-0.824 + 4.717 / Rv)
+    }
+
+    if LMC2:
+        params.update({"x0": 4.626, "gamma": 1.05, "c3": 1.92, "c4": 0.42, "c2": 1.31, "c1": -2.16})
+    elif AVGLMC:
+        params.update({"x0": 4.596, "gamma": 0.91, "c3": 2.73, "c4": 0.64, "c2": 1.11, "c1": -1.28})
+
+    # UV portion
+    xcutuv = 10000.0 / 2700.0
+    iuv = np.where(x >= xcutuv)[0]
+    xuv = np.concatenate(([10000.0 / 2700.0, 10000.0 / 2600.0], x[iuv])) if len(iuv) > 0 else [10000.0 / 2700.0, 10000.0 / 2600.0]
+    yuv = params["c1"] + params["c2"] * xuv + params["c3"] * xuv**2 / ((xuv**2 - params["x0"]**2)**2 + (xuv * params["gamma"])**2)
+    yuv += params["c4"] * (0.5392 * (np.maximum(xuv, 5.9) - 5.9)**2 + 0.05644 * (np.maximum(xuv, 5.9) - 5.9)**3) + Rv
+    if len(iuv) > 0:
+        curve[iuv] = yuv[2:]
+
+    # Optical/IR portion
+    xsplopir = np.concatenate(([0], 10000.0 / np.array([26500.0, 12200.0, 6000.0, 5470.0, 4670.0, 4110.0])))
+    ysplopir = np.concatenate(([0.0, 0.26469, 0.82925] * Rv / 3.1, [np.polyval([-0.422809, 1.0027, 0.000213572][::-1], Rv),
+                                                                    np.polyval([-0.051354, 1.00216, -0.000073578][::-1], Rv),
+                                                                    np.polyval([0.700127, 1.00184, -0.00003326][::-1], Rv),
+                                                                    np.polyval([1.19456, 1.01707, -0.00546959, 0.000797809, -0.0000445636][::-1], Rv)]))
+    iopir = np.where(x < xcutuv)[0]
+    if len(iopir) > 0:
+        tck = interpolate.splrep(np.concatenate((xsplopir, [10000.0 / 2700.0, 10000.0 / 2600.0])), np.concatenate((ysplopir, yuv[:2])), s=0)
+        curve[iopir] = interpolate.splev(x[iopir], tck)
+
+    return Flux * 10.**(0.4 * curve * EBV)
 
 
 def querry_vizier_data(radius, target):
