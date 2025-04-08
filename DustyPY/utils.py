@@ -686,6 +686,20 @@ def set_mcmc_param(mc=MCMC, param=None):
                                           minimum=param[par]['minimum'],
                                           maximum=param[par]['maximum'],
                                           sample=param[par]['sample'])
+        
+def supp_car_list(list, car):
+    """
+    Filters out elements from the input list that are present in the car list and removes newline characters.
+
+    Args:
+        list (list of str): The input list of strings to be filtered.
+        car (list of str): The list of strings to be excluded from the input list.
+
+    Returns:
+        list of str: A new list with elements from the input list that are not in the car list, 
+                        with newline characters removed.
+    """
+    return [el.split('\n')[0] for el in list if el not in car]
 
 
 def unred(Wavelength, Flux, EBV, Rv=3.1, LMC2=False, AVGLMC=False) -> np.array:
