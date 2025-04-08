@@ -736,10 +736,10 @@ def unred(Wavelength, Flux, EBV, Rv=3.1, LMC2=False, AVGLMC=False) -> np.array:
 
     # Optical/IR portion
     xsplopir = np.concatenate(([0], 10000.0 / np.array([26500.0, 12200.0, 6000.0, 5470.0, 4670.0, 4110.0])))
-    ysplopir = np.concatenate(([0.0, 0.26469, 0.82925] * Rv / 3.1, [np.polyval([-0.422809, 1.0027, 0.000213572][::-1], Rv),
-                                                                    np.polyval([-0.051354, 1.00216, -0.000073578][::-1], Rv),
-                                                                    np.polyval([0.700127, 1.00184, -0.00003326][::-1], Rv),
-                                                                    np.polyval([1.19456, 1.01707, -0.00546959, 0.000797809, -0.0000445636][::-1], Rv)]))
+    ysplopir = np.concatenate((np.array([0.0, 0.26469, 0.82925]) * Rv / 3.1, [np.polyval([-0.422809, 1.0027, 0.000213572][::-1], Rv),
+                                                                             np.polyval([-0.051354, 1.00216, -0.000073578][::-1], Rv),
+                                                                             np.polyval([0.700127, 1.00184, -0.00003326][::-1], Rv),
+                                                                             np.polyval([1.19456, 1.01707, -0.00546959, 0.000797809, -0.0000445636][::-1], Rv)]))
     iopir = np.where(x < xcutuv)[0]
     if len(iopir) > 0:
         tck = interpolate.splrep(np.concatenate((xsplopir, [10000.0 / 2700.0, 10000.0 / 2600.0])), np.concatenate((ysplopir, yuv[:2])), s=0)
