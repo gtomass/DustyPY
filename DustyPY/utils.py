@@ -625,7 +625,7 @@ def model(theta, data)-> None:
 
             bandpass = data_mod.get_common_filters(data_mod.get_table())
             
-            ymodel  =  dusty.get_SED().integrate_bandpass(bandpass=bandpass)
+            ymodel,ymodel_err  =  dusty.get_SED().integrate_bandpass(bandpass=bandpass)
 
             central_wavelength = [get_central_wavelegnth(get_bandpass(f)) for f in bandpass.values()]
             index = np.argsort(central_wavelength)
@@ -912,8 +912,11 @@ def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: Spectral
     """
     flux_interp = np.interp(bandpass.waveset.value / 10000, wavelength, flux)
     filtSpec = bandpass(bandpass.waveset) * flux_interp  # Calculate throughput
-    fl = simpson(bandpass.waveset.value / 10000, filtSpec) / simpson(bandpass.waveset.value / 10000, bandpass(bandpass.waveset))
-    return fl
+    numerator, numerator_err = simpson(bandpass.waveset.value / 10000, filtSpec), simpson_error(bandpass.waveset.value / 10000, bandpass(bandpass.waveset))
+    denominator, denominator_err = simpson(bandpass.waveset.value / 10000, bandpass(bandpass.waveset)), simpson_error(bandpass.waveset.value / 10000, bandpass(bandpass.waveset))
+    fl = numerator / denominator
+    fl_err2 = (1/denominator)**2*numerator_err**2 + (numerator/denominator**2)**2*denominator_err**2
+    return fl, np.sqrt(fl_err2)
 
 def get_central_wavelegnth(bandpass: SpectralElement) -> float:
     """
@@ -979,13 +982,16 @@ def integrate_SED_bandpass(wavelength: np.array, flux: np.array, common_filter: 
     Returns:
     np.array: The integrated flux over the bandpass.
     """
-    integrated_flux = []
+    integrated_flux, integrated_flux_err = [], []
 
     for bandpass in common_filter.values():
         filt  = get_bandpass(bandpass)
-        integrated_flux.append(intergrate_bandpass(wavelength, flux, filt))
+        fl, fl_err = intergrate_bandpass(wavelength, flux, filt)
+        integrated_flux.append(fl)
+        integrated_flux_err.append(fl_err)
+        
     
-    return np.asarray(integrated_flux)  
+    return np.asarray(integrated_flux) , np.asarray(integrated_flux_err) 
 
 def savefig(path: str) -> None: 
     """
@@ -1041,15 +1047,14 @@ def get_photometry(Wavelength, Flux, bandpass_name: str) -> tuple:
     Parameters:
     Wavelength (np.array): Array of wavelength values.
     Flux (np.array): Array of flux values corresponding to the wavelengths.
-    eFlux (np.array): Array of error flux values corresponding to the wavelengths.
     bandpass_name (str): The name of the bandpass to use.
 
     Returns:
     tuple: A tuple containing the integrated flux and its error.
     """
     bandpass = get_bandpass(bandpass_name)
-    integrated_flux = intergrate_bandpass(Wavelength, Flux, bandpass)    
-    return get_central_wavelegnth(bandpass)/10000,integrated_flux
+    integrated_flux, integrated_flux_err = intergrate_bandpass(Wavelength, Flux, bandpass)    
+    return get_central_wavelegnth(bandpass)/10000,integrated_flux, integrated_flux_err
 
 
 

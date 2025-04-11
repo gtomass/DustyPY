@@ -104,7 +104,7 @@ class SED():
         kwargs (dict, optional): Additional arguments for the scatter function. Defaults to None.
         """
         central =[utils.get_central_wavelegnth(utils.get_bandpass(f))/10000 for f in bandpass.values()]
-        f = self.integrate_bandpass(bandpass)
-        utils.scatter_plot(self.integrate_bandpass(bandpass),central, unit=unit, xlim=xlim,
+        f, f_err = self.integrate_bandpass(bandpass)
+        utils.error_plot(Flux = f,Wavelength=central,eFlux=f_err, unit=unit, xlim=xlim,
                    ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
 
