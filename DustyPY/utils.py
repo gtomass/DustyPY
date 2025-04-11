@@ -904,7 +904,7 @@ def get_bandpass(bandpass: str) -> SpectralElement:
         raise FileNotFoundError(f"Filter {bandpass} not found")
     return SpectralElement.from_file(filter_path)
 
-def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: SpectralElement) -> float:
+def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: SpectralElement, n_int: int = 10000) -> float:
     """
     Integrate the bandpass of a given spectrum using the custom Simpson's rule.
 
@@ -916,7 +916,7 @@ def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: Spectral
     Returns:
     float: The integrated flux over the bandpass.
     """
-    wavelength_int = np.linspace(np.min(bandpass.waveset.value), np.max(bandpass.waveset.value), 3000) *u.AA
+    wavelength_int = np.linspace(np.min(bandpass.waveset.value), np.max(bandpass.waveset.value), n_int) *u.AA
     flux_interp = np.interp(wavelength_int.value / 10000, wavelength, flux)
     filtSpec = bandpass(wavelength_int) * flux_interp  # Calculate throughput
     numerator, numerator_err = simpson(wavelength_int.value / 10000, filtSpec), simpson_error(wavelength_int.value / 10000, bandpass(wavelength_int))
