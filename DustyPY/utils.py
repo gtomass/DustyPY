@@ -914,8 +914,14 @@ def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: Spectral
     filtSpec = bandpass(bandpass.waveset) * flux_interp  # Calculate throughput
     numerator, numerator_err = simpson(bandpass.waveset.value / 10000, filtSpec), simpson_error(bandpass.waveset.value / 10000, bandpass(bandpass.waveset))
     denominator, denominator_err = simpson(bandpass.waveset.value / 10000, bandpass(bandpass.waveset)), simpson_error(bandpass.waveset.value / 10000, bandpass(bandpass.waveset))
-    fl = numerator / denominator
-    fl_err2 = (1/denominator)**2*numerator_err**2 + (numerator/denominator**2)**2*denominator_err**2
+    if denominator == 0 :
+        fl,fl_err2 = 0, 0
+    elif denominator_err == 0:
+        fl = numerator / denominator
+        fl_err2 = 0
+    else:
+        fl = numerator / denominator
+        fl_err2 = (1/denominator)**2*numerator_err**2 + (numerator/denominator**2)**2*denominator_err**2
     return fl, np.sqrt(fl_err2)
 
 def get_central_wavelegnth(bandpass: SpectralElement) -> float:
