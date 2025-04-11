@@ -22,7 +22,6 @@ double simpson(double x[], double y[], int n) {
     return (h / 3) * sum;
 }
 
-
 // Function to estimate the fourth derivative using a higher-order finite difference formula
 double fourth_derivative(double x[], double y[], int n, double* error) {
     if (n < 7) {
