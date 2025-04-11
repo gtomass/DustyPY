@@ -918,10 +918,10 @@ def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: Spectral
     """
     wavelength_int = np.logspace(
         np.log10(np.min(bandpass.waveset.value)), np.log10(np.max(bandpass.waveset.value)), 1000) *u.AA
-    flux_interp = np.interp(wavelength_int / 10000, wavelength, flux)
+    flux_interp = np.interp(wavelength_int.value / 10000, wavelength, flux)
     filtSpec = bandpass(wavelength_int) * flux_interp  # Calculate throughput
-    numerator, numerator_err = simpson(wavelength_int / 10000, filtSpec), simpson_error(wavelength_int / 10000, bandpass(wavelength_int))
-    denominator, denominator_err = simpson(wavelength_int / 10000, bandpass(wavelength_int)), simpson_error(wavelength_int / 10000, bandpass(wavelength_int))
+    numerator, numerator_err = simpson(wavelength_int.value / 10000, filtSpec), simpson_error(wavelength_int.value / 10000, bandpass(wavelength_int))
+    denominator, denominator_err = simpson(wavelength_int.value / 10000, bandpass(wavelength_int)), simpson_error(wavelength_int.value / 10000, bandpass(wavelength_int))
     if denominator == 0 :
         fl,fl_err2 = 0, 0
     elif denominator_err == 0:
