@@ -58,7 +58,7 @@ def simpson_error(x, y):
     n = len(x) if len(x) % 2 == 1 else len(x) - 1
     x = np.array(x, dtype=np.double)
     y = np.array(y, dtype=np.double)
-    
+
     x_c = x.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     y_c = y.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     return simpson_lib.simpson_error(x_c, y_c, n)
@@ -916,10 +916,12 @@ def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: Spectral
     Returns:
     float: The integrated flux over the bandpass.
     """
-    flux_interp = np.interp(bandpass.waveset.value / 10000, wavelength, flux)
-    filtSpec = bandpass(bandpass.waveset) * flux_interp  # Calculate throughput
-    numerator, numerator_err = simpson(bandpass.waveset.value / 10000, filtSpec), simpson_error(bandpass.waveset.value / 10000, bandpass(bandpass.waveset))
-    denominator, denominator_err = simpson(bandpass.waveset.value / 10000, bandpass(bandpass.waveset)), simpson_error(bandpass.waveset.value / 10000, bandpass(bandpass.waveset))
+    wavelength_int = np.logspace(
+        np.log10(np.min(bandpass.waveset.value)), np.log10(np.max(bandpass.waveset.value)), 1000) *u.AA
+    flux_interp = np.interp(wavelength_int / 10000, wavelength, flux)
+    filtSpec = bandpass(wavelength_int) * flux_interp  # Calculate throughput
+    numerator, numerator_err = simpson(wavelength_int / 10000, filtSpec), simpson_error(wavelength_int / 10000, bandpass(wavelength_int))
+    denominator, denominator_err = simpson(wavelength_int / 10000, bandpass(wavelength_int)), simpson_error(wavelength_int / 10000, bandpass(wavelength_int))
     if denominator == 0 :
         fl,fl_err2 = 0, 0
     elif denominator_err == 0:
