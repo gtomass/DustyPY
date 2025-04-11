@@ -118,9 +118,9 @@ class Dust():
             Composition = {}
         if Density is None:
             Density = {'density type':'POWD',
-                        'number of powers':'1',             
-                        "shell":'1000.',
-                        'power':'2.'
+                        'number of powers':1,             
+                        "shell":1000.,
+                        'power':2.
                         }
 
         self._tau = tau

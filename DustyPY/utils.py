@@ -9,10 +9,53 @@ from astropy.table import Table, Column
 from astropy.io import fits
 from scipy.interpolate import make_interp_spline
 import scipy.interpolate as interpolate
-from scipy.integrate import simpson as simps
 from pymcmcstat.MCMC import MCMC
 from synphot import SpectralElement
+import ctypes
+import numpy as np
+# ...existing imports...
 
+# Load the compiled C library
+simpson_lib = ctypes.CDLL('/Users/gtomassini/Documents/git_repo/DustyPY/DustyPY/libs/simpson.so')
+
+# Define the argument and return types for the C functions
+simpson_lib.simpson.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
+simpson_lib.simpson.restype = ctypes.c_double
+
+simpson_lib.simpson_error.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
+simpson_lib.simpson_error.restype = ctypes.c_double
+
+def simpson(x, y):
+    """
+    Python wrapper for the C implementation of Simpson's rule.
+
+    Parameters:
+    x (np.array): Array of x values.
+    y (np.array): Array of y values.
+
+    Returns:
+    float: The integral calculated using Simpson's rule.
+    """
+    n = len(x) if len(x) % 2 == 0 else len(x) - 1
+    x_c = x.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    y_c = y.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    return simpson_lib.simpson(x_c, y_c, n)
+
+def simpson_error(x, y):
+    """
+    Python wrapper for the C implementation of Simpson's rule error estimation.
+
+    Parameters:
+    x (np.array): Array of x values.
+    y (np.array): Array of y values.
+
+    Returns:
+    float: The error estimate for the integral.
+    """
+    n = len(x) if len(x) % 2 == 0 else len(x) - 1
+    x_c = x.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    y_c = y.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    return simpson_lib.simpson_error(x_c, y_c, n)
 
 def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None, normalize: bool = False):
     """Create a scatter plot
@@ -857,21 +900,19 @@ def get_bandpass(bandpass: str) -> SpectralElement:
 
 def intergrate_bandpass(wavelength: np.array, flux: np.array, bandpass: SpectralElement) -> float:
     """
-    Integrate the bandpass of a given spectrum.
+    Integrate the bandpass of a given spectrum using the custom Simpson's rule.
 
     Parameters:
     wavelength (np.array): Array of wavelength values.
     flux (np.array): Array of flux values corresponding to the wavelengths.
-    filter (SpectralElement): Filter object that defines the bandpass.
+    bandpass (SpectralElement): Filter object that defines the bandpass.
 
     Returns:
     float: The integrated flux over the bandpass.
     """
-    
-
     flux_interp = np.interp(bandpass.waveset.value / 10000, wavelength, flux)
     filtSpec = bandpass(bandpass.waveset) * flux_interp  # Calculate throughput
-    fl = simps(y=filtSpec, x=bandpass.waveset.value / 10000) / simps(y=bandpass(bandpass.waveset), x=bandpass.waveset.value / 10000)
+    fl = simpson(bandpass.waveset.value / 10000, filtSpec) / simpson(bandpass.waveset.value / 10000, bandpass(bandpass.waveset))
     return fl
 
 def get_central_wavelegnth(bandpass: SpectralElement) -> float:
