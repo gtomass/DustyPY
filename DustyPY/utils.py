@@ -37,6 +37,9 @@ def simpson(x, y):
     float: The integral calculated using Simpson's rule.
     """
     n = len(x) if len(x) % 2 == 1 else len(x) - 1
+    x = np.array(x, dtype=np.double)
+    y = np.array(y, dtype=np.double)
+
     x_c = x.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     y_c = y.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     return simpson_lib.simpson(x_c, y_c, n)
@@ -53,6 +56,9 @@ def simpson_error(x, y):
     float: The error estimate for the integral.
     """
     n = len(x) if len(x) % 2 == 1 else len(x) - 1
+    x = np.array(x, dtype=np.double)
+    y = np.array(y, dtype=np.double)
+    
     x_c = x.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     y_c = y.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     return simpson_lib.simpson_error(x_c, y_c, n)
