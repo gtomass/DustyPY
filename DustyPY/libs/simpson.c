@@ -77,8 +77,6 @@ double simpson_error(double x[], double y[], int n) {
 
     // Combine the truncation error and propagated error
     double total_error = sqrt(pow(truncation_error, 2) + pow(propagated_error, 2));
-
-    printf("Truncation Error: %e, Propagated Error: %e, Total Error: %e\n", truncation_error, propagated_error, total_error);
-
+    
     return total_error;
 }
