@@ -15,8 +15,10 @@ import ctypes
 import numpy as np
 # ...existing imports...
 
+Lib_Path = os.path.join(os.path.dirname(__file__), 'libs')
+
 # Load the compiled C library
-simpson_lib = ctypes.CDLL('/Users/gtomassini/Documents/git_repo/DustyPY/DustyPY/libs/simpson.so')
+simpson_lib = ctypes.CDLL(Lib_Path+'/simpson.so')
 
 # Define the argument and return types for the C functions
 simpson_lib.simpson.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
