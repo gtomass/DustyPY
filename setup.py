@@ -8,7 +8,7 @@ setup(
     description="DustyPY is a convenient Package to run and fit SED using the radiative transfer modeling code dusty",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/Radron74/DustyPY.git",
+    url="https://github.com/gtomass/DustyPY.git",
     package_dir={"DustyPY": "DustyPY"},
     packages=find_packages(),
     classifiers=[
@@ -29,5 +29,6 @@ setup(
     include_package_data=True,
     package_data={
         "DustyPY": ["filter/*"],
+        "DustyPY": ["libs/*"],
     },
 )
