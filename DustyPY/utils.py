@@ -180,9 +180,6 @@ def error_plot(Flux, Wavelength, eFlux, unit=None, xlim=None, ylim=None, ax=None
         else:
             Flux = Flux / np.max(Flux)
 
-    if 'log' in scale:
-        eFlux = 1/(np.log(10)*Flux) * eFlux
-
     ax.errorbar(Wavelength, Flux, yerr=eFlux, **kwargs)
     ax.set_xlabel(f"{unit['x']}",fontsize=15)
     ax.set_ylabel(f"{unit['y']}",fontsize=15)

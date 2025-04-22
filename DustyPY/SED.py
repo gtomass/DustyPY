@@ -1,4 +1,5 @@
 from . import utils as utils
+import numpy as np
 
 
 class SED():
@@ -105,6 +106,9 @@ class SED():
         """
         central =[utils.get_central_wavelegnth(utils.get_bandpass(f))/10000 for f in bandpass.values()]
         f, f_err = self.integrate_bandpass(bandpass)
+
+        if scale == 'log':
+            f_err = 1/(np.log(10)*f) * f_err
         utils.error_plot(Flux = f,Wavelength=central,eFlux=f_err, unit=unit, xlim=xlim,
                    ylim=ylim, ax=ax, scale=scale, kwargs=kwargs, normalize=normalize)
 
