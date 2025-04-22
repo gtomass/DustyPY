@@ -346,7 +346,7 @@ class DustyFit():
         
         if SED_band:
             SED.scatter_SED_bandpass(self._Data.get_common_filters(self._Data.get_table()), ax=ax, kwargs={
-                                     'marker': '.', 'color': 'b', 'label': 'SED'}, normalize=normalize)
+                                     'fmt': '.b', 'label': 'SED'}, normalize=normalize)
         if self._Data.get_yerr() is not None:
             utils.error_plot(self._Data.get_ydata(), self._Data.get_xdata(), self._Data.get_yerr(
             ), unit=unit, xlim=xlim, ylim=ylim, ax=ax, scale=scale, kwargs=kwargs_data, normalize=normalize)
