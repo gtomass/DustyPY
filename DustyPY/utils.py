@@ -591,7 +591,7 @@ def interpol(xdata, xdusty, ydusty):
     
 def model(theta, data)-> None:
         
-        dusty, data_mod, fit, logfile, Jansky = data.user_defined_object[0]
+        dusty, data_mod, fit, logfile, Jansky, lock = data.user_defined_object[0]
 
         dustsize = dusty.get_Model().get_Dust().get_DustSize()
         density = dusty.get_Model().get_Dust().get_Density()
@@ -624,11 +624,18 @@ def model(theta, data)-> None:
         Lum  = p['Lest']
 
         set_change(dusty,change)
+        
+        if lock is not None:
+            with lock:
+                dusty.change_parameter()
+                dusty.lunch_dusty(verbose=0, logfile=logfile)
+                dusty.make_SED(luminosity=Lum, Jansky=Jansky)
+        else:
+            dusty.change_parameter()
+            dusty.lunch_dusty(verbose=0, logfile=logfile)
+            dusty.make_SED(luminosity=Lum, Jansky=Jansky)
 
-        dusty.change_parameter()
-        dusty.lunch_dusty(verbose=0, logfile=logfile)
-        dusty.make_SED(luminosity=Lum, Jansky=Jansky)
-
+            
         if data_mod.get_table() is not None:
 
             bandpass = data_mod.get_common_filters(data_mod.get_table())

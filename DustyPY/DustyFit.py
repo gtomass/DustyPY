@@ -22,7 +22,7 @@ class DustyFit():
     _Fit (fit): The fitting object.
     """
 
-    def __init__(self, Dusty: dusty.Dusty, data: Data, ParamFit: dict = None, Param: dict = None, fit: MCfit.fit = None, logfile: bool = False) -> None:
+    def __init__(self, Dusty: dusty.Dusty, data: Data, ParamFit: dict = None, Param: dict = None, fit: MCfit.fit = None, logfile: bool = False, ncpu: int = 1) -> None:
         """
         Initializes an instance of the DustyFit class.
 
@@ -34,7 +34,7 @@ class DustyFit():
         fit (fit, optional): The fitting object. Defaults to an instance of MCfit.fit.
         """
         if fit is None:
-            fit = MCfit.fit()
+            fit = MCfit.fit(ncpu=ncpu)
         if data is None:
             data = Data()
         
@@ -154,7 +154,7 @@ class DustyFit():
         utils.set_change(dusty=self._Dusty,change=change)
             
 
-    def __Chi2Dusty(self, theta, data) -> float:
+    def Chi2Dusty(self, theta, data) -> float:
         """
         Calculate the chi-squared value for the Dusty model fit.
         This method updates the Dusty model parameters based on the provided 
@@ -187,7 +187,7 @@ class DustyFit():
 
         return chi2
         
-    def __Chi2Dusty_modified(self, theta, data) -> float:
+    def Chi2Dusty_modified(self, theta, data) -> float:
         """
         Calculate the chi-squared value for the Dusty model fit.
         This method updates the Dusty model parameters based on the provided 
@@ -241,9 +241,9 @@ class DustyFit():
 
         self.__InitFit(Jansky=Jansky)
         if chi2 == 'Chi2':
-            self._Fit.fit(Chi2=self.__Chi2Dusty)
+            self._Fit.fit(Chi2=self.Chi2Dusty)
         elif chi2 == 'Chi2_modified':
-            self._Fit.fit(Chi2=self.__Chi2Dusty_modified)
+            self._Fit.fit(Chi2=self.Chi2Dusty_modified)
         else:
             raise Exception('The chi2 function is not recognized')
         
@@ -256,14 +256,14 @@ class DustyFit():
         Returns: chi2 (float): The chi-squared value of the fitting procedure.
         """
         pdata = pymcmcstat.MCMC.MCMC()
-        pdata.data.add_data_set(self.get_Data().get_xdata(), self.get_Data().get_ydata(), user_defined_object=[self._Dusty, self._Data, self._Fit, self._logfile, Jansky])
+        pdata.data.add_data_set(self.get_Data().get_xdata(), self.get_Data().get_ydata(), user_defined_object=[self._Dusty, self._Data, self._Fit, self._logfile, Jansky, None])
 
         p = [key for key, value in self.get_Param().items() if value['sample']]
         stats = [self._Fit.get_Stats()['mean'][p.index(key)] if value['sample'] else value['theta0'] for i, (key, value) in enumerate(self.get_Param().items())]
         if chi2 == 'Chi2':
-            return self.__Chi2Dusty(stats, pdata.data)
+            return self.Chi2Dusty(stats, pdata.data)
         elif chi2 == 'Chi2_modified':
-            return self.__Chi2Dusty_modified(stats, pdata.data)
+            return self.Chi2Dusty_modified(stats, pdata.data)
         else:
             raise Exception('The chi2 function is not recognized')
 

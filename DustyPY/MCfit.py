@@ -5,6 +5,13 @@ from . import utils as utils
 from . import Data as Data
 import numpy as np
 import matplotlib.pyplot as plt
+from multiprocessing import Pool, Lock
+
+def run_simulation_wrapper(Model):
+        """
+        Wrapper function to run the MCMC simulation.
+        """
+        Model.run_simulation()
 
 
 class fit():
@@ -19,7 +26,7 @@ class fit():
     _Results (dict): The results of the fitting procedure.
     """
 
-    def __init__(self, data: Data = None, Model: pymcmcstat.MCMC.MCMC = None, ParamFit: dict = None, Param: dict = None) -> None:
+    def __init__(self, data: Data = None, Model: pymcmcstat.MCMC.MCMC = None, ParamFit: dict = None, Param: dict = None, ncpu: int = 1) -> None:
         """
         Initializes an instance of the Fit class.
 
@@ -50,6 +57,7 @@ class fit():
         self._ParamFit = ParamFit
         self._Param = Param
         self._Results = {}
+        self.Ncpu = ncpu
         self._UserDefinedObject = None
         self._Stats = None
 
@@ -171,25 +179,47 @@ class fit():
         any: The statistics of the fitting procedure.
         """
         return self._Stats
+    
+    def run_parallel(self) -> None:
+        """
+        Runs the MCMC simulation in parallel using multiple processes.
+        """
+        self._Model.run_simulation()
+
 
     def fit(self, Chi2=utils.chi2) -> None:
         """
-        Performs the fitting procedure using the provided chi-squared function.
+        Executes the fitting procedure using the specified chi-squared function.
 
         Parameters:
-        Chi2 (function, optional): The chi-squared function to be used for the fitting procedure. Defaults to utils.chi2.
+        Chi2 (function, optional): The chi-squared function to use for the fitting procedure. Defaults to utils.chi2.
         """
         y = self._Data.get_ydata()
         x = self._Data.get_xdata()
+
+        self.set_Chi2Func(Chi2)
+
+        # Add data and user-defined object to the model
+        user_defined_object = self._UserDefinedObject
+        if self.Ncpu > 1:
+            lock = Lock()
+            user_defined_object.append(lock)
+        else:
+            user_defined_object.append(None)
+
+        self._UserDefinedObject = user_defined_object
         self._Model.data.add_data_set(x, y, user_defined_object=self._UserDefinedObject)
         self.set_Model()
 
-        self.set_Chi2Func(Chi2)
-        self._Model.run_simulation()
+        if self.Ncpu > 1:
+            with Pool(processes=self.Ncpu) as pool:
+                from functools import partial
+                pool.map(partial(run_simulation_wrapper, self._Model), range(self.Ncpu))
+        else:
+            self._Model.run_simulation()
 
-        results = {}
+        # Store results and statistics
         results = self._Model.simulation_results.results.copy()
-
         chain = results['chain']
         burnin = int(results['nsimu'] / 2)
         stats = self._Model.chainstats(chain[burnin:, :], results=results, returnstats=True)
