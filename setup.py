@@ -1,5 +1,12 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 
+# Define the C extension
+simpson_extension = Extension(
+    name="DustyPY.libs.simpson",  # Module name
+    sources=["DustyPY/libs/simpson.c"],  # Path to the C source file
+)
+
+# Setup configuration
 setup(
     name="DustyPY",
     version="0.1.0",
@@ -16,7 +23,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.12',
     install_requires=[
         "matplotlib",
         "numpy",
@@ -28,7 +35,7 @@ setup(
     ],
     include_package_data=True,
     package_data={
-        "DustyPY": ["filter/*"],
-        "DustyPY": ["libs/*"],
+        "DustyPY": ["filter/*", "libs/*"],
     },
+    ext_modules=[simpson_extension],  # Include the C extension
 )

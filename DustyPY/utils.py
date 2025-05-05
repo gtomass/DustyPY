@@ -15,17 +15,18 @@ import ctypes
 import numpy as np
 # ...existing imports...
 
-Lib_Path = os.path.join(os.path.dirname(__file__), 'libs')
-
 # Load the compiled C library
-simpson_lib = ctypes.CDLL(Lib_Path+'/simpson.so')
+try:
+    from DustyPY.libs import simpson
+except ImportError:
+    raise ImportError("The simpson module could not be loaded. Ensure it is compiled correctly.")
 
 # Define the argument and return types for the C functions
-simpson_lib.simpson.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
-simpson_lib.simpson.restype = ctypes.c_double
+simpson.simpson.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
+simpson.simpson.restype = ctypes.c_double
 
-simpson_lib.simpson_error.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
-simpson_lib.simpson_error.restype = ctypes.c_double
+simpson.simpson_error.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
+simpson.simpson_error.restype = ctypes.c_double
 
 def simpson(x, y):
     """
