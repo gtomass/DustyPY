@@ -56,7 +56,7 @@ def simpson(x, y):
 
     x_c = x.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     y_c = y.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-    return simpson_lib.simpson(x_c, y_c, n)
+    return simpson.simpson(x_c, y_c, n)
 
 def simpson_error(x, y):
     """
@@ -75,7 +75,7 @@ def simpson_error(x, y):
 
     x_c = x.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     y_c = y.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-    return simpson_lib.simpson_error(x_c, y_c, n)
+    return simpson.simpson_error(x_c, y_c, n)
 
 def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None, normalize: bool = False):
     """Create a scatter plot
