@@ -13,13 +13,24 @@ from pymcmcstat.MCMC import MCMC
 from synphot import SpectralElement
 import ctypes
 import numpy as np
-# ...existing imports...
 
-# Load the compiled C library
+# Dynamically load the compiled C library
+def load_simpson_library():
+    """
+    Dynamically loads the compiled simpson shared library (.so file) based on the platform and Python version.
+    """
+    lib_dir = os.path.join(os.path.dirname(__file__), "libs")
+    for file in os.listdir(lib_dir):
+        if file.startswith("simpson") and file.endswith(".so"):
+            return ctypes.CDLL(os.path.join(lib_dir, file))
+    raise ImportError("The simpson shared library could not be found. Ensure it is compiled correctly.")
+
 try:
-    from DustyPY.libs import simpson
-except ImportError:
-    raise ImportError("The simpson module could not be loaded. Ensure it is compiled correctly.")
+    simpson = load_simpson_library()
+except ImportError as e:
+    raise ImportError(
+        "The simpson shared library could not be loaded. Ensure it is compiled correctly."
+    ) from e
 
 # Define the argument and return types for the C functions
 simpson.simpson.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
