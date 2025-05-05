@@ -254,6 +254,26 @@ class fit():
         mcpl.plot_chain_panel(chain[burnin:,:], names);
         mcpl.plot_density_panel(np.sqrt(s2chain[burnin:,:]), ['$\\sigma_1$', '$\\sigma_2$'])
 
+    def plot_density_panel(self) -> None:
+        """
+        Plots the density panel of the MCMC chain.
+        """
+        chain = self.get_Results()['chain']
+        burnin = int(self.get_Results()['nsimu'] / 2)
+        names = self.get_Results()['names']
+        mcpl = pymcmcstat.mcmcplot
+        mcpl.plot_density_panel(chain[burnin:,:], names)
+
+    def plot_chain_panel(self) -> None:
+        """
+        Plots the density panel of the MCMC chain.
+        """
+        chain = self.get_Results()['chain']
+        burnin = int(self.get_Results()['nsimu'] / 2)
+        names = self.get_Results()['names']
+        mcpl = pymcmcstat.mcmcplot
+        mcpl.plot_chain_panel(chain[burnin:,:], names)
+
 
     def prediction_interval(self, data: any = None) -> None:
         """

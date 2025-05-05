@@ -284,6 +284,24 @@ class DustyFit():
         """
         self._Fit.plot_stats()
 
+    def plot_density_panel(self) -> None:
+        """
+        Plots the density panel of the fitting procedure.
+
+        Parameters:
+        ax (matplotlib.axes.Axes): The axis on which to plot the density panel.
+        """
+        self._Fit.plot_density_panel()
+
+    def plot_chain_panel(self) -> None:
+        """
+        Plots the chain panel of the fitting procedure.
+
+        Parameters:
+        ax (matplotlib.axes.Axes): The axis on which to plot the chain panel.
+        """
+        self._Fit.plot_chain_panel()
+
     def plot_results(self,
                      unit: dict = None,
                      xlim: tuple = None,
