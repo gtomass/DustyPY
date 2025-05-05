@@ -26,18 +26,18 @@ def load_simpson_library():
     raise ImportError("The simpson shared library could not be found. Ensure it is compiled correctly.")
 
 try:
-    simpson = load_simpson_library()
+    simpson_lib = load_simpson_library()
 except ImportError as e:
     raise ImportError(
         "The simpson shared library could not be loaded. Ensure it is compiled correctly."
     ) from e
 
 # Define the argument and return types for the C functions
-simpson.simpson.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
-simpson.simpson.restype = ctypes.c_double
+simpson_lib.simpson.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
+simpson_lib.simpson.restype = ctypes.c_double
 
-simpson.simpson_error.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
-simpson.simpson_error.restype = ctypes.c_double
+simpson_lib.simpson_error.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
+simpson_lib.simpson_error.restype = ctypes.c_double
 
 def simpson(x, y):
     """
@@ -56,7 +56,7 @@ def simpson(x, y):
 
     x_c = x.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     y_c = y.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-    return simpson.simpson(x_c, y_c, n)
+    return simpson_lib.simpson(x_c, y_c, n)
 
 def simpson_error(x, y):
     """
@@ -75,7 +75,7 @@ def simpson_error(x, y):
 
     x_c = x.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     y_c = y.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-    return simpson.simpson_error(x_c, y_c, n)
+    return simpson_lib.simpson_error(x_c, y_c, n)
 
 def scatter_plot(Flux, Wavelength, unit=None, xlim=None, ylim=None, ax=None, scale='linear', kwargs=None, normalize: bool = False):
     """Create a scatter plot
