@@ -13,6 +13,8 @@ from pymcmcstat.MCMC import MCMC
 from synphot import SpectralElement
 import ctypes
 import numpy as np
+from typing import Callable
+
 
 # Dynamically load the compiled C library
 def load_simpson_library():
@@ -846,7 +848,7 @@ def querry_vizier_data(radius, target):
 
     return Table.read(f"https://vizier.cds.unistra.fr/viz-bin/sed?-c={target}&-c.rs={radius}")
 
-def aggregate_table(table, column:str = 'sed_filter', fct: function = np.mean):
+def aggregate_table(table, column: str = 'sed_filter', fct: Callable = np.mean):
     """
     Agrège les données d'une table en fonction d'une fonction donnée.
 
