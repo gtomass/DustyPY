@@ -860,7 +860,7 @@ def aggregate_table(table, column: str = 'sed_filter', fct: Callable = np.mean):
     Table: La table agrégée.
     """
 
-    units = [table[col].unit for col in table.colnames]
+    units = [table[col].unit for col in ['sed_filter', 'sed_freq', 'sed_flux', 'sed_eflux', '_tabname'] if col in table.colnames and hasattr(table[col], 'unit')]
 
     grouped = table.group_by('sed_filter')
     keys = grouped.groups.keys['sed_filter']
