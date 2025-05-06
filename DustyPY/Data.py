@@ -281,6 +281,7 @@ class Data():
     def set_vizier_data(self, table) -> None:
         """
         Sets the data from a Vizier query. Fill nan with 0 for compatibility with the rest of the code.
+        The data is then aggregated by filter and the x and y data are set.
 
         Parameters:
         table (array-like): The data from the Vizier query.
@@ -289,9 +290,7 @@ class Data():
         has_nan = np.isnan(data)
         table[has_nan]['sed_eflux'] = 0.0
 
-        grouped_table = table.group_by('sed_filter')
-        table = grouped_table.groups.aggregate(np.mean)
-        table.sort('sed_freq', reverse=True)
+        table = utils.aggregate_table(table, column='sed_filter', fct=np.mean)
 
         self._table = table
         self._xdata = (table['sed_freq']).to(u.um, equivalencies=u.spectral()).value

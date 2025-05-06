@@ -846,6 +846,33 @@ def querry_vizier_data(radius, target):
 
     return Table.read(f"https://vizier.cds.unistra.fr/viz-bin/sed?-c={target}&-c.rs={radius}")
 
+def aggregate_table(table, column:str = 'sed_filter', fct: function = np.mean):
+    """
+    Agrège les données d'une table en fonction d'une fonction donnée.
+
+    Paramètres:
+    table (Table): La table à agréger.
+    function (function): La fonction d'agrégation à appliquer.
+
+    Retourne:
+    Table: La table agrégée.
+    """
+
+    grouped = table.group_by('sed_filter')
+    keys = grouped.groups.keys['sed_filter']
+    new_rows = []
+    for i, group in enumerate(grouped.groups):
+        sed_freq_mean = fct(group['sed_freq'])
+        sed_flux_mean = fct(group['sed_flux'])
+        sed_eflux_mean = fct(group['sed_eflux'])
+        tabname_list = list(group['_tabname'])
+        new_rows.append((str(keys[i]), sed_freq_mean, sed_flux_mean, sed_eflux_mean, tabname_list))
+
+    # Create the new table
+    return Table(rows=new_rows, names=['sed_filter','sed_freq', 'sed_flux', 'sed_eflux', 'tabname'])
+
+    
+
 
 def log_space(start, stop, num):
     """
