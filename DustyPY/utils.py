@@ -860,6 +860,8 @@ def aggregate_table(table, column: str = 'sed_filter', fct: Callable = np.mean):
     Table: La table agrégée.
     """
 
+    units = [table[col].unit for col in table.colnames]
+
     grouped = table.group_by('sed_filter')
     keys = grouped.groups.keys['sed_filter']
     new_rows = []
@@ -871,7 +873,7 @@ def aggregate_table(table, column: str = 'sed_filter', fct: Callable = np.mean):
         new_rows.append((str(keys[i]), sed_freq_mean, sed_flux_mean, sed_eflux_mean, tabname_list))
 
     # Create the new table
-    return Table(rows=new_rows, names=['sed_filter','sed_freq', 'sed_flux', 'sed_eflux', 'tabname'])
+    return Table(rows=new_rows, names=['sed_filter','sed_freq', 'sed_flux', 'sed_eflux', 'tabname'], units=units)
 
     
 

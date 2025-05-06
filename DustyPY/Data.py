@@ -293,7 +293,7 @@ class Data():
         table = utils.aggregate_table(table, column='sed_filter', fct=np.mean)
 
         self._table = table
-        self._xdata = (table['sed_freq']).to(u.um, equivalencies=u.spectral()).value
+        self._xdata = (np.asarray(table['sed_freq'])*table['sed_freq'].unit).to(u.um, equivalencies=u.spectral()).value
         self._ydata = table['sed_flux'].value
         self._yerr = table['sed_eflux'].value
 
