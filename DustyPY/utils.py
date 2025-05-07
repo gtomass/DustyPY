@@ -645,6 +645,42 @@ def get_table_interpolated(teff=None, logg=None, ebv=0.0, **kwargs) -> tuple:
         return False, wave, flux 
 
     return True, wave, flux
+
+def create_spectral_file(dusty) -> None:
+    """
+    Create a spectral file for the Dusty model.
+    Parameters:
+    dusty (Dusty): The Dusty model object.
+    """
+
+    file_name = dusty.get_Model().get_GridlFile()
+    bool_file,Wavelength,Flux = [], None, None
+    if os.path.exists(file_name):
+        for i in range(1,len(dusty.get_Model().get_NbStar())):
+            if Wavelength is None:
+                bool, Wavelength, Flux = get_table_interpolated(teff=p['Temp{i}'], logg=dusty.get_Model().get_Stars()[i].get_Logg(), ebv=0, gridfilename=file_name)
+                bool_file.append(bool)
+            else:
+                bool, Wavelength, Flux_add = get_table_interpolated(teff=p['Temp{i}'], logg=dusty.get_Model().get_Stars()[i].get_Logg(), ebv=0, gridfilename=file_name)
+                bool_file.append(bool)
+                Flux += Flux_add
+    else:
+        raise FileNotFoundError(f'This file does not exist: {file_name}')
+    
+    if all(bool_file):
+        spectral_file = dusty.get_Model().get_SpectralFile()
+        with open(spectral_file, 'w') as f:
+            f.write('#>')
+            for i in range(len(Wavelength)):
+                f.write(f'{Wavelength[i]} {Flux[i]}\n')
+
+    else:
+        spectral_file = dusty.get_Model().get_SpectralFile()
+        with open(spectral_file, 'w') as f:
+            f.write('#>')
+            for i in range(len(Wavelength)):
+                f.write(f'{Wavelength[i]} {np.nan}\n')
+
     
 def model(theta, data)-> None:
         
@@ -683,36 +719,8 @@ def model(theta, data)-> None:
         set_change(dusty,change)
 
         if dusty.get_Model().get_Spectral() in ['FILE_LAMBDA_F_LAMBDA', 'FILE_F_LAMBDA']:
-            file_name = dusty.get_Model().get_GridlFile()
-            bool_file,Wavelength,Flux = [], None, None
-            if os.path.exists(file_name):
-                for i in range(1,len(dusty.get_Model().get_NbStar())):
-                    if Wavelength is None:
-                        bool, Wavelength, Flux = get_table_interpolated(teff=p['Temp{i}'], logg=dusty.get_Model().get_Stars()[i].get_Logg(), ebv=0, gridfilename=file_name)
-                        bool_file.append(bool)
-                    else:
-                        bool, Wavelength, Flux_add = get_table_interpolated(teff=p['Temp{i}'], logg=dusty.get_Model().get_Stars()[i].get_Logg(), ebv=0, gridfilename=file_name)
-                        bool_file.append(bool)
-                        Flux += Flux_add
-            else:
-                raise FileNotFoundError(f'This file does not exist: {file_name}')
-            
-            if all(bool_file):
-                spectral_file = dusty.get_Model().get_SpectralFile()
-                with open(spectral_file, 'w') as f:
-                    f.write('#>')
-                    for i in range(len(Wavelength)):
-                        f.write(f'{Wavelength[i]} {Flux[i]}\n')
+            create_spectral_file(dusty)
 
-            else:
-                spectral_file = dusty.get_Model().get_SpectralFile()
-                with open(spectral_file, 'w') as f:
-                    f.write('#>')
-                    for i in range(len(Wavelength)):
-                        f.write(f'{Wavelength[i]} {np.nan}\n')
-
-
-        
         if lock is not None:
             with lock:
                 dusty.change_parameter()
