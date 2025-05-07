@@ -612,7 +612,7 @@ def get_table_interpolated(teff=None, logg=None, ebv=0.0, **kwargs) -> tuple:
     gridfilename = kwargs.get('gridfilename', None)
     hdu = fits.open(gridfilename)
 
-    wave_unit = hdu[0].header['WAVEUNIT']
+    wave_unit = hdu[0].header['WAVUNIT']
     if wave_unit == 'Angstrom':
         wave_unit = u.Angstrom
     elif wave_unit == 'Micron':
