@@ -1,3 +1,5 @@
+import os
+
 class Star():
     """
     Class representing a star with a name, temperature, and luminosity.
@@ -297,7 +299,8 @@ class Model():
                  distance: float = 1,
                  Spectral: str = 'black_body',
                  SiOAbsorption: float = 10,
-                 SpectralFile: str = None) -> None:
+                 SpectralFile: str = None,
+                 GridFile: str = None) -> None:
         """
         Initializes an instance of the Model class.
 
@@ -307,6 +310,10 @@ class Model():
         Stars (list, optional): A list of stars in the model. Defaults to an empty list.
         Dust (Dust, optional): An instance of the Dust class representing the dust in the model. Defaults to a new Dust instance.
         distance (float, optional): The distance of the model in pc. Defaults to 1.
+        Spectral (str, optional): The spectral shape of the model. Defaults to 'black_body'.
+        SiOAbsorption (float, optional): The SiO absorption depth of the model. Defaults to 10.
+        SpectralFile (str, optional): The spectral file path of the model. Defaults to None.
+        GridFile (str, optional): The atmosphere grid file path of the model. Defaults to None.
         """
         if Stars is None:
             Stars = []
@@ -314,6 +321,8 @@ class Model():
             dust = Dust()
         if SpectralFile is None:
             SpectralFile = ''
+        if GridFile is None:
+            GridFile = ''
 
         self._Name = Name
         self._NbStar = NbStar
@@ -323,6 +332,7 @@ class Model():
         self._Spectral = Spectral
         self._SiOAbsorption = SiOAbsorption
         self._SpectralFile = SpectralFile
+        self._GridFile = GridFile
         self.__Check()
 
     def set_Name(self, Name: str) -> None:
@@ -477,6 +487,25 @@ class Model():
         str: The spectral file of the model.
         """
         return self._SpectralFile
+    
+    def set_GridFile(self, GridFile: str) -> None:
+        """
+        Sets the atmosphere grid file of the model.
+
+        Parameters:
+        GridFile (str): The atmosphere grid file of the model.
+        """
+        self._GridFile = GridFile
+        self.__Check()
+    
+    def get_GridFile(self) -> str:
+        """
+        Returns the atmosphere grid file of the model.
+
+        Returns:
+        str: The atmosphere grid file of the model.
+        """
+        return self._GridFile
 
     def __Check(self) -> None:
         """
@@ -497,3 +526,5 @@ class Model():
             raise ValueError("SiO absorption depth must be between 0 and 100")
         if self._Spectral.lower() in ['file_lambda_f_lambda', 'file_f_lambda', 'file_f_nu'] and self._SpectralFile == '':
             raise ValueError("Spectral file cannot be empty")
+        if not os.path.isfile(self._SpectralFile):
+            raise ValueError(f"Spectral file {self._SpectralFile} does not exist")
