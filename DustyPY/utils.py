@@ -603,6 +603,23 @@ def interpol(xdata, xdusty, ydusty):
     except Exception:
         return interpolate_spline(xdusty, ydusty)(xdusty)
     
+def create_param_dict(model):
+    """
+    Create a dictionary of parameters from the Dusty model.
+
+    Parameters:
+    model: The Dusty model object.
+
+    Returns:
+    dict: A dictionary with parameter names as keys and their values.
+    """
+    params = {}
+    for i, star in enumerate(model.get_Stars()):
+        params[f'Temp{i+1}'] = star.get_Temperature()
+        params[f'Lum{i+1}'] = star.get_Luminosity()
+        params[f'Logg{i+1}'] = star.get_Logg()
+    return params
+    
 def get_table_interpolated(teff=None, logg=None, ebv=0.0, **kwargs) -> tuple:
     """
     Interpolates the atmosphere model grid to the desired Teff and logg.
@@ -717,17 +734,16 @@ def model(theta, data)-> None:
         Lum  = p['Lest']
 
         set_change(dusty,change)
+        dusty.change_parameter()
 
         if dusty.get_Model().get_Spectral() in ['FILE_LAMBDA_F_LAMBDA', 'FILE_F_LAMBDA']:
             create_spectral_file(dusty,p)
 
         if lock is not None:
             with lock:
-                dusty.change_parameter()
                 dusty.lunch_dusty(verbose=0, logfile=logfile)
                 dusty.make_SED(luminosity=Lum, Jansky=Jansky)
         else:
-            dusty.change_parameter()
             dusty.lunch_dusty(verbose=0, logfile=logfile)
             dusty.make_SED(luminosity=Lum, Jansky=Jansky)
 
