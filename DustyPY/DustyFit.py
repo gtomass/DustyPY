@@ -185,7 +185,15 @@ class DustyFit():
 
         chi2 = np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2) if self._Data.get_yerr() is not None else np.nansum((ymodel - ydata)**2)
 
-        return chi2
+        # Calcul des degrés de liberté
+        n_data_points = len(ydata)
+        n_parameters = len(theta)
+        dof = n_data_points - n_parameters - 1
+
+        # Calcul du chi² réduit
+        chi2_reduced = chi2 / dof if dof > 0 else np.inf  # Évite une division par zéro
+
+        return chi2_reduced
         
     def Chi2Dusty_modified(self, theta, data) -> float:
         """
