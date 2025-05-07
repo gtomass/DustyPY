@@ -138,7 +138,7 @@ class Dusty():
         """
         Runs the Dusty simulation with the current model settings.
         """
-        if self._Model().get_Spectral() in ['FILE_LAMBDA_F_LAMBDA', 'FILE_F_LAMBDA', 'FILE_F_NU']:
+        if self._Model.get_Spectral() in ['FILE_LAMBDA_F_LAMBDA', 'FILE_F_LAMBDA', 'FILE_F_NU']:
             utils.create_spectral_file(self)
                 
         if verbose not in [0, 1, 2]:
