@@ -5,7 +5,7 @@ class Star():
     Class representing a star with a name, temperature, and luminosity.
     """
 
-    def __init__(self, Name: str = '', Temperature: float = 0, Luminosity: float = 0) -> None:
+    def __init__(self, Name: str = '', Temperature: float = 0, Luminosity: float = 0, Logg: float = 0) -> None:
         """
         Initializes an instance of the Star class.
 
@@ -13,10 +13,12 @@ class Star():
         Name (str, optional): The name of the star. Defaults to an empty string.
         Temperature (float, optional): The temperature of the star in Kelvin. Defaults to 0.
         Luminosity (float, optional): The luminosity of the star in solar units. Defaults to 0.
+        Logg (float, optional): The surface gravity of the star. Defaults to 0.
         """
         self._Name = Name
         self._Temperature = Temperature
         self._Luminosity = Luminosity
+        self._Logg = Logg
 
     def __str__(self) -> str:
         """
@@ -80,6 +82,24 @@ class Star():
         float: The luminosity of the star in solar units.
         """
         return self._Luminosity
+    
+    def set_Logg(self, Logg: float) -> None:
+        """
+        Sets the surface gravity of the star.
+
+        Parameters:
+        Logg (float): The surface gravity of the star.
+        """
+        self._Logg = Logg
+
+    def get_Logg(self) -> float:
+        """
+        Returns the surface gravity of the star.
+
+        Returns:
+        float: The surface gravity of the star.
+        """
+        return self._Logg
 
 
 class Dust():
