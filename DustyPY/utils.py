@@ -673,7 +673,7 @@ def create_spectral_file(dusty, p) -> None:
     file_name = dusty.get_Model().get_GridFile()
     bool_file,Wavelength,Flux = [], None, None
     if os.path.exists(file_name):
-        for i in range(1,len(dusty.get_Model().get_NbStar())):
+        for i in range(1,dusty.get_Model().get_NbStar()+1):
             if Wavelength is None:
                 bool, Wavelength, Flux = get_table_interpolated(teff=p['Temp{i}'], logg=dusty.get_Model().get_Stars()[i].get_Logg(), ebv=0, gridfilename=file_name)
                 bool_file.append(bool)
