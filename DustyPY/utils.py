@@ -613,11 +613,11 @@ def get_table_interpolated(teff=None, logg=None, ebv=0.0, **kwargs) -> tuple:
     hdu = fits.open(gridfilename)
 
     wave_unit = hdu[0].header['WAVUNIT']
-    if wave_unit == 'Angstrom':
+    if wave_unit.lower() == 'angstrom':
         wave_unit = u.Angstrom
-    elif wave_unit == 'Micron':
+    elif wave_unit.lower() == 'micron':
         wave_unit = u.micron
-    elif wave_unit == 'nm':
+    elif wave_unit.lower() == 'nm':
         wave_unit = u.nm
     else:
         raise ValueError(f"Unknown wavelength unit: {wave_unit}")
