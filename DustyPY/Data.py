@@ -291,6 +291,7 @@ class Data():
         table[has_nan]['sed_eflux'] = 0.0
 
         table = utils.aggregate_table(table, column='sed_filter', fct=np.mean)
+        table.sort('sed_freq', reverse=True)
 
         self._table = table
         self._xdata = (np.asarray(table['sed_freq'])*table['sed_freq'].unit).to(u.um, equivalencies=u.spectral()).value
