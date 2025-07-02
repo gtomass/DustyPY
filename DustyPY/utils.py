@@ -7,7 +7,7 @@ import os
 import astropy.units as u
 from astropy.table import Table, Column
 from astropy.io import fits
-from scipy.interpolate import make_interp_spline
+from scipy.interpolate import make_interp_spline, LinearNDInterpolator
 import scipy.interpolate as interpolate
 from pymcmcstat.MCMC import MCMC
 from synphot import SpectralElement
@@ -603,6 +603,102 @@ def interpol(xdata, xdusty, ydusty):
     except Exception:
         return interpolate_spline(xdusty, ydusty)(xdusty)
     
+def create_param_dict(model):
+    """
+    Create a dictionary of parameters from the Dusty model.
+
+    Parameters:
+    model: The Dusty model object.
+
+    Returns:
+    dict: A dictionary with parameter names as keys and their values.
+    """
+    params = {}
+    for i, star in enumerate(model.get_Stars()):
+        params[f'Temp{i+1}'] = star.get_Temperature()
+        params[f'Lum{i+1}'] = star.get_Luminosity()
+        params[f'Logg{i+1}'] = star.get_Logg()
+    return params
+    
+def get_table_interpolated(teff=None, logg=None, ebv=0.0, **kwargs) -> tuple:
+    """
+    Interpolates the atmosphere model grid to the desired Teff and logg.
+    """
+    # -- get the grid
+
+    gridfilename = kwargs.get('gridfilename', None)
+    hdu = fits.open(gridfilename)
+
+    wave_unit = hdu[0].header['WAVUNIT']
+    if wave_unit.lower() == 'angstrom':
+        wave_unit = u.Angstrom
+    elif wave_unit.lower() == 'micron':
+        wave_unit = u.micron
+    elif wave_unit.lower() == 'nm':
+        wave_unit = u.nm
+    else:
+        raise ValueError(f"Unknown wavelength unit: {wave_unit}")
+
+    # Extract grid points and models
+    teffs, loggs, models = [], [], []
+    for i in range(1, len(hdu)):
+        teffs.append(hdu[i].header['TEFF'])
+        loggs.append(hdu[i].header['LOGG'])
+        models.append(hdu[i].data)
+
+    teffs = np.array(teffs)
+    loggs = np.array(loggs)
+
+    # Interpolate flux for each wavelength
+    wave = (models[0]['wavelength'] * wave_unit).to(u.micron).value
+    flux_grid = np.array([model['flux'] for model in models])
+    # Find the closest values for teff and logg in the grid
+    interpolator = LinearNDInterpolator(list(zip(teffs, loggs)), flux_grid)
+
+    # Interpolate to the desired Teff and logg
+    flux = interpolator(teff, logg)
+
+    if flux is None:
+        return False, wave, flux 
+
+    return True, wave, flux
+
+def create_spectral_file(dusty, p) -> None:
+    """
+    Create a spectral file for the Dusty model.
+    Parameters:
+    dusty (Dusty): The Dusty model object.
+    """
+
+    file_name = dusty.get_Model().get_GridFile()
+    bool_file,Wavelength,Flux = [], None, None
+    if os.path.exists(file_name):
+        for i in range(dusty.get_Model().get_NbStar()):
+            if Wavelength is None:
+                bool, Wavelength, Flux = get_table_interpolated(teff=p[f'Temp{i+1}'], logg=dusty.get_Model().get_Stars()[i].get_Logg(), ebv=0, gridfilename=file_name)
+                bool_file.append(bool)
+            else:
+                bool, Wavelength, Flux_add = get_table_interpolated(teff=p[f'Temp{i+1}'], logg=dusty.get_Model().get_Stars()[i].get_Logg(), ebv=0, gridfilename=file_name)
+                bool_file.append(bool)
+                Flux += Flux_add
+    else:
+        raise FileNotFoundError(f'This file does not exist: {file_name}')
+    
+    if all(bool_file):
+        spectral_file = dusty.get_Model().get_SpectralFile()
+        with open(spectral_file, 'w') as f:
+            f.write('#>')
+            for i in range(len(Wavelength)):
+                f.write(f'{Wavelength[i]} {Flux[i]}\n')
+
+    else:
+        spectral_file = dusty.get_Model().get_SpectralFile()
+        with open(spectral_file, 'w') as f:
+            f.write('#>')
+            for i in range(len(Wavelength)):
+                f.write(f'{Wavelength[i]} {np.nan}\n')
+
+    
 def model(theta, data)-> None:
         
         dusty, data_mod, fit, logfile, Jansky, lock = data.user_defined_object[0]
@@ -638,14 +734,16 @@ def model(theta, data)-> None:
         Lum  = p['Lest']
 
         set_change(dusty,change)
-        
+        dusty.change_parameter()
+
+        if dusty.get_Model().get_Spectral() in ['FILE_LAMBDA_F_LAMBDA', 'FILE_F_LAMBDA']:
+            create_spectral_file(dusty,p)
+
         if lock is not None:
             with lock:
-                dusty.change_parameter()
                 dusty.lunch_dusty(verbose=0, logfile=logfile)
                 dusty.make_SED(luminosity=Lum, Jansky=Jansky)
         else:
-            dusty.change_parameter()
             dusty.lunch_dusty(verbose=0, logfile=logfile)
             dusty.make_SED(luminosity=Lum, Jansky=Jansky)
 
@@ -712,6 +810,10 @@ def prediction_model(theta, data):
     Lum  =  p['Lest']
 
     set_change(dusty,change)
+
+
+    if dusty.get_Model().get_Spectral() in ['FILE_LAMBDA_F_LAMBDA', 'FILE_F_LAMBDA']:
+        create_spectral_file(dusty,p)
 
     dusty.change_parameter()
     dusty.lunch_dusty(verbose=0, logfile=logfile)
