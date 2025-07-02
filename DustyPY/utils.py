@@ -1105,7 +1105,7 @@ def write_table_to_latex(table, Path, columns=None, column_names=None, wavelengt
         f.write('\\label{table:label}\n')
         f.write('\\end{table*}\n')
 
-def get_photometry(Wavelength, Flux, bandpass_name: str) -> tuple:
+def get_photometry(Wavelength, Flux, bandpass_name: str, number_of_steps: int = 10000) -> tuple:
     """
     Get the photometry of a given spectrum.
 
@@ -1113,12 +1113,13 @@ def get_photometry(Wavelength, Flux, bandpass_name: str) -> tuple:
     Wavelength (np.array): Array of wavelength values.
     Flux (np.array): Array of flux values corresponding to the wavelengths.
     bandpass_name (str): The name of the bandpass to use.
+    number_of_steps (int, optional): The number of steps for integration. Defaults to 10000.
 
     Returns:
     tuple: A tuple containing the integrated flux and its error.
     """
     bandpass = get_bandpass(bandpass_name)
-    integrated_flux, integrated_flux_err = intergrate_bandpass(Wavelength, Flux, bandpass)    
+    integrated_flux, integrated_flux_err = intergrate_bandpass(Wavelength, Flux, bandpass, n_int=number_of_steps)    
     return get_central_wavelegnth(bandpass)/10000,integrated_flux, integrated_flux_err
 
 

@@ -67,17 +67,18 @@ class SED():
         """
         return utils.integrate_SED_bandpass(self._Wavelength, self._Flux, bandpass)
     
-    def get_photometry(self, bandpass: dict) -> dict:
+    def get_photometry(self, bandpass: dict, number_of_step:int = 10000) -> dict:
         """
         Gets the photometry of the SED over a bandpass.
 
         Parameters:
         bandpass (list): The bandpass to integrate over.
+        number_of_step (int, optional): The number of steps for integration. Defaults to 10000.
 
         Returns:
         dict: A dictionary where keys are bandpasses and values are tuples (wavelength, flux).
         """
-        photometry = {band: utils.get_photometry(self._Wavelength, self._Flux, filt) for band,filt in bandpass.items()}
+        photometry = {band: utils.get_photometry(self._Wavelength, self._Flux, filt, number_of_step) for band,filt in bandpass.items()}
         return photometry
 
     def plot_SED(self, unit: str = None, xlim: tuple = None, ylim: tuple = None, ax=None, scale: str = 'linear', kwargs: dict = None, normalize: bool = False) -> None:
