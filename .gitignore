@@ -126,3 +126,7 @@ cython_debug/
 
 # testing
 test.py
+tests/test_erreur.py
+
+# C
+DustyPY/libs/*.so

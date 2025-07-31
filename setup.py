@@ -35,7 +35,7 @@ setup(
     ],
     include_package_data=True,
     package_data={
-        "DustyPY": ["filter/*", "libs/*"],
+        "DustyPY": ["filter/*", "libs/simpson.c"],
     },
     ext_modules=[simpson_extension],  # Include the C extension
 )

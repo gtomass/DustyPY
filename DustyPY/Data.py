@@ -286,6 +286,8 @@ class Data():
         Parameters:
         table (array-like): The data from the Vizier query.
         """
+        table = self.restrict_data_vizier(table)
+
         data = np.array(table['sed_eflux'])
         has_nan = np.isnan(data)
         table[has_nan]['sed_eflux'] = 0.0
