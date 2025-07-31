@@ -181,7 +181,10 @@ class DustyFit():
         except AttributeError:
             ydata = data.get_ydata()
 
-        ymodel = utils.model(theta, data).reshape(ydata.shape)
+        try:
+            ymodel = utils.model(theta, data).reshape(ydata.shape)
+        except ValueError as e:
+            raise(ValueError("Model computation failed. Check the input parameters and data format: " + str(e)))
 
         chi2 = np.nansum(((ymodel - ydata)/self._Data.get_yerr())**2) if self._Data.get_yerr() is not None else np.nansum((ymodel - ydata)**2)
 
