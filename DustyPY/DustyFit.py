@@ -391,7 +391,7 @@ class DustyFit():
             plt.savefig(os.path.join(self._Dusty.get_PATH(), self._Dusty.get_Model().get_Name(),'SED.png'), dpi=300)
 
         plt.legend()
-        plt.show()
+        # plt.show(block=False)
 
 
     def plot_interval(self, wavelength_intervals: list = [(1e-2, 1e0, 50), (1e0, 1e2, 100), (1e2, 1e4, 50)],ciset: dict = None, piset: dict = None, fig: tuple = None) -> None:
