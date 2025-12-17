@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <math.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 // Function to calculate the integral using Simpson's rule
 double simpson(double x[], double y[], int n) {
@@ -11,10 +14,12 @@ double simpson(double x[], double y[], int n) {
     double h = (x[n-1] - x[0]) / (n - 1);
     double sum = y[0] + y[n-1];
 
+    #pragma omp parallel for reduction(+:sum)
     for (int i = 1; i < n-1; i += 2) {
         sum += 4 * y[i];
     }
 
+    #pragma omp parallel for reduction(+:sum)
     for (int i = 2; i < n-2; i += 2) {
         sum += 2 * y[i];
     }
@@ -61,7 +66,6 @@ double simpson_error(double x[], double y[], int n) {
         return 0.0;
     }
 
-    double h = (x[n-1] - x[0]) / (n - 1); // Step size
     double a = x[0];                     // Start of the interval
     double b = x[n-1];                   // End of the interval
     double error_der;
