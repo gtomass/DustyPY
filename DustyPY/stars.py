@@ -339,7 +339,7 @@ class Model():
             Stars = []
         if dust is None:
             dust = Dust()
-        if SpectralFile is None:
+        if SpectralFile is None and Spectral.lower() not in ['file_lambda_f_lambda', 'file_f_lambda', 'file_f_nu']:
             SpectralFile = ''
         if GridFile is None:
             GridFile = ''
@@ -349,7 +349,7 @@ class Model():
         self._Stars = Stars
         self._Dust = dust
         self._distance = distance
-        self._Spectral = Spectral
+        self._Spectral = Spectral.lower()
         self._SiOAbsorption = SiOAbsorption
         self._SpectralFile = SpectralFile
         self._GridFile = GridFile
@@ -546,5 +546,5 @@ class Model():
             raise ValueError("SiO absorption depth must be between 0 and 100")
         if self._Spectral.lower() in ['file_lambda_f_lambda', 'file_f_lambda', 'file_f_nu'] and self._SpectralFile == '':
             raise ValueError("Spectral file cannot be empty")
-        if not os.path.isfile(self._SpectralFile):
+        if not os.path.isfile(self._SpectralFile) and self._Spectral.lower() in ['file_lambda_f_lambda', 'file_f_lambda', 'file_f_nu']:
             raise ValueError(f"Spectral file {self._SpectralFile} does not exist")

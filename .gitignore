@@ -131,3 +131,7 @@ tests/test_erreur.py
 
 # C
 DustyPY/libs/*.so
+
+# Building
+build/*
+DustyPY.egg-info/*
