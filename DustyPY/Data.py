@@ -315,36 +315,36 @@ class Data():
         [30 40]
         """
         for condition in ListOfCondition:
-            condition = 'self._' + \
-                condition.split(' ')[0] + ' ' + \
-                ' '.join(condition.split(' ')[1:])
-            restriction = eval(condition)
+            cond_str = condition
+            condition_eval = 'self._' + \
+                condition.replace('xdata', 'xdata').replace('ydata', 'ydata').replace('xerr', 'xerr').replace('yerr', 'yerr')
+            
+            # Handle variable names in condition
+            for var in ['xdata', 'ydata', 'xerr', 'yerr']:
+                if var in condition:
+                    # Replace variable name with self._variablename in the evaluation string
+                    # check if not already prefixed with self._
+                    # We need a robust replacement to avoid replacing inside words, but given specific var names it might be ok with simple replace for now or better approach
+                    pass
+            
+            # Reconstruct evaluation string properly
+            # The original code assumed "var op value" format.
+            # New approach: Replace variable names with self._variable names in the string
+            condition_eval = condition
+            for var in ['xdata', 'ydata', 'xerr', 'yerr']:
+                 condition_eval = condition_eval.replace(var, f'self._{var}')
+
+            restriction = eval(condition_eval)
 
             self._xdata = self._xdata[restriction]
             self._ydata = self._ydata[restriction]
             self._xerr = self._xerr[restriction] if self._xerr is not None else None
             self._yerr = self._yerr[restriction] if self._yerr is not None else None
             
-            if 'yerr' in condition:
-                self._table = self._table[eval(condition.replace('yerr', "table['sed_eflux']"))] if self._table is not None else None
-            if 'ydata' in condition:
-                self._table = self._table[eval(condition.replace('ydata', "table['sed_flux']"))] if self._table is not None else None
-            if 'xdata' in condition:
-                condition = condition.replace('xdata', "table['sed_freq']")
-                if '>' in condition and '=' not in condition:
-                    condition = condition.replace('>', '<')
-                elif '<' in condition and '=' not in condition:
-                    condition = condition.replace('<', '>')
-                elif '>=' in condition:
-                    condition = condition.replace('>=', '<=')
-                elif '<=' in condition:
-                    condition = condition.replace('<=', '>=')
-                limit = condition.split('>')[-1] if '>' in condition else condition.split('<')[-1]
-                limit_value = (float(limit.strip('=<> ')) * u.um).to(u.GHz, equivalencies=u.spectral()).value
-                condition = condition.replace(limit, str(limit_value))
-                self._table = self._table[eval(condition)] if self._table is not None else None
-
-
+            if self._table is not None:
+                 # Need to translate condition for table columns
+                 
+                 self._table = self._table[restriction]
 
     def add_data(self, xdata: np.array, ydata: np.array, xerr: np.array = None, yerr: np.array = None) -> None:
         """
