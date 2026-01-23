@@ -134,17 +134,53 @@ class Dusty():
         utils.print_file(os.path.join(
             self._dustyPath, name, name+'.inp'), stop=73)
 
-    def lunch_dusty(self, verbose: str = 2, logfile: bool = False) -> None:
+    def lunch_dusty(self, verbose: int = 0, logfile: bool = False) -> None:
         """
         Runs the Dusty simulation with the current model settings.
         """
+        # 1. RECUPERATION DE LA LOGIQUE SPECTRALE (Importante !)
         if self._Model.get_Spectral() in ['file_lambda_f_lambda', 'file_f_lambda', 'file_f_nu']:
+            # Note: Assurez-vous que utils est importé dans dusty.py
+            from . import utils as utils 
             p = utils.create_param_dict(self._Model)
-            utils.create_spectral_file(self,p)
-        if verbose not in [0, 1, 2]:
-            raise ValueError('The verbose parameter must be 0, 1 or 2')
-        subprocess.check_call(
-            [f'./dusty model.mas {verbose if verbose != None else ''} {f'> {os.path.join(self._Model.get_Name(),'log.txt')}' if logfile else ''}'], cwd=self._dustyPath, shell=True)
+            utils.create_spectral_file(self, p)
+
+        # 2. CONFIGURATION DES CHEMINS
+        # Utiliser model.mas comme dans votre ancienne version
+        executable = os.path.join(self._dustyPath, 'dusty')
+        input_file = 'model.mas' 
+        
+        # 3. GESTION DES FLUX (SILENCE / LOGS)
+        stdout_dest = None
+        stderr_dest = None
+        
+        if logfile:
+            # On écrit dans le fichier log spécifié dans le dossier du modèle
+            log_path = os.path.join(self._dustyPath, "dusty_mcmc.log")
+            log_file_obj = open(log_path, "a")
+            stdout_dest = log_file_obj
+            stderr_dest = log_file_obj
+        elif verbose == 0:
+            stdout_dest = subprocess.DEVNULL
+            stderr_dest = subprocess.DEVNULL
+
+        try:
+            # 4. EXECUTION
+            # Dusty attend souvent le nom du fichier .mas en argument
+            # On passe [executable, input_file, str(verbose)]
+            subprocess.run(
+                [executable, input_file, str(verbose)],
+                cwd=self._dustyPath,
+                stdout=stdout_dest,
+                stderr=stderr_dest,
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"Error: Dusty failed with exit code {e.returncode}")
+            raise e
+        finally:
+            if logfile and 'log_file_obj' in locals():
+                log_file_obj.close()
 
     def get_results(self) -> dict:
         """
