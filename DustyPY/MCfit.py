@@ -1,345 +1,246 @@
-import pymcmcstat
-import pymcmcstat.MCMC
-import pymcmcstat.propagation
-from . import utils as utils
-from . import Data as Data
 import numpy as np
 import matplotlib.pyplot as plt
-from multiprocessing import Pool, Lock
+from typing import Dict, Any, Optional, List
 
-def run_simulation_wrapper(Model):
-        """
-        Wrapper function to run the MCMC simulation.
-        """
-        Model.run_simulation()
-
+# Core components from PyMCMC
+from PyMCMC import FunctionFitter, Prior, MCMCAnalyzer, ParallelTempering
+# Internal DustyPY imports
+from .Data import Data  # Correctly import the class to avoid AttributeError
+from . import utils as utils
 
 class fit():
     """
-    Class representing a fitting procedure using MCMC.
+    Management class for MCMC fitting procedures in DustyPY.
+    
+    This class handles the transition between Dusty physical parameters and 
+    the PyMCMC inference engine. It supports both single-core and parallel sampling.
 
     Attributes:
-    _Model (pymcmcstat.MCMC.MCMC): The MCMC model.
-    _Data (Data): The data to fit.
-    _ParamFit (dict): The fitting parameters.
-    _Param (dict): The model parameters.
-    _Results (dict): The results of the fitting procedure.
+        _Data (Data): The observational data to fit.
+        _ParamFit (dict): MCMC configuration (iterations, method, etc.).
+        _Param (dict): Physical model parameters and their priors.
+        _Results (dict): Dictionary containing the results of the fitting procedure.
+        _Stats (dict): Summary statistics for the sampled parameters.
+        Ncpu (int): Number of CPUs dedicated to sampling.
+        fitter (FunctionFitter): The PyMCMC engine instance.
+        analyzer (MCMCAnalyzer): Post-processing tool for diagnostics and plots.
     """
 
-    def __init__(self, data: Data = None, Model: pymcmcstat.MCMC.MCMC = None, ParamFit: dict = None, Param: dict = None, ncpu: int = 1) -> None:
+    def __init__(self, data: Optional[Data] = None, ParamFit: Optional[Dict] = None, 
+                 Param: Optional[Dict] = None, ncpu: int = 1) -> None:
         """
-        Initializes an instance of the Fit class.
+        Initializes the fitting class.
 
-        Parameters:
-        Data (Data, optional): The data to fit. Defaults to an instance of Data.
-        Model (pymcmcstat.MCMC.MCMC, optional): The MCMC model. Defaults to an instance of pymcmcstat.MCMC.MCMC.
-        ParamFit (dict, optional): The fitting parameters. Defaults to a predefined dictionary.
-        Param (dict, optional): The model parameters. Defaults to an empty dictionary.
+        Args:
+            data (Data, optional): The data object. Defaults to an empty Data instance.
+            ParamFit (dict, optional): Sampling settings. Defaults to standard DRAM configuration.
+            Param (dict, optional): Model parameters dictionary. Defaults to empty.
+            ncpu (int, optional): Number of workers for parallel execution. Defaults to 1.
         """
-        if data is None:
-            data = Data()
-        if Model is None:
-            Model = pymcmcstat.MCMC.MCMC()
+        # Fix: use Data() directly since it refers to the class imported via __init__.py
+        self._Data = data if data is not None else Data()
+        
         if ParamFit is None:
             ParamFit = {
                 'nsimu': 10000,
-                'updatesigma': True,
-                'method': 'dram',
+                'method': 'DRAM',
                 'adaptint': 100,
-                'verbosity': 0,
                 'waitbar': True,
+                'burn_in_fraction': 0.2
             }
-        if Param is None:
-            Param = {}
-
-        self._Model = Model
-        self._Data = data
+        
         self._ParamFit = ParamFit
-        self._Param = Param
+        self._Param = Param if Param is not None else {}
         self._Results = {}
+        self._Stats = None
         self.Ncpu = ncpu
         self._UserDefinedObject = None
-        self._Stats = None
+        self.fitter = None   
+        self.analyzer = None 
 
-    def set_Data(self, data: Data = None, user_defined_object: list = None) -> None:
-        """
-        Sets the data to fit.
-
-        Parameters:
-        Data (Data, optional): The data to fit. Defaults to None.
-        """
-        if data is None:
-            data = Data()
+    def set_Data(self, data: Optional[Data] = None, user_defined_object: Optional[list] = None) -> None:
+        """Sets the dataset and the contextual object for the physical model."""
+        if data is not None:
+            self._Data = data
         if user_defined_object is not None:
             self._UserDefinedObject = user_defined_object
-        self._Data = data
 
     def get_Data(self) -> Data:
-        """
-        Returns the data to fit.
-
-        Returns:
-        Data: The data to fit.
-        """
+        """Returns the current data object."""
         return self._Data
 
-    def set_Model(self) -> None:
-        """
-        Sets the MCMC model parameters and simulation options.
-
-        Utilizes the utility function `set_mcmc_param` to set the model parameters and
-        defines the simulation options using the fitting parameters.
-        """
-        utils.set_mcmc_param(self._Model, self._Param)
-        self._Model.simulation_options.define_simulation_options(
-            **self._ParamFit)
-
-    def get_Model(self) -> pymcmcstat.MCMC.MCMC:
-        """
-        Returns the MCMC model.
-
-        Returns:
-        pymcmcstat.MCMC.MCMC: The MCMC model.
-        """
-        return self._Model
-
-    def set_ParamFit(self, ParamFit: dict = None) -> None:
-        """
-        Sets the fitting parameters for the MCMC model.
-
-        Parameters:
-        ParamFit (dict, optional): A dictionary containing the fitting parameters. If None, defaults to a predefined dictionary:
-        {
-            'nsimu': 10000,
-            'updatesigma': True,
-            'method': 'dram',
-            'adaptint': 100,
-            'verbosity': 0,
-            'waitbar': True,
-        }
-        """
-        if ParamFit is None:
-            raise ValueError('ParamFit cannot be None')
+    def set_ParamFit(self, ParamFit: dict) -> None:
+        """Updates MCMC simulation settings."""
         self._ParamFit = ParamFit
 
     def get_ParamFit(self) -> dict:
-        """
-        Returns the fitting parameters for the MCMC model.
-
-        Returns:
-        dict: The fitting parameters.
-        """
+        """Returns the current MCMC simulation settings."""
         return self._ParamFit
 
     def set_Param(self, Param: dict) -> None:
-        """
-        Sets the model parameters for the MCMC model.
-
-        Parameters:
-        Param (dict): A dictionary containing the model parameters.
-        """
-        if Param is None:
-            raise ValueError('Param cannot be None')
+        """Updates the physical parameters configuration."""
         self._Param = Param
 
     def get_Param(self) -> dict:
-        """
-        Returns the model parameters for the MCMC model.
-
-        Returns:
-        dict: The model parameters.
-        """
+        """Returns the physical parameters configuration."""
         return self._Param
 
-    def set_Chi2Func(self, func=None) -> None:
-        """
-        Sets the chi-squared function for the MCMC model.
-
-        Parameters:
-        func (function): The chi-squared function to be used by the MCMC model.
-        """
-        if func is None:
-            raise ValueError('func cannot be None')
-        self._Model.model_settings.define_model_settings(sos_function=func)
-
     def get_Results(self) -> dict:
-        """
-        Returns the results of the fitting procedure.
-
-        Returns:
-        dict: The results of the fitting procedure.
-        """
+        """Returns the MCMC chain and results dictionary."""
         return self._Results
     
-    def get_Stats(self) -> any:
-        """
-        Returns the statistics of the fitting procedure.
-
-        Returns:
-        any: The statistics of the fitting procedure.
-        """
+    def get_Stats(self) -> Any:
+        """Returns the summary statistics of the parameters."""
         return self._Stats
-    
-    def run_parallel(self) -> None:
-        """
-        Runs the MCMC simulation in parallel using multiple processes.
-        """
-        self._Model.run_simulation()
 
-
-    def fit(self, Chi2=utils.chi2) -> None:
+    def fit(self, Chi2_func: Any = utils.chi2) -> None:
         """
-        Executes the fitting procedure using the specified chi-squared function.
-
-        Parameters:
-        Chi2 (function, optional): The chi-squared function to use for the fitting procedure. Defaults to utils.chi2.
+        Executes the fitting procedure using PyMCMC with a bridge wrapper.
         """
         y = self._Data.get_ydata()
         x = self._Data.get_xdata()
+        y_err = self._Data.get_yerr()
 
-        self.set_Chi2Func(Chi2)
+        # 1. Map parameters and convert to Priors
+        priors, initial_theta0 = utils.convert_params_to_priors(self._Param)
+        
+        # 2. Context bundle for Dusty
+        # Format: [DustyObj, DataObj, FitObj, Logfile, Jansky, Lock]
+        data_bundle = [self._UserDefinedObject[0], self._Data, self, False, True, None]
 
-        # Add data and user-defined object to the model
-        user_defined_object = self._UserDefinedObject
+        # 3. BRIDGE WRAPPER : Corrects signature and injects context
+        # PyMCMC calls: model(x_input, theta)
+        # DustyPY expects: utils.model(theta, context_object)
+        def model_bridge(x_input, theta):
+            # Create a lightweight context object that mimics what utils.model expects
+            class DataContext:
+                def __init__(self, x_val, bundle):
+                    self.xdata = x_val
+                    self.user_defined_object = [bundle]
+            
+            ctx = DataContext(x_input, data_bundle)
+            return utils.model(theta, ctx)
+
+        # 4. LOG-LIKELIHOOD WRAPPER (For the sampler)
+        # Note: We use the same context logic for consistency
+        def log_likelihood_wrapper(theta):
+            class DataContext:
+                def __init__(self, x_val, y_val, bundle):
+                    self.xdata = [x_val]
+                    self.ydata = [y_val]
+                    self.user_defined_object = [bundle]
+            ctx = DataContext(x, y, data_bundle)
+            return -0.5 * Chi2_func(theta, ctx)
+
+        # 5. Initialize the Fitter with the BRIDGE model
+        self.fitter = FunctionFitter(
+            model_func=model_bridge, # Use the bridge here!
+            x_data=x,
+            y_data=y,
+            y_err=y_err,
+            priors=priors,
+            custom_log_lik=log_likelihood_wrapper,
+            adapt_every=self._ParamFit.get('adaptint', 100)
+        )
+        self.fitter.user_defined_object = [data_bundle]
+
+        # 6. Execute Sampling
+        method = self._ParamFit.get('method', 'DRAM').upper()
+        nsimu = self._ParamFit.get('nsimu', 10000)
+        show_progress = self._ParamFit.get('waitbar', True)
+
         if self.Ncpu > 1:
-            lock = Lock()
-            user_defined_object.append(lock)
+            starts = [np.array(initial_theta0) * (1 + 0.01 * np.random.randn(len(initial_theta0))) 
+                      for _ in range(self.Ncpu)]
+            chains = self.fitter.fit_parallel(
+                initial_params_list=starts,
+                n_iterations=nsimu,
+                method=method,
+                num_workers=self.Ncpu
+            )
+            self.analyzer = MCMCAnalyzer(chains, fitter=self.fitter, 
+                                        burn_in_fraction=self._ParamFit.get('burn_in_fraction', 0.2))
         else:
-            user_defined_object.append(None)
+            chain = self.fitter.fit(
+                initial_params=initial_theta0,
+                n_iterations=nsimu,
+                method=method,
+                show_progress=show_progress
+            )
+            self.analyzer = MCMCAnalyzer(chain, fitter=self.fitter,
+                                        burn_in_fraction=self._ParamFit.get('burn_in_fraction', 0.2))
 
-        self._UserDefinedObject = user_defined_object
-        self._Model.data.add_data_set(x, y, user_defined_object=self._UserDefinedObject)
-        self.set_Model()
+        # 7. Finalize Results
+        self._Results = self.analyzer.merged_chain.to_dict()
+        self._Stats = self.analyzer.get_summary_stats()
 
-        if self.Ncpu > 1:
-            with Pool(processes=self.Ncpu) as pool:
-                from functools import partial
-                pool.map(partial(run_simulation_wrapper, self._Model), range(self.Ncpu))
-        else:
-            self._Model.run_simulation()
-
-        # Store results and statistics
-        results = self._Model.simulation_results.results.copy()
-        chain = results['chain']
-        burnin = int(results['nsimu'] / 2)
-        stats = self._Model.chainstats(chain[burnin:, :], results=results, returnstats=True)
-
-        self._Results = results
-        self._Stats = stats
-
-    def print_results(self) -> None:
+    def print_results(self, include_ic: bool = True) -> None:
         """
-        Prints the results of the fitting procedure, including chain statistics.
+        Prints the summary statistics.
+        Set include_ic=False if the model is slow to skip AIC/BIC/WAIC.
         """
-        chain = self._Results['chain']
-        burnin = int(self._Results['nsimu'] / 2)
-        self._Model.chainstats(chain[burnin:, :], self._Results)
-
+        if self.analyzer:
+            param_names = [k for k, v in self._Param.items() if v['sample']]
+            self.analyzer.print_summary(param_names=param_names, include_ic=include_ic)
+            
     def plot_stats(self) -> None:
-        """
-        Plots the statistics of the fitting procedure.
+        """Plots parameter traces and posterior distributions (Corner Plot)."""
+        if self.analyzer:
+            self.analyzer.plot_traces()
+            self.analyzer.plot_corner()
 
-        Parameters:
-        ax (matplotlib.axes.Axes): The axes to plot the statistics on.
+    def plot_pairwise_correlation(self, fig: Optional[dict] = None) -> None:
+        """Generates a Corner Plot to visualize parameter correlations."""
+        if self.analyzer:
+            self.analyzer.plot_corner()
+
+    def prediction_interval(self, x_eval: np.ndarray, n_samples: int = 500) -> Dict[str, np.ndarray]:
         """
-        chain = self.get_Results()['chain']
-        burnin = int(self.get_Results()['nsimu'] / 2)
-        names = self.get_Results()['names']
-        s2chain = self.get_Results()['s2chain']
+        Calculates confidence intervals for the model across a custom grid.
+
+        Args:
+            x_eval (np.ndarray): The wavelength grid for evaluation.
+            n_samples (int): Number of posterior samples to draw.
         
-        result = self.get_Model().chainstats(
-            chain[burnin:, :], self.get_Results(), returnstats=True)
-        mcpl = pymcmcstat.mcmcplot # initialize plotting methods
-        mcpl.plot_density_panel(chain[burnin:,:], names);
-        mcpl.plot_chain_panel(chain[burnin:,:], names);
-        mcpl.plot_density_panel(np.sqrt(s2chain[burnin:,:]), ['$\\sigma_1$', '$\\sigma_2$'])
-
-    def plot_density_panel(self) -> None:
+        Returns:
+            dict: Statistical bounds (mean, median, 68%, 95%).
         """
-        Plots the density panel of the MCMC chain.
-        """
-        chain = self.get_Results()['chain']
-        burnin = int(self.get_Results()['nsimu'] / 2)
-        names = self.get_Results()['names']
-        mcpl = pymcmcstat.mcmcplot
-        mcpl.plot_density_panel(chain[burnin:,:], names)
-
-    def plot_chain_panel(self) -> None:
-        """
-        Plots the density panel of the MCMC chain.
-        """
-        chain = self.get_Results()['chain']
-        burnin = int(self.get_Results()['nsimu'] / 2)
-        names = self.get_Results()['names']
-        mcpl = pymcmcstat.mcmcplot
-        mcpl.plot_chain_panel(chain[burnin:,:], names)
-
-
-    def prediction_interval(self, data: any = None) -> None:
-        """
-        Sets up the prediction model for calculating prediction intervals.
-        """
-        def predmodelfun2(theta, dat):
-            p = utils.prediction_model(theta,dat)
-            return p
-
-        results = self.get_Results()
-        chain = results['chain']
-        s2chain = results['s2chain']
-
-        intervals = pymcmcstat.propagation.calculate_intervals(chain, results, data, predmodelfun2,
-                               s2chain=s2chain, nsample=500, waitbar=True)
+        samples = self.analyzer.merged_chain.samples
+        indices = np.random.choice(len(samples), size=min(n_samples, len(samples)), replace=False)
         
-        return intervals
-    
-    def plot_prediction_interval(self, wavelength_dusty: np.array = None, ciset: dict = None, piset: dict = None, fig: dict = None) -> None:
-        """
-        Plots the prediction intervals.
-
-        Parameters:
-        intervals (dict): The prediction intervals to plot.
-        """
-        def format_plot(fig):
-            plt.xscale(fig['xscale'])
-            plt.yscale(fig['yscale'])
-            plt.xlim(*fig['xlim'])
-            plt.ylim(*fig['ylim'])
-            plt.xlabel(fig['xlabel'], fontsize=15)
-            plt.ylabel(fig['ylabel'], fontsize=15)
-            plt.title(fig['title'])
-
-        if wavelength_dusty is None:
-            time = self._Model.data.xdata[0]
-        else:
-            pdata = pymcmcstat.MCMC.MCMC()
-            pdata.data.add_data_set(wavelength_dusty, wavelength_dusty, user_defined_object=self._UserDefinedObject)
-            time = wavelength_dusty
-        if ciset is None:
-            ciset = {'limits': [50, 95]}
-        if piset is None:
-            addprediction = False
-        else:
-            addprediction = True
-
-        intervals = self.prediction_interval(data=pdata.data)
-
-
-        if fig is None:
-            pymcmcstat.propagation.plot_intervals(intervals=intervals, time = time, 
-                                              ydata=self._Data.get_ydata(), xdata=self._Data.get_xdata(), adddata=True,
-                                              ciset=ciset, piset=piset, addprediction=addprediction)
-        else:
-            f,ax = pymcmcstat.propagation.plot_intervals(intervals=intervals, time = time, 
-                                                    ydata=self._Data.get_ydata(), xdata=self._Data.get_xdata(), adddata=True,
-                                                    ciset=ciset, piset=piset, addprediction=addprediction)
-            format_plot(fig)
+        y_models = []
+        for idx in indices:
+            theta = samples[idx]
+            # Use the prediction model utility
+            y_models.append(utils.prediction_model(theta, self.fitter.user_defined_object[0], x_eval))
+            
+        y_models = np.array(y_models)
         
+        return {
+            'mean': np.mean(y_models, axis=0),
+            'median': np.median(y_models, axis=0),
+            'low_95': np.percentile(y_models, 2.5, axis=0),
+            'high_95': np.percentile(y_models, 97.5, axis=0),
+            'low_68': np.percentile(y_models, 16, axis=0),
+            'high_68': np.percentile(y_models, 84, axis=0)
+        }
 
-    def plot_pairwise_correlation(self, fig: dict = None) -> None:
-        """
-        Plots the pairwise correlation between the parameters.
-        """
-        chain = self.get_Results()['chain']
-        names = self.get_Results()['names']
-        settings = dict(fig=fig)
-        mcpl = pymcmcstat.mcmcplot.plot_pairwise_correlation_panel(chain, names, settings=settings)
+    def plot_prediction_interval(self, wavelength_grid: np.ndarray, fig_settings: Optional[Dict] = None) -> None:
+        """Plots the SED with prediction intervals overlaid on observational data."""
+        intervals = self.prediction_interval(wavelength_grid)
+        
+        plt.figure(figsize=(10, 6))
+        plt.fill_between(wavelength_grid, intervals['low_95'], intervals['high_95'], color='gray', alpha=0.3, label='95% CI')
+        plt.fill_between(wavelength_grid, intervals['low_68'], intervals['high_68'], color='gray', alpha=0.5, label='68% CI')
+        plt.plot(wavelength_grid, intervals['median'], color='red', label='Median Model')
+        
+        plt.errorbar(self._Data.get_xdata(), self._Data.get_ydata(), yerr=self._Data.get_yerr(), fmt='ok', label='Data')
+        
+        if fig_settings:
+            plt.xscale(fig_settings.get('xscale', 'log'))
+            plt.yscale(fig_settings.get('yscale', 'log'))
+            plt.xlabel(fig_settings.get('xlabel', 'Wavelength ($\mu m$)'))
+            plt.ylabel(fig_settings.get('ylabel', 'Flux'))
+            
+        plt.legend()
+        plt.show()
