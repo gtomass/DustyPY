@@ -152,6 +152,7 @@ class Filter:
         Args:
             model_wavelength (np.ndarray): Wavelength array of the model (microns).
             model_flux (np.ndarray): Flux density array of the model (W/m2/um).
+            use_flux (bool): If True, weights by wavelength for flux integration. Defaults to True.
 
         Returns:
             Tuple[float, float]: A tuple containing (synthetic_flux, integration_error).
@@ -182,7 +183,7 @@ class Filter:
         return f_eff, f_eff_err
     
     @staticmethod
-    def batch_compute(wavelength: np.ndarray, flux: np.ndarray, filter_names: list, n_int: int = 5000) -> Dict[str, Dict]:
+    def batch_compute(wavelength: np.ndarray, flux: np.ndarray, filter_names: list, n_int: int = 5000, use_flux: bool = True) -> Dict[str, Dict]:
         """
         Helper to compute photometry for multiple filters on arbitrary arrays.
         
@@ -191,6 +192,8 @@ class Filter:
             flux (np.ndarray): Flux density array of the model (W/m2/um).
             filter_names (list): List of filter names to compute photometry for.
             n_int (int): Number of points for the integration grid. Defaults to 5000.
+            use_flux (bool): If True, weights by wavelength for flux integration. Defaults to True.
+
         Returns:
             Dict[str, Dict]: Dictionary with filter names as keys and dictionaries
                              containing 'wavelength', 'flux', and 'error' as values.
@@ -198,7 +201,7 @@ class Filter:
         results = {}
         for name in filter_names:
             f = Filter.get(name, n_int=n_int)
-            val, err = f.calculate_synthetic_flux(wavelength, flux)
+            val, err = f.calculate_synthetic_flux(wavelength, flux, use_flux=use_flux)
             results[name] = {'wavelength': f.central_wavelength, 'flux': val, 'error': err}
         return results
     
