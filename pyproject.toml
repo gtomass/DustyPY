@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["dustypy", "dustypy.core", "dustypy.utils", "dustypy.io"]
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
