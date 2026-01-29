@@ -55,38 +55,36 @@ class Filter:
     def __init__(self, bandpass_name: str, n_int: int = 5000):
         """
         Initializes the Filter instance and performs pre-calculations.
-
-        Args:
-            bandpass_name (str): Name of the bandpass (must match a .fits filename).
-            n_int (int): Number of points for the integration grid. Defaults to 5000.
+        Updates the grid if a different n_int is requested.
         """
-        # Prevent re-initialization if retrieved from cache
-        if hasattr(self, '_initialized'):
-            return
+        # 1. Load the FITS file only if it's the very first time
+        if not hasattr(self, '_initialized'):
+            self.name = bandpass_name
+            self.path = self._find_filter_path(bandpass_name)
 
-        self.name = bandpass_name
-        self.path = self._find_filter_path(bandpass_name)
+            # Load the filter file using synphot (The slow part)
+            self.bandpass = SpectralElement.from_file(self.path)
+            self._pivot_wavelength = self.bandpass.pivot().to(u.um).value
+            self._initialized = True
 
-        # 1. Load the filter file using synphot
-        self.bandpass = SpectralElement.from_file(self.path)
-        self._pivot_wavelength = self.bandpass.pivot().to(u.um).value
+        # 2. Check if we need to (re)calculate the integration grid
+        # We do this if the grid doesn't exist or if the requested n_int has changed
+        if not hasattr(self, 'w_int_um') or len(self.w_int_um) != n_int:
+            # Pre-calculate the fixed integration grid in microns
+            w_min = np.min(self.bandpass.waveset.value)
+            w_max = np.max(self.bandpass.waveset.value)
+            w_int_aa = np.linspace(w_min, w_max, n_int) * u.AA
 
-        # 2. Pre-calculate the fixed integration grid in microns
-        w_min = np.min(self.bandpass.waveset.value)
-        w_max = np.max(self.bandpass.waveset.value)
-        w_int_aa = np.linspace(w_min, w_max, n_int) * u.AA
+            self.w_int_um = w_int_aa.to(u.um).value
+            self.throughput = self.bandpass(w_int_aa).value
 
-        self.w_int_um = w_int_aa.to(u.um).value
-        self.throughput = self.bandpass(w_int_aa).value
+            # Pre-calculate the normalization denominator
+            self.norm_factor, _ = simpson_integrate(
+                self.w_int_um, 
+                self.throughput * self.w_int_um
+            )
 
-        # 3. Pre-calculate the normalization denominator
-        # Uses photon-counter logic: integral(Transmission * lambda * dlambda)
-        self.norm_factor, _ = simpson_integrate(
-            self.w_int_um, 
-            self.throughput * self.w_int_um
-        )
-
-        self._initialized = True
+        # Update cache reference
         Filter._instance_cache[bandpass_name] = self
 
     @classmethod
