@@ -5,7 +5,7 @@ Handles the loading, caching, and synthetic photometry calculations for instrume
 
 import os
 import glob
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional, List
 import warnings
 
 import numpy as np
@@ -90,17 +90,18 @@ class Filter:
         Filter._instance_cache[bandpass_name] = self
 
     @classmethod
-    def get(cls, name: str) -> "Filter":
+    def get(cls, name: str, n_int: int = 5000) -> "Filter":
         """
         Utility method to access the filter cache.
 
         Args:
             name (str): Name of the filter to retrieve.
+            n_int (int): Number of points for the integration grid if creating new. Defaults to 5000.
 
         Returns:
             Filter: The requested Filter instance.
         """
-        return cls(name)
+        return cls(name, n_int=n_int)
 
     def _find_filter_path(self, name: str) -> str:
         """
@@ -176,7 +177,7 @@ class Filter:
         return f_eff, f_eff_err
     
     @staticmethod
-    def batch_compute(wavelength: np.ndarray, flux: np.ndarray, filter_names: list):
+    def batch_compute(wavelength: np.ndarray, flux: np.ndarray, filter_names: list, n_int: int = 5000) -> Dict[str, Dict]:
         """
         Helper to compute photometry for multiple filters on arbitrary arrays.
         
@@ -184,13 +185,14 @@ class Filter:
             wavelength (np.ndarray): Wavelength array of the model (microns).
             flux (np.ndarray): Flux density array of the model (W/m2/um).
             filter_names (list): List of filter names to compute photometry for.
+            n_int (int): Number of points for the integration grid. Defaults to 5000.
         Returns:
             Dict[str, Dict]: Dictionary with filter names as keys and dictionaries
                              containing 'wavelength', 'flux', and 'error' as values.
         """
         results = {}
         for name in filter_names:
-            f = Filter.get(name)
+            f = Filter.get(name, n_int=n_int)
             val, err = f.calculate_synthetic_flux(wavelength, flux)
             results[name] = {'wavelength': f.central_wavelength, 'flux': val, 'error': err}
         return results
