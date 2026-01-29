@@ -41,8 +41,6 @@ This will automatically fetch dependencies like `numpy`, `astropy`, and the late
 
 ## Quick Start
 
-## Use
-
 **1. Define a Model**
 
 ```python
@@ -76,7 +74,9 @@ fitter.add_star_parameter(0, 'temp', initial=3600, min_val=3000, max_val=4000)
 fitter.add_parameter('opacity', initial=0.1, min_val=0.0, max_val=1.0)
 
 analyzer = fitter.run(n_iterations=1000)
-analyzer.plot_chains()
+analyzer.plot_traces()
+analyzer.plot_corner()
+fitter.best_model.plot()
 ```
 
 ## Project Structure
@@ -92,6 +92,17 @@ analyzer.plot_chains()
 ## Note
 
 As of today, there is a bug in dusty V4 that has not yet been corrected. This implies that the is not taken into account. Refer to the [raised issue](https://github.com/ivezic/dusty/issues/11) for solution.
+
+## Data Specifications
+
+### Atmosphere Grids (FITS)
+To ensure compatibility with the interpolation engine, FITS grids must follow this structure:
+* **HDU 0**: Primary header. Optional `WAVUNIT` keyword (e.g., 'Angstrom', 'micron'). Defaults to 'micron'.
+* **HDU 1**: Contains the reference `wavelength` column and the first `flux` column.
+* **HDU 1 to N**: Each extension must contain:
+    * **Header**: `TEFF` (float) and `LOGG` (float) keywords.
+    * **Data**: A table with at least a `flux` column.
+* **Note**: The code assumes all extensions share the same wavelength grid as HDU 1.
 
 ## License
 

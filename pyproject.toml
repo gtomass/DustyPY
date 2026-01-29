@@ -2,9 +2,6 @@
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
 [project]
 name = "DustyPY"
 version = "1.0.0"
@@ -33,6 +30,9 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["dustypy", "dustypy.core", "dustypy.utils", "dustypy.io"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.setuptools.package-data]
 "dustypy.io.templates" = ["*.inp"]

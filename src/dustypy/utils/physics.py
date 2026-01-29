@@ -8,6 +8,9 @@ import os
 import ctypes
 from typing import Dict, List, Optional, Tuple, Any
 
+import urllib.request
+from pathlib import Path
+
 import numpy as np
 from scipy import interpolate
 from scipy.interpolate import LinearNDInterpolator
@@ -293,6 +296,12 @@ def get_interpolated_atmosphere(
 
     Results are cached in memory to speed up repeated calls during fitting.
 
+    Expected FITS structure:
+    - HDU 0: Header 'WAVUNIT' (unit name).
+    - HDU 1-N: Headers 'TEFF', 'LOGG' (parameters).
+    - HDU 1-N: Table with 'flux' column.
+    - HDU 1: Table with 'wavelength' column (used for all HDUs).
+
     Args:
         grid_path (str): Path to the FITS atmosphere grid.
         teff (float): Effective temperature in Kelvin.
@@ -305,23 +314,50 @@ def get_interpolated_atmosphere(
     """
     global _ATMOSPHERE_GRID_CACHE
     
-    # 1. Load and cache grid if not already present
     if grid_path not in _ATMOSPHERE_GRID_CACHE:
         if not os.path.exists(grid_path):
-            raise FileNotFoundError(f"Atmosphere grid not found at: {grid_path}")
+            try:
+                download_atmosphere_grid(
+                    destination_path=grid_path,
+                    zenodo_id="",  # Example Zenodo ID for MARCS grid
+                    filename=os.path.basename(grid_path)
+                )
+            except Exception:
+                raise FileNotFoundError(
+                    f"Atmosphere grid file not found at {grid_path} "
+                    "and automatic download failed."
+                )
             
         with fits.open(grid_path) as hdu:
+            # 1. Validate basic structure
+            if len(hdu) < 2:
+                raise ValueError(f"FITS file {grid_path} must have at least one data extension.")
+            
             wave_unit_str = hdu[0].header.get('WAVUNIT', 'micron')
             wave_unit = u.Unit(wave_unit_str)
             
             teffs, loggs, fluxes = [], [], []
-            for i in range(1, len(hdu)):
-                teffs.append(hdu[i].header['TEFF'])
-                loggs.append(hdu[i].header['LOGG'])
-                fluxes.append(hdu[i].data['flux'])
             
+            # 2. Extract Wavelength from the first extension
+            if 'wavelength' not in hdu[1].columns.names:
+                raise KeyError(f"Missing 'wavelength' column in HDU 1 of {grid_path}")
             wavelength = (hdu[1].data['wavelength'] * wave_unit).to(u.um).value
             
+            # 3. Extract Grid Points
+            for i in range(1, len(hdu)):
+                header = hdu[i].header
+                # Check for mandatory headers
+                if 'TEFF' not in header or 'LOGG' not in header:
+                    print(f"Warning: Skipping HDU {i}, missing TEFF or LOGG.")
+                    continue
+                
+                teffs.append(header['TEFF'])
+                loggs.append(header['LOGG'])
+                fluxes.append(hdu[i].data['flux'])
+            
+            if not teffs:
+                raise ValueError("No valid TEFF/LOGG data found in the grid.")
+                
             # Setup 2D Linear Interpolator
             points = np.array(list(zip(teffs, loggs)))
             flux_grid = np.array(fluxes)
@@ -336,21 +372,49 @@ def get_interpolated_atmosphere(
 
     grid_data = _ATMOSPHERE_GRID_CACHE[grid_path]
     
-    # 2. Bound checking to prevent NaNs
+    # 4. Bound checking
     t_min, t_max = grid_data['teff_range']
     g_min, g_max = grid_data['logg_range']
     
     if not (t_min <= teff <= t_max) or not (g_min <= logg <= g_max):
+        # We return None for flux if outside bounds to allow the Runner 
+        # to handle the fallback (e.g., using a Blackbody instead).
         return grid_data['wavelength'], None
         
-    # 3. Perform interpolation
     flux = grid_data['interpolator'](teff, logg)
     
-    # Check if interpolation resulted in NaNs (e.g., holes in the grid)
     if np.isnan(flux).any():
         return grid_data['wavelength'], None
         
     return grid_data['wavelength'], flux
+
+def download_atmosphere_grid(destination_path: str, zenodo_id: str, filename: str):
+    """
+    Télécharge une grille d'atmosphère depuis Zenodo si elle est absente.
+    
+    Args:
+        destination_path (str): Chemin local où enregistrer le fichier.
+        zenodo_id (str): L'identifiant de votre dépôt Zenodo (ex: '1234567').
+        filename (str): Le nom du fichier sur Zenodo (ex: 'marcs_z0.00.fits').
+    """
+    path = Path(destination_path)
+    if path.exists():
+        return # Le fichier est déjà là
+
+    # URL de téléchargement direct Zenodo
+    url = f"https://zenodo.org/record/{zenodo_id}/files/{filename}?download=1"
+    
+    print(f"Downloading {filename} from Zenodo (~800MB)...")
+    
+    # Création du dossier parent si nécessaire
+    path.parent.mkdir(parents=True, exist_ok=True)
+    
+    try:
+        urllib.request.urlretrieve(url, destination_path)
+        print(f"Download complete: {destination_path}")
+    except Exception as e:
+        print(f"Error downloading from Zenodo: {e}")
+        raise
 
 
 def get_grid_bounds(grid_path: str) -> Tuple[Optional[Tuple[float, float]], Optional[Tuple[float, float]]]:
