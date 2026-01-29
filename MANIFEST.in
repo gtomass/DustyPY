@@ -1,2 +1,2 @@
-include DustyPY/Mod.inp
-graft DustyPY/filter
+include src/dustypy/io/templates/Mod.inp
+graft src/dustypy/data/filter

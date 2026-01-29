@@ -127,11 +127,22 @@ cython_debug/
 
 # testing
 test.py
-tests/test_erreur.py
+tests/*
+debug_tests/*
+
 
 # C
-DustyPY/libs/*.so
+src/dustypy/libs/*.so
 
 # Building
 build/*
 DustyPY.egg-info/*
+
+# Tmp files
+tmp_run/*
+tmp_mcmc/*
+
+build/
+dist/
+*.egg-info/
+.ipynb_checkpoints/

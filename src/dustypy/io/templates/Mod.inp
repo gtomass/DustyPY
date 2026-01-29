@@ -9,16 +9,16 @@ II. PHYSICAL PARAMETERS
 
      1.1) Shape: %(available options: black_body\engelke_marengo\power_law\file_lambda_f_lambda\file_f_lambda\file_f_nu)
 
-      	        Spectral shape = engelke_marengo  
-				Number of BB = 1
-                Temperature = 5800 K
-				SiO absorption depth = 10 percents
-				Luminosities = 
+{{SPECTRAL_LOGIC}}
+{{BB_LOGIC}}
+{{TEMPERATURE_LOGIC}}
+{{ABSORPTION_LOGIC}}
+{{LUMINOSITY_LOGIC}}
 
      1.2) Scale: %(available options: flux\Lum_r1\energy_den\dilutn_fac\T1)
         
 		Scale:    type of entry = T1
-                            Td = 800 K
+{{DUST_TEMP_LOGIC}}
 
      2) External source  %(available options: on\off)
                
@@ -28,35 +28,31 @@ II. PHYSICAL PARAMETERS
      
      3.1 Chemical composition %(available options: common_grain_composite\common_and_addl_grain\tabulated)
 
-            optical properties index = common_and_addl_grain_composite
+{{OPTICAL_PROPERTIES_LOGIC}}
 
-     		Abundances for supported grain types:
+    		Abundances for supported grain types:
                	Sil-Ow  Sil-Oc  Sil-DL  grf-DL  amC-Hn  SiC-Pg 
            x =  0.00    0.00    0.00    0.00    0.0    0.00
 
-			Number of additional components = 0, properties listed in files
-                            
+{{COMPOSITION_LOGIC}}
+{{ABUNDANCES_LOGIC}}
 
-            Abundances for these components = 
-
-	        SIZE DISTRIBUTION = MODIFIED_MRN
-			q = 3.5, a(min) = 0.005 microns, a(max) = 0.25 microns
-	        Tsub = 1500.
+{{SIZE_DIST_LOGIC}}
+{{SIZE_PARAMS_LOGIC}}
+	   
+{{TSUB_LOGIC}}
 
 
      4) Density Distribution %(available options: powd\expd\rdw\rdwa\usr_suppld)
 
-         	 density type = POWD
-        	 number of powers = 1                
-        	 shell's relative thickness = 1000.
-        	 power = 2.
+{{DENSITY_LOGIC}}
         
      5) Optical Depth: %(available options: linear\logarithmic\user_supplied)
    
 		 grid type = linear % log grid
         	 lambda0 = .55 micron    % fiducial wavelength
 		 % minimal optical depth @ fiducial wavelength   
-        	 tau(min) = .1; tau(max) = .1 
+{{OPACITY_LOGIC}}
         	 number of models = 1
 
   ----------------------------------------------------------------------
@@ -96,4 +92,3 @@ II. PHYSICAL PARAMETERS
 
   The end of the input parameters listing
   **********************************************************************
- 

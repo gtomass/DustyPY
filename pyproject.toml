@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "DustyPY"
+version = "1.0.0"
+authors = [
+  { name="G. Tomassini", email="gabriel.tomassini@oca.eu" },
+]
+description = "A Python wrapper for the Dusty radiation transfer code with MCMC support"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "astropy",
+    "astroquery",
+    "synphot",
+    "matplotlib",
+    "PyMCMC @ git+https://github.com/gtomass/PyMCMC.git"
+]
+
+[tool.setuptools]
+packages = ["dustypy", "dustypy.core", "dustypy.utils", "dustypy.io"]
+
+[tool.setuptools.package-data]
+"dustypy.io.templates" = ["*.inp"]
+"dustypy.data" = ["*"]

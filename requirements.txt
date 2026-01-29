@@ -1,0 +1,8 @@
+numpy
+scipy
+astropy
+astroquery
+synphot
+matplotlib
+# Version spécifique pour pip
+git+https://github.com/gtomassini/PyMCMC.git
