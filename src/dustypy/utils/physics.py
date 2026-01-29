@@ -339,9 +339,9 @@ def get_interpolated_atmosphere(
             teffs, loggs, fluxes = [], [], []
             
             # 2. Extract Wavelength from the first extension
-            if 'wavelength' not in hdu[1].columns.names:
-                raise KeyError(f"Missing 'wavelength' column in HDU 1 of {grid_path}")
-            wavelength = (hdu[1].data['wavelength'] * wave_unit).to(u.um).value
+            if 'Wavelength' not in hdu[1].columns.names:
+                raise KeyError(f"Missing 'Wavelength' column in HDU 1 of {grid_path}")
+            wavelength = (hdu[1].data['Wavelength'] * wave_unit).to(u.um).value
             
             # 3. Extract Grid Points
             for i in range(1, len(hdu)):
@@ -353,7 +353,7 @@ def get_interpolated_atmosphere(
                 
                 teffs.append(header['TEFF'])
                 loggs.append(header['LOGG'])
-                fluxes.append(hdu[i].data['flux'])
+                fluxes.append(hdu[i].data['Flux'])
             
             if not teffs:
                 raise ValueError("No valid TEFF/LOGG data found in the grid.")
