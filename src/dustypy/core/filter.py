@@ -140,7 +140,8 @@ class Filter:
     def calculate_synthetic_flux(
         self, 
         model_wavelength: np.ndarray, 
-        model_flux: np.ndarray
+        model_flux: np.ndarray,
+        use_flux: bool = True
     ) -> Tuple[float, float]:
         """
         Calculates the synthetic flux by integrating the model SED over the filter.
@@ -160,9 +161,15 @@ class Filter:
         f_interp = np.interp(self.w_int_um, model_wavelength, model_flux)
 
         # Calculate numerator: integral(Flux * Transmission * lambda * dlambda)
+        if use_flux:
+            weight = self.w_int_um
+        else:
+            weight = 1.0
+
+        # Intégration du numérateur
         num, num_err = simpson_integrate(
             self.w_int_um, 
-            f_interp * self.throughput * self.w_int_um
+            f_interp * self.throughput * weight
         )
 
         # The effective flux is the ratio of the integrals
