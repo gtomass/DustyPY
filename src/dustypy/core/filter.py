@@ -79,9 +79,15 @@ class Filter:
             self.throughput = self.bandpass(w_int_aa).value
 
             # Pre-calculate the normalization denominator
-            self.norm_factor, _ = simpson_integrate(
+            self.norm_photon, _ = simpson_integrate(
                 self.w_int_um, 
                 self.throughput * self.w_int_um
+            )
+            
+            # Normalisation Énergie (Bolomètre)
+            self.norm_energy, _ = simpson_integrate(
+                self.w_int_um, 
+                self.throughput
             )
 
         # Update cache reference
@@ -141,7 +147,7 @@ class Filter:
         self, 
         model_wavelength: np.ndarray, 
         model_flux: np.ndarray,
-        use_flux: bool = True
+        use_photon_count: bool = True
     ) -> Tuple[float, float]:
         """
         Calculates the synthetic flux by integrating the model SED over the filter.
@@ -152,7 +158,7 @@ class Filter:
         Args:
             model_wavelength (np.ndarray): Wavelength array of the model (microns).
             model_flux (np.ndarray): Flux density array of the model (W/m2/um).
-            use_flux (bool): If True, weights by wavelength for flux integration. Defaults to True.
+            use_photon_count (bool): If True, weights by wavelength for photon count integration. Defaults to True.
 
         Returns:
             Tuple[float, float]: A tuple containing (synthetic_flux, integration_error).
@@ -162,10 +168,12 @@ class Filter:
         f_interp = np.interp(self.w_int_um, model_wavelength, model_flux)
 
         # Calculate numerator: integral(Flux * Transmission * lambda * dlambda)
-        if use_flux:
+        if use_photon_count:
             weight = self.w_int_um
+            norm = self.norm_photon
         else:
             weight = 1.0
+            norm = self.norm_energy
 
         # Intégration du numérateur
         num, num_err = simpson_integrate(
@@ -173,17 +181,13 @@ class Filter:
             f_interp * self.throughput * weight
         )
 
-        # The effective flux is the ratio of the integrals
-        if self.norm_factor == 0:
+        if norm == 0:
             return 0.0, 0.0
 
-        f_eff = num / self.norm_factor
-        f_eff_err = num_err / self.norm_factor
-
-        return f_eff, f_eff_err
+        return num / norm, num_err / norm
     
     @staticmethod
-    def batch_compute(wavelength: np.ndarray, flux: np.ndarray, filter_names: list, n_int: int = 5000, use_flux: bool = True) -> Dict[str, Dict]:
+    def batch_compute(wavelength: np.ndarray, flux: np.ndarray, filter_names: list, n_int: int = 5000, use_photon_count: bool = True) -> Dict[str, Dict]:
         """
         Helper to compute photometry for multiple filters on arbitrary arrays.
         
@@ -192,7 +196,7 @@ class Filter:
             flux (np.ndarray): Flux density array of the model (W/m2/um).
             filter_names (list): List of filter names to compute photometry for.
             n_int (int): Number of points for the integration grid. Defaults to 5000.
-            use_flux (bool): If True, weights by wavelength for flux integration. Defaults to True.
+            use_photon_count (bool): If True, weights by wavelength for photon count integration. Defaults to True.
 
         Returns:
             Dict[str, Dict]: Dictionary with filter names as keys and dictionaries
@@ -201,7 +205,7 @@ class Filter:
         results = {}
         for name in filter_names:
             f = Filter.get(name, n_int=n_int)
-            val, err = f.calculate_synthetic_flux(wavelength, flux, use_flux=use_flux)
+            val, err = f.calculate_synthetic_flux(wavelength, flux, use_photon_count=use_photon_count)
             results[name] = {'wavelength': f.central_wavelength, 'flux': val, 'error': err}
         return results
     

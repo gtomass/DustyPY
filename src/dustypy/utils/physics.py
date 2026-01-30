@@ -319,7 +319,7 @@ def get_interpolated_atmosphere(
             try:
                 download_atmosphere_grid(
                     destination_path=grid_path,
-                    zenodo_id="",  # Example Zenodo ID for MARCS grid
+                    zenodo_id="18412489",  # Example Zenodo ID for MARCS grid
                     filename=os.path.basename(grid_path)
                 )
             except Exception:
