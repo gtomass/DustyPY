@@ -4,5 +4,6 @@ astropy
 astroquery
 synphot
 matplotlib
+sbpy
 # Version spécifique pour pip
 git+https://github.com/gtomassini/PyMCMC.git

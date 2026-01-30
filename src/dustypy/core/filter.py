@@ -13,6 +13,7 @@ import astropy.units as u
 from astropy.table import Table
 from astropy.io import ascii
 from synphot import SpectralElement
+from sbpy.units import VEGAmag, spectral_density_vega
 
 from ..utils.physics import simpson_integrate
 
@@ -65,7 +66,6 @@ class Filter:
             # Load the filter file using synphot (The slow part)
             self.bandpass = SpectralElement.from_file(self.path)
             self._pivot_wavelength = self.bandpass.pivot().to(u.um).value
-            self._effective_wavelength = self.bandpass.effective_wavelength().to(u.um).value
             self._initialized = True
 
         # 2. Check if we need to (re)calculate the integration grid
@@ -144,58 +144,77 @@ class Filter:
         """
         return self._pivot_wavelength
     
-    @property
-    def get_effective_wavelength(self) -> float:
+    def to_vega_mag(self, flux_val: float, unit: str = 'W/(m2 um)') -> float:
         """
-        Returns the effective wavelength of the filter.
-
-        Returns:
-            float: Effective wavelength in microns.
+        Convertit un flux calculé en magnitude VEGA en utilisant sbpy.
         """
-        return self._effective_wavelength
+        
+        # On crée la quantité avec unité
+        flux_q = flux_val * u.Unit(unit)
+        
+        # On passe directement l'objet bandpass (SpectralElement) à sbpy !
+        # C'est la méthode la plus précise possible.
+        mag = flux_q.to(VEGAmag, equivalencies=spectral_density_vega(self.bandpass))
+        
+        return mag.value
 
     def calculate_synthetic_flux(
         self, 
         model_wavelength: np.ndarray, 
         model_flux: np.ndarray,
         use_photon_count: bool = True
-    ) -> Tuple[float, float]:
+    ) -> Tuple[float, float, float]:
         """
         Calculates the synthetic flux by integrating the model SED over the filter.
 
-        This method interpolates the provided model onto the filter's pre-calculated 
-        internal grid and performs a Simpson integration.
+        This method interpolates the provided model onto the filter's high-res internal grid 
+        and performs a Simpson integration. It also calculates the source-dependent 
+        effective wavelength.
 
         Args:
             model_wavelength (np.ndarray): Wavelength array of the model (microns).
             model_flux (np.ndarray): Flux density array of the model (W/m2/um).
-            use_photon_count (bool): If True, weights by wavelength for photon count integration. Defaults to True.
+            use_photon_count (bool): If True, uses photon-counting logic (standard for CCDs).
+                                     If False, uses energy-integration logic.
 
         Returns:
-            Tuple[float, float]: A tuple containing (synthetic_flux, integration_error).
-                Flux is returned in the same physical units as the input model_flux.
+            Tuple[float, float, float]: (synthetic_flux, integration_error, effective_wavelength).
+                Flux is returned in the same physical units as model_flux.
         """
-        # Fast interpolation of the model onto the filter's high-res internal grid
+        # 1. Interpolation rapide du modèle sur la grille fine du filtre
         f_interp = np.interp(self.w_int_um, model_wavelength, model_flux)
 
-        # Calculate numerator: integral(Flux * Transmission * lambda * dlambda)
-        if use_photon_count:
-            weight = self.w_int_um
-            norm = self.norm_photon
-        else:
-            weight = 1.0
-            norm = self.norm_energy
-
-        # Intégration du numérateur
-        num, num_err = simpson_integrate(
+        # 2. Calcul des deux intégrales nécessaires
+        # Intégrale "Photon" : Integral( F * T * lambda dlambda )
+        num_phot, err_phot = simpson_integrate(
             self.w_int_um, 
-            f_interp * self.throughput * weight
+            f_interp * self.throughput * self.w_int_um
+        )
+        
+        # Intégrale "Energie" : Integral( F * T dlambda )
+        num_ener, err_ener = simpson_integrate(
+            self.w_int_um, 
+            f_interp * self.throughput
         )
 
-        if norm == 0:
-            return 0.0, 0.0
+        # 3. Calcul de la vraie longueur d'onde effective (Source-dependent)
+        # lambda_eff = Integral(F * T * lambda) / Integral(F * T)
+        if num_ener != 0:
+            eff_wave = num_phot / num_ener
+        else:
+            eff_wave = self._pivot_wavelength
 
-        return num / norm, num_err / norm
+        # 4. Sélection du flux final et de sa normalisation
+        if use_photon_count:
+            # Mode standard (Gaia/CCD) : Numérateur Photon / Normalisation Photon
+            f_eff = num_phot / self.norm_photon if self.norm_photon != 0 else 0.0
+            f_eff_err = err_phot / self.norm_photon if self.norm_photon != 0 else 0.0
+        else:
+            # Mode Énergie (Bolomètre) : Numérateur Énergie / Normalisation Énergie
+            f_eff = num_ener / self.norm_energy if self.norm_energy != 0 else 0.0
+            f_eff_err = err_ener / self.norm_energy if self.norm_energy != 0 else 0.0
+
+        return f_eff, f_eff_err, eff_wave
     
     @staticmethod
     def batch_compute(wavelength: np.ndarray, flux: np.ndarray, filter_names: list, n_int: int = 5000, use_photon_count: bool = True, wavelength_definition: str = "pivot") -> Dict[str, Dict]:
@@ -217,14 +236,14 @@ class Filter:
         results = {}
         for name in filter_names:
             f = Filter.get(name, n_int=n_int)
-            val, err = f.calculate_synthetic_flux(wavelength, flux, use_photon_count=use_photon_count)
+            val, err, eff_wave = f.calculate_synthetic_flux(wavelength, flux, use_photon_count=use_photon_count)
             if wavelength_definition == "pivot":
                 wave = f.get_pivot_wavelength
             elif wavelength_definition == "effective":
-                wave = f.get_effective_wavelength
+                wave = eff_wave
             else:
                 raise ValueError("wavelength_definition must be 'pivot' or 'effective'")
-            results[name] = {'wavelength': wave, 'flux': val, 'error': err}
+            results[name] = {'wavelength': wave, 'flux': val, 'error': err, 'mag_vega': f.to_vega_mag(val)}
         return results
     
     @staticmethod
