@@ -138,7 +138,7 @@ class Result:
                 )
 
                 self.photometry[fname] = {
-                    'wavelength': f_obj.central_wavelength,
+                    'wavelength': f_obj.get_pivot_wavelength,
                     'flux': f_val,
                     'error': f_err
                 }
@@ -199,7 +199,7 @@ class Result:
                 )
 
                 self.photometry[viz_name] = {
-                    'wavelength': filt_obj.central_wavelength,
+                    'wavelength': filt_obj.get_pivot_wavelength,
                     'flux': syn_flux,
                     'error': syn_err
                 }

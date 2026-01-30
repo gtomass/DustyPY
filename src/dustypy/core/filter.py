@@ -65,6 +65,7 @@ class Filter:
             # Load the filter file using synphot (The slow part)
             self.bandpass = SpectralElement.from_file(self.path)
             self._pivot_wavelength = self.bandpass.pivot().to(u.um).value
+            self._effective_wavelength = self.bandpass.effective_wavelength().to(u.um).value
             self._initialized = True
 
         # 2. Check if we need to (re)calculate the integration grid
@@ -134,7 +135,7 @@ class Filter:
         return files[0]
 
     @property
-    def central_wavelength(self) -> float:
+    def get_pivot_wavelength(self) -> float:
         """
         Returns the pivot wavelength of the filter.
 
@@ -142,6 +143,16 @@ class Filter:
             float: Pivot wavelength in microns.
         """
         return self._pivot_wavelength
+    
+    @property
+    def get_effective_wavelength(self) -> float:
+        """
+        Returns the effective wavelength of the filter.
+
+        Returns:
+            float: Effective wavelength in microns.
+        """
+        return self._effective_wavelength
 
     def calculate_synthetic_flux(
         self, 
@@ -187,7 +198,7 @@ class Filter:
         return num / norm, num_err / norm
     
     @staticmethod
-    def batch_compute(wavelength: np.ndarray, flux: np.ndarray, filter_names: list, n_int: int = 5000, use_photon_count: bool = True) -> Dict[str, Dict]:
+    def batch_compute(wavelength: np.ndarray, flux: np.ndarray, filter_names: list, n_int: int = 5000, use_photon_count: bool = True, wavelength_definition: str = "pivot") -> Dict[str, Dict]:
         """
         Helper to compute photometry for multiple filters on arbitrary arrays.
         
@@ -197,6 +208,7 @@ class Filter:
             filter_names (list): List of filter names to compute photometry for.
             n_int (int): Number of points for the integration grid. Defaults to 5000.
             use_photon_count (bool): If True, weights by wavelength for photon count integration. Defaults to True.
+            wavelength_definition (str): 'pivot' or 'effective' wavelength to return. Defaults to 'pivot'.
 
         Returns:
             Dict[str, Dict]: Dictionary with filter names as keys and dictionaries
@@ -206,7 +218,13 @@ class Filter:
         for name in filter_names:
             f = Filter.get(name, n_int=n_int)
             val, err = f.calculate_synthetic_flux(wavelength, flux, use_photon_count=use_photon_count)
-            results[name] = {'wavelength': f.central_wavelength, 'flux': val, 'error': err}
+            if wavelength_definition == "pivot":
+                wave = f.get_pivot_wavelength
+            elif wavelength_definition == "effective":
+                wave = f.get_effective_wavelength
+            else:
+                raise ValueError("wavelength_definition must be 'pivot' or 'effective'")
+            results[name] = {'wavelength': wave, 'flux': val, 'error': err}
         return results
     
     @staticmethod
