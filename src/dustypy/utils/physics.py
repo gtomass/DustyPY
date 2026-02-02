@@ -278,6 +278,39 @@ def get_common_filters(vizier_filters: List[str], local_filenames: List[str]) ->
                 
     return common_filters
 
+def calculate_filter_zp_flux(filter_obj, vega_wave_aa, vega_flux_erg, mode='energy'):
+    """
+    Calcule le flux moyen de Vega à travers un filtre (Zero Point Flux).
+    
+    Args:
+        filter_obj: Instance de la classe Filter.
+        vega_wave_aa: Array des longueurs d'onde de Vega (Angstroms).
+        vega_flux_erg: Array du flux de Vega (erg/s/cm2/A).
+        mode: 'energy' ou 'photon' selon le type de détecteur.
+        
+    Returns:
+        float: Flux de point zéro en W/m2/um.
+    """
+    # 1. Conversion de Vega en unités Dustypy (microns et W/m2/um)
+    # 1 erg/s/cm2/A = 10 W/m2/um
+    w_vega_um = vega_wave_aa * 1e-4
+    f_vega_wm2um = vega_flux_erg * 10.0
+    
+    # 2. Interpolation de Vega sur la grille haute résolution du filtre
+    f_vega_interp = np.interp(filter_obj.w_int_um, w_vega_um, f_vega_wm2um)
+    
+    # 3. Intégration selon le mode du détecteur
+    if mode == 'photon':
+        # Intégrale (F * T * lambda) / Intégrale (T * lambda)
+        num, _ = simpson_integrate(filter_obj.w_int_um, f_vega_interp * filter_obj.throughput * filter_obj.w_int_um)
+        den = filter_obj.norm_photon
+    else:
+        # Intégrale (F * T) / Intégrale (T)
+        num, _ = simpson_integrate(filter_obj.w_int_um, f_vega_interp * filter_obj.throughput)
+        den = filter_obj.norm_energy
+        
+    return num / den
+
 
 # =============================================================================
 # ATMOSPHERE UTILS
@@ -335,6 +368,7 @@ def get_interpolated_atmosphere(
             
             wave_unit_str = hdu[0].header.get('WAVUNIT', 'micron')
             wave_unit = u.Unit(wave_unit_str)
+            print(f"Loading atmosphere grid from {grid_path} with wavelength unit: {wave_unit_str}")
             
             teffs, loggs, fluxes = [], [], []
             
