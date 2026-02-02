@@ -132,13 +132,14 @@ class Result:
                 f_obj = Filter.get(fname)
 
                 # High-speed calculation (approx 0.1ms per call)
-                f_val, f_err = f_obj.calculate_synthetic_flux(
+                f_val, f_err, eff_w = f_obj.calculate_synthetic_flux(
                     self.wavelength, 
-                    self.flux
+                    self.flux, 
+                    use_photon_count=(f_obj.detector_type == 'photon')
                 )
 
                 self.photometry[fname] = {
-                    'wavelength': f_obj.get_pivot_wavelength,
+                    'wavelength': f_obj.get_pivot_wavelength(),
                     'flux': f_val,
                     'error': f_err
                 }
@@ -193,13 +194,14 @@ class Result:
 
         for viz_name, filt_obj in active_filters.items():
             try:
-                syn_flux, syn_err = filt_obj.calculate_synthetic_flux(
+                syn_flux, syn_err, eff_w = filt_obj.calculate_synthetic_flux(
                     self.wavelength, 
-                    self.flux
+                    self.flux, 
+                    use_photon_count=(filt_obj.detector_type == 'photon')
                 )
 
                 self.photometry[viz_name] = {
-                    'wavelength': filt_obj.get_pivot_wavelength,
+                    'wavelength': filt_obj.get_pivot_wavelength(),
                     'flux': syn_flux,
                     'error': syn_err
                 }

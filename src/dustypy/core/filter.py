@@ -1,10 +1,11 @@
 """
-Filter management module for DustyPY.
-Handles the loading, caching, and synthetic photometry calculations for instrument bandpasses
-using the internal STScI Vega spectrum for Zero Point calibration.
+Module de gestion des filtres pour DustyPY.
+Gère le chargement, le cache, les métadonnées (Type de détecteur) et les 
+calculs de photométrie synthétique avec calibration Vega dynamique.
 """
 
 import os
+import json
 import glob
 from typing import Dict, Tuple, Optional, List
 import warnings
@@ -15,16 +16,23 @@ from astropy.table import Table
 from astropy.io import ascii
 from synphot import SpectralElement
 
+# Import de l'intégrateur local
 from ..utils.physics import simpson_integrate
 
 
 class Filter:
     """
-    Wrapper optimisé pour les transmissions d'instruments avec calcul dynamique 
-    du Point Zéro basé sur le spectre de Vega interne.
+    Wrapper optimisé pour les filtres instrumentaux.
+    Gère les types de détecteurs (Photon/Energy) via un manifeste JSON.
     """
 
     _instance_cache: Dict[str, "Filter"] = {}
+    
+    # Chemin vers le fichier de métadonnées dans le package
+    METADATA_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), 
+        'data', 'filter', 'metadata.json'
+    )
 
     def __new__(cls, bandpass_name: str, *args, **kwargs):
         if bandpass_name in cls._instance_cache:
@@ -33,29 +41,31 @@ class Filter:
 
     def __init__(self, bandpass_name: str, n_int: int = 10000):
         """
-        Initialise le filtre et calcule les constantes (ZP, Normalisations).
+        Initialise le filtre, charge son type de détecteur et calcule le ZP Vega.
         """
         if not hasattr(self, '_initialized'):
             self.name = bandpass_name
             self.path = self._find_filter_path(bandpass_name)
+            
+            # 1. Charger le type de détecteur (Manifeste ou défaut)
+            self.detector_type = self._load_detector_type()
 
-            # 1. Chargement de la transmission (synphot)
+            # 2. Charger la transmission via synphot
             self.bandpass = SpectralElement.from_file(self.path)
             self._pivot_wavelength = self.bandpass.pivot().to(u.um).value
             
-            # 2. Définition de la grille d'intégration haute résolution
+            # 3. Créer la grille d'intégration
             w_min = np.min(self.bandpass.waveset.value)
             w_max = np.max(self.bandpass.waveset.value)
             w_int_aa = np.linspace(w_min, w_max, n_int) * u.AA
             self.w_int_um = w_int_aa.to(u.um).value
             self.throughput = self.bandpass(w_int_aa).value
 
-            # 3. Pré-calcul des dénominateurs de normalisation
-            # Photon (lambda * T) et Energie (T)
+            # 4. Normalisations (Pré-calculées pour accélérer batch_compute)
             self.norm_photon, _ = simpson_integrate(self.w_int_um, self.throughput * self.w_int_um)
             self.norm_energy, _ = simpson_integrate(self.w_int_um, self.throughput)
 
-            # 4. Calcul automatique du Point Zéro (Vega)
+            # 5. Calculer le Point Zéro Vega dynamique
             self._setup_vega_zp()
             
             self._initialized = True
@@ -66,42 +76,65 @@ class Filter:
     def get(cls, name: str, n_int: int = 10000) -> "Filter":
         return cls(name, n_int=n_int)
 
-    def _find_filter_path(self, name: str) -> str:
-        """Localise le fichier FITS du filtre dans data/filter/"""
-        base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'filter')
-        pattern = os.path.join(base_path, '**', f"{name}.fits")
-        files = glob.glob(pattern, recursive=True)
-        if not files:
-            raise FileNotFoundError(f"Filtre '{name}.fits' non trouvé dans {base_path}")
-        return files[0]
+    # --- GESTION DES MÉTADONNÉES (JSON) ---
+
+    def _load_detector_type(self) -> str:
+        """Récupère le type de détecteur dans le fichier JSON."""
+        if os.path.exists(self.METADATA_PATH):
+            with open(self.METADATA_PATH, 'r') as f:
+                meta = json.load(f)
+                return meta.get(self.name, {}).get('detector_type', 'energy')
+        return 'energy'
+
+    @staticmethod
+    def set_detector_type(filter_name: str, detector_type: str):
+        """
+        Définit et sauvegarde le type de détecteur pour un filtre.
+        Types valides : 'photon' ou 'energy'.
+        """
+        if detector_type not in ['photon', 'energy']:
+            raise ValueError("detector_type doit être 'photon' ou 'energy'.")
+
+        # Charger le manifeste existant
+        meta = {}
+        if os.path.exists(Filter.METADATA_PATH):
+            with open(Filter.METADATA_PATH, 'r') as f:
+                meta = json.load(f)
+
+        # Mettre à jour
+        if filter_name not in meta:
+            meta[filter_name] = {}
+        meta[filter_name]['detector_type'] = detector_type
+
+        # Sauvegarder
+        with open(Filter.METADATA_PATH, 'w') as f:
+            json.dump(meta, f, indent=4)
+        
+        # Si l'instance est déjà en cache, on la met à jour
+        if filter_name in Filter._instance_cache:
+            Filter._instance_cache[filter_name].detector_type = detector_type
+            Filter._instance_cache[filter_name]._setup_vega_zp() # Recalcul du ZP
+
+        print(f"Type de détecteur mis à jour pour {filter_name} -> {detector_type}")
+
+    # --- CALCULS PHOTOMÉTRIQUES ---
 
     def _setup_vega_zp(self):
-        """
-        Calcule le flux de Point Zéro (Fzp) en intégrant le spectre de Vega 
-        fourni par le STScI situé dans data/filter/vega/vega.dat.
-        """
+        """Calcule le flux de Point Zéro Vega (Fzp) selon le mode du détecteur."""
         vega_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)), 
             'data', 'filter', 'vega', 'vega.dat'
         )
-        
         if not os.path.exists(vega_path):
-            warnings.warn(f"Spectre de Vega non trouvé à {vega_path}. Magnitude Vega impossible.")
             self.zp_flux = None
             return
 
-        # Chargement Vega: col 1 = AA, col 2 = erg/s/cm2/A
         vega_data = np.loadtxt(vega_path)
         w_vega_um = vega_data[:, 0] * 1e-4
-        f_vega_wm2um = vega_data[:, 1] * 10.0 # Conversion erg/s/cm2/A -> W/m2/um
-
-        # Détermination du mode (SVO : Gaia=Photon, Reste=Energie)
-        use_photon = any(tag in self.name.lower() for tag in ['gaia3', 'gaia'])
-        
-        # Interpolation de Vega sur la grille du filtre
+        f_vega_wm2um = vega_data[:, 1] * 10.0 # erg/s/cm2/A -> W/m2/um
         f_vega_interp = np.interp(self.w_int_um, w_vega_um, f_vega_wm2um)
 
-        if use_photon:
+        if self.detector_type == 'photon':
             num, _ = simpson_integrate(self.w_int_um, f_vega_interp * self.throughput * self.w_int_um)
             self.zp_flux = num / self.norm_photon
         else:
@@ -114,82 +147,84 @@ class Filter:
         model_flux: np.ndarray,
         use_photon_count: bool = True
     ) -> Tuple[float, float, float]:
-        """
-        Calcule le flux synthétique moyen à travers le filtre.
-        """
+        """Intégration du modèle sur le filtre."""
         f_interp = np.interp(self.w_int_um, model_wavelength, model_flux)
 
-        num_phot, _ = simpson_integrate(self.w_int_um, f_interp * self.throughput * self.w_int_um)
-        num_ener, _ = simpson_integrate(self.w_int_um, f_interp * self.throughput)
+        num_phot, num_phot_err = simpson_integrate(self.w_int_um, f_interp * self.throughput * self.w_int_um)
+        num_ener, num_ener_err = simpson_integrate(self.w_int_um, f_interp * self.throughput)
 
-        # Longueur d'onde effective (source-dependant)
         eff_wave = num_phot / num_ener if num_ener != 0 else self._pivot_wavelength
 
-        # Flux moyen normalisé selon le mode
         if use_photon_count:
             f_eff = num_phot / self.norm_photon if self.norm_photon != 0 else 0.0
+            f_eff_err = num_phot_err / self.norm_photon if self.norm_photon != 0 else 0.0
         else:
             f_eff = num_ener / self.norm_energy if self.norm_energy != 0 else 0.0
+            f_eff_err = num_ener_err / self.norm_energy if self.norm_energy != 0 else 0.0
 
-        return f_eff, 0.0, eff_wave
-
+        return f_eff, f_eff_err, eff_wave
+    
     def get_magnitude(self, flux_avg: float) -> float:
         """Calcule la magnitude Vega : -2.5 * log10(F_star / F_zp)"""
         if self.zp_flux is None:
-            raise ValueError(f"Le Point Zéro de Vega n'est pas initialisé pour {self.name}.")
+            raise ValueError(f"ZP non initialisé pour {self.name}. Vérifiez vega.dat.")
         return -2.5 * np.log10(flux_avg / self.zp_flux)
 
-    @staticmethod
-    def get_bandpass_data(filter_names: List[str]) -> Dict[str, Dict[str, np.ndarray]]:
-        """
-        Retrieves wavelength and throughput data for a list of filter names.
-
-        Args:
-        filter_names (list): List of filter names to retrieve.
-
-        Returns:
-        Dict[str, Dict[str, np.ndarray]]: Dictionary mapping filter names to
-        dictionaries containing 'wavelength' (microns) and 'throughput' arrays.
-        """
-        results = {}
-
-        for name in filter_names:
-            # Récupère l'instance du filtre (utilise le cache interne)
-            f = Filter.get(name)
-            # On utilise les données pré-calculées lors de l'initialisation
-
-            results[name] = {
-            'wavelength': f.w_int_um,
-            'throughput': f.throughput
-            }
-        return results
+    # --- MÉTHODES STATIQUES ET UTILITAIRES ---
 
     @staticmethod
-    def batch_compute(
-        wavelength: np.ndarray, 
-        flux: np.ndarray, 
-        filter_names: List[str], 
-        n_int: int = 10000, 
-        wavelength_definition: str = "effective"
-    ) -> Dict[str, Dict]:
-        """
-        Méthode de haut niveau pour calculer la photométrie sur plusieurs filtres.
-        """
+    def batch_compute(wavelength, flux, filter_names, n_int=10000, wavelength_definition="effective"):
+        """Calcule la photométrie pour une liste de filtres en respectant leur detector_type."""
         results = {}
         for name in filter_names:
             f = Filter.get(name, n_int=n_int)
-            
-            # Logique hybride SVO
-            use_photon = any(tag in name.lower() for tag in ['gaia3', 'gaia'])
+            use_photon = (f.detector_type == 'photon')
             
             val, err, eff_wave = f.calculate_synthetic_flux(wavelength, flux, use_photon_count=use_photon)
             mag = f.get_magnitude(val)
-
-            wave = eff_wave if wavelength_definition == "effective" else f._pivot_wavelength
             
+            wave = eff_wave if wavelength_definition == "effective" else f._pivot_wavelength
             results[name] = {
-                'wavelength': wave,
-                'flux': val,
+                'wavelength': wave, 
+                'flux': val, 
+                'error': err,        
                 'mag_vega': mag
             }
         return results
+
+    @classmethod
+    def add_custom_filter(cls, ascii_path: str, filter_name: str, detector_type: str = 'energy'):
+        """Ajoute un nouveau filtre et enregistre son type de détecteur."""
+        base_data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'filter', 'custom')
+        os.makedirs(base_data_path, exist_ok=True)
+        fits_path = os.path.join(base_data_path, f"{filter_name}.fits")
+
+        # Conversion ASCII -> FITS
+        data = ascii.read(ascii_path)
+        table = Table(data, names=('WAVELENGTH', 'THROUGHPUT'), units=('ANGSTROMS', 'TRANSMISSION'))
+        table.write(fits_path, format='fits', overwrite=True)
+        
+        # Enregistrement du detector_type
+        cls.set_detector_type(filter_name, detector_type)
+        
+        return cls(filter_name)
+
+    def _find_filter_path(self, name: str) -> str:
+        base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'filter')
+        pattern = os.path.join(base_path, '**', f"{name}.fits")
+        files = glob.glob(pattern, recursive=True)
+        if not files:
+            raise FileNotFoundError(f"Filtre '{name}' non trouvé.")
+        return files[0]
+    
+    @staticmethod
+    def get_bandpass_data(filter_names: List[str]) -> Dict[str, Dict[str, np.ndarray]]:
+        results = {}
+        for name in filter_names:
+            f = Filter.get(name)
+            results[name] = {'wavelength': f.w_int_um, 'throughput': f.throughput}
+        return results
+    
+    def get_pivot_wavelength(self) -> float:
+        """Retourne la longueur d'onde pivot du filtre en microns."""
+        return self._pivot_wavelength

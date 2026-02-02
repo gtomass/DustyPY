@@ -348,7 +348,7 @@ def get_interpolated_atmosphere(
     global _ATMOSPHERE_GRID_CACHE
     
     if grid_path not in _ATMOSPHERE_GRID_CACHE:
-        if not os.path.exists(grid_path):
+        if not os.path.exists(grid_path) and 'marcs' in os.path.basename(grid_path).lower():
             try:
                 download_atmosphere_grid(
                     destination_path=grid_path,

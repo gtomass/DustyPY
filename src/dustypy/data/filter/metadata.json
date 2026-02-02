@@ -1,0 +1,212 @@
+{
+    "2mass_h": {
+        "detector_type": "photon"
+    },
+    "2mass_j": {
+        "detector_type": "photon"
+    },
+    "2mass_ks": {
+        "detector_type": "photon"
+    },
+    "bessell_h": {
+        "detector_type": "energy"
+    },
+    "bessell_j": {
+        "detector_type": "energy"
+    },
+    "bessell_k": {
+        "detector_type": "energy"
+    },
+    "cousins_i": {
+        "detector_type": "energy"
+    },
+    "cousins_r": {
+        "detector_type": "energy"
+    },
+    "ctio_andicam_H": {
+        "detector_type": "energy"
+    },
+    "ctio_andicam_J": {
+        "detector_type": "energy"
+    },
+    "ctio_andicam_K": {
+        "detector_type": "energy"
+    },
+    "gaia3_g": {
+        "detector_type": "photon"
+    },
+    "gaia3_gbp": {
+        "detector_type": "photon"
+    },
+    "gaia3_grp": {
+        "detector_type": "photon"
+    },
+    "galex_fuv": {
+        "detector_type": "photon"
+    },
+    "galex_nuv": {
+        "detector_type": "photon"
+    },
+    "iras_12": {
+        "detector_type": "energy"
+    },
+    "iras_25": {
+        "detector_type": "energy"
+    },
+    "iras_60": {
+        "detector_type": "energy"
+    },
+    "iras_100": {
+        "detector_type": "energy"
+    },
+    "iso_lw1": {
+        "detector_type": "photon"
+    },
+    "iso_lw2": {
+        "detector_type": "photon"
+    },
+    "iso_lw3": {
+        "detector_type": "photon"
+    },
+    "iso_lw4": {
+        "detector_type": "photon"
+    },
+    "iso_lw5": {
+        "detector_type": "photon"
+    },
+    "iso_lw6": {
+        "detector_type": "photon"
+    },
+    "iso_lw7": {
+        "detector_type": "photon"
+    },
+    "iso_lw8": {
+        "detector_type": "photon"
+    },
+    "iso_lw9": {
+        "detector_type": "photon"
+    },
+    "iso_lw10": {
+        "detector_type": "photon"
+    },
+    "iso_sw1": {
+        "detector_type": "photon"
+    },
+    "iso_sw2": {
+        "detector_type": "photon"
+    },
+    "iso_sw3": {
+        "detector_type": "photon"
+    },
+    "iso_sw4": {
+        "detector_type": "photon"
+    },
+    "iso_sw5": {
+        "detector_type": "photon"
+    },
+    "iso_sw6": {
+        "detector_type": "photon"
+    },
+    "iso_sw7": {
+        "detector_type": "photon"
+    },
+    "iso_sw8": {
+        "detector_type": "photon"
+    },
+    "iso_sw9": {
+        "detector_type": "photon"
+    },
+    "iso_sw10": {
+        "detector_type": "photon"
+    },
+    "iso_sw11": {
+        "detector_type": "photon"
+    },
+    "johnson_b": {
+        "detector_type": "energy"
+    },
+    "johnson_h": {
+        "detector_type": "energy"
+    },
+    "johnson_i": {
+        "detector_type": "energy"
+    },
+    "johnson_j": {
+        "detector_type": "energy"
+    },
+    "johnson_k": {
+        "detector_type": "energy"
+    },
+    "johnson_l": {
+        "detector_type": "energy"
+    },
+    "johnson_r": {
+        "detector_type": "energy"
+    },
+    "johnson_u": {
+        "detector_type": "energy"
+    },
+    "johnson_v": {
+        "detector_type": "energy"
+    },
+    "pacs_70": {
+        "detector_type": "energy"
+    },
+    "pacs_100": {
+        "detector_type": "energy"
+    },
+    "pacs_160": {
+        "detector_type": "energy"
+    },
+    "scuba_450": {
+        "detector_type": "energy"
+    },
+    "scuba_850": {
+        "detector_type": "energy"
+    },
+    "sdss_g": {
+        "detector_type": "photon"
+    },
+    "sdss_i": {
+        "detector_type": "photon"
+    },
+    "sdss_r": {
+        "detector_type": "photon"
+    },
+    "sdss_u": {
+        "detector_type": "photon"
+    },
+    "sdss_z": {
+        "detector_type": "photon"
+    },
+    "skymapper_g": {
+        "detector_type": "photon"
+    },
+    "skymapper_i": {
+        "detector_type": "photon"
+    },
+    "skymapper_r": {
+        "detector_type": "photon"
+    },
+    "skymapper_u": {
+        "detector_type": "photon"
+    },
+    "skymapper_v": {
+        "detector_type": "photon"
+    },
+    "skymapper_z": {
+        "detector_type": "photon"
+    },
+    "wise_w1": {
+        "detector_type": "energy"
+    },
+    "wise_w2": {
+        "detector_type": "energy"
+    },
+    "wise_w3": {
+        "detector_type": "energy"
+    },
+    "wise_w4": {
+        "detector_type": "energy"
+    }
+}
