@@ -352,8 +352,8 @@ def get_interpolated_atmosphere(
             try:
                 download_atmosphere_grid(
                     destination_path=grid_path,
-                    zenodo_id="18412489",  # Example Zenodo ID for MARCS grid
-                    filename=os.path.basename(grid_path)
+                    filename=os.path.basename(grid_path),
+                    zenodo_id="18412489"  # Example Zenodo ID for MARCS grid
                 )
             except Exception:
                 raise FileNotFoundError(
@@ -422,14 +422,14 @@ def get_interpolated_atmosphere(
         
     return grid_data['wavelength'], flux
 
-def download_atmosphere_grid(destination_path: str, zenodo_id: str, filename: str):
+def download_atmosphere_grid(destination_path: str, filename: str, zenodo_id: str = '18412489'):
     """
     Télécharge une grille d'atmosphère depuis Zenodo si elle est absente.
     
     Args:
         destination_path (str): Chemin local où enregistrer le fichier.
-        zenodo_id (str): L'identifiant de votre dépôt Zenodo (ex: '1234567').
         filename (str): Le nom du fichier sur Zenodo (ex: 'marcs_z0.00.fits').
+        zenodo_id (str): L'identifiant de votre dépôt Zenodo (ex: '1234567').
     """
     path = Path(destination_path)
     if path.exists():

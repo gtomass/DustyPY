@@ -1,6 +1,6 @@
 __version__ = "1.0.0"
 __author__ = "G. Tomassini"
-__all__ = ["Model", "Runner", "Result", "Dataset", "Fitter", "Filter"]
+__all__ = ["Model", "Runner", "Result", "Dataset", "Fitter", "Filter", "utils"]
 
 import os
 for var in ["OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"]:
@@ -13,3 +13,4 @@ from .core.result import Result
 from .core.dataset import Dataset
 from .core.fitter import Fitter
 from .core.filter import Filter
+from . import utils

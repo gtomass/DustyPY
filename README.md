@@ -104,6 +104,18 @@ To ensure compatibility with the interpolation engine, FITS grids must follow th
     * **Data**: A table with at least a `flux` column.
 * **Note**: The code assumes all extensions share the same wavelength grid as HDU 1.
 
+You can find Marcs grid in the good format on [Zenodo](https://zenodo.org/uploads/18412489) or download them directly in the code using:
+
+```python
+from dustypy import utils
+
+PATH = 'PATH/TO/LOCATION/YOU/WANT'
+file = 'marcs_z0.00.fits'
+
+utils.download_atmosphere_grid(destination_path=PATH, filename=file)
+
+```
+
 ## License
 
 DustyPY is licensed under the MIT License. See the [LICENSE](https://github.com/Radron74/DustyPY/blob/main/LICENSE) file for more details.

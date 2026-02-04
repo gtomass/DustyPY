@@ -146,3 +146,6 @@ build/
 dist/
 *.egg-info/
 .ipynb_checkpoints/
+
+notebook/data/*.fits
+notebook/tmp*

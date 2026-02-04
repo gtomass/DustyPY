@@ -1,212 +1,357 @@
 {
     "2mass_h": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 1.6494947091250949,
+        "zp_wm2um": 1.1108355046481558e-09
     },
     "2mass_j": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 1.2393093155655275,
+        "zp_wm2um": 3.0557183382490955e-09
     },
     "2mass_ks": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 2.1638605964521873,
+        "zp_wm2um": 4.17821591912379e-10
     },
     "bessell_h": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 1.6441678603742158,
+        "zp_wm2um": 1.1364392130938704e-09
     },
     "bessell_j": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 1.2347712952218726,
+        "zp_wm2um": 3.130859405125243e-09
     },
     "bessell_k": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 2.209060939610735,
+        "zp_wm2um": 3.9258042022956564e-10
     },
     "cousins_i": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 0.7874868952287399,
+        "zp_wm2um": 1.1912653836455447e-08
     },
     "cousins_r": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 0.647300977728483,
+        "zp_wm2um": 2.238584607804202e-08
     },
     "ctio_andicam_H": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 1.6288531007354026,
+        "zp_wm2um": 1.1746893323867638e-09
     },
     "ctio_andicam_J": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 1.2457559121633919,
+        "zp_wm2um": 2.9977487310253287e-09
     },
     "ctio_andicam_K": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 2.140960267866711,
+        "zp_wm2um": 4.3742693816688093e-10
     },
     "gaia3_g": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.6217590363240914,
+        "zp_wm2um": 2.5038224296829184e-08
     },
     "gaia3_gbp": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.5109712136288587,
+        "zp_wm2um": 4.0783685090716526e-08
     },
     "gaia3_grp": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.776902248915346,
+        "zp_wm2um": 1.2690341150469612e-08
     },
     "galex_fuv": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.15350795110932386,
+        "zp_wm2um": 6.724210197684266e-08
     },
     "galex_nuv": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.23007848136832063,
+        "zp_wm2um": 4.536334455624839e-08
     },
     "iras_12": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 11.409884026302008,
+        "zp_wm2um": 8.749024607614101e-13
     },
     "iras_25": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 23.60914159384554,
+        "zp_wm2um": 4.486090137865561e-14
     },
     "iras_60": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 60.40925645460144,
+        "zp_wm2um": 1.1966425972360617e-15
     },
     "iras_100": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 101.14423033661767,
+        "zp_wm2um": 1.2353827120866773e-16
     },
     "iso_lw1": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 4.487787829437412,
+        "zp_wm2um": 2.6404114281620128e-11
     },
     "iso_lw2": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 6.753424517653787,
+        "zp_wm2um": 5.780161995953304e-12
     },
     "iso_lw3": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 14.403863026455722,
+        "zp_wm2um": 2.787057857102427e-13
     },
     "iso_lw4": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 5.996716566408506,
+        "zp_wm2um": 8.550102180522357e-12
     },
     "iso_lw5": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 6.7883497739204435,
+        "zp_wm2um": 5.210929811757824e-12
     },
     "iso_lw6": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 7.738925845494471,
+        "zp_wm2um": 3.1483469883379165e-12
     },
     "iso_lw7": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 9.647964668393868,
+        "zp_wm2um": 1.3349764245441568e-12
     },
     "iso_lw8": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 11.324282011412688,
+        "zp_wm2um": 6.944479264013381e-13
     },
     "iso_lw9": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 14.907105157128212,
+        "zp_wm2um": 2.339040215630552e-13
     },
     "iso_lw10": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 11.509218104934632,
+        "zp_wm2um": 7.27778658369195e-13
     },
     "iso_sw1": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 3.576121684630552,
+        "zp_wm2um": 6.397310306198571e-11
     },
     "iso_sw2": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 3.304185699028203,
+        "zp_wm2um": 8.451702425493285e-11
     },
     "iso_sw3": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 4.425690139700713,
+        "zp_wm2um": 2.7902515597004543e-11
     },
     "iso_sw4": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 2.777484298956728,
+        "zp_wm2um": 1.6422585497305917e-10
     },
     "iso_sw5": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 4.0770268925774245,
+        "zp_wm2um": 4.0838771396933467e-11
     },
     "iso_sw6": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 3.699605030258616,
+        "zp_wm2um": 5.508053555601172e-11
     },
     "iso_sw7": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 3.0436999498081736,
+        "zp_wm2um": 1.1599994952082772e-10
     },
     "iso_sw8": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 4.054658808934766,
+        "zp_wm2um": 3.822737793865714e-11
     },
     "iso_sw9": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 3.8747075921799334,
+        "zp_wm2um": 4.5884146737049737e-11
     },
     "iso_sw10": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 4.631101911717154,
+        "zp_wm2um": 2.3070995993712575e-11
     },
     "iso_sw11": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 4.221668773348324,
+        "zp_wm2um": 3.2995141454287426e-11
     },
     "johnson_b": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 0.43722269317319623,
+        "zp_wm2um": 6.430722278102557e-08
     },
     "johnson_h": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 1.6441678612142103,
+        "zp_wm2um": 1.1364391148213668e-09
     },
     "johnson_i": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 0.8739127557064547,
+        "zp_wm2um": 9.241824155301864e-09
     },
     "johnson_j": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 1.243058859765428,
+        "zp_wm2um": 3.1618116271063807e-09
     },
     "johnson_k": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 2.187923028721212,
+        "zp_wm2um": 4.16910621397156e-10
     },
     "johnson_l": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 3.4291280539674256,
+        "zp_wm2um": 7.58056025109833e-11
     },
     "johnson_r": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 0.6899017349227525,
+        "zp_wm2um": 1.8728617875904895e-08
     },
     "johnson_u": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 0.3589969608023284,
+        "zp_wm2um": 4.1965263269443536e-08
     },
     "johnson_v": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 0.5479351886195022,
+        "zp_wm2um": 3.6590060518403835e-08
     },
     "pacs_70": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 71.54149314304205,
+        "zp_wm2um": 4.743266118428223e-16
     },
     "pacs_100": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 102.0073134196702,
+        "zp_wm2um": 1.1456910127198355e-16
     },
     "pacs_160": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 165.35618206997043,
+        "zp_wm2um": 1.7541421353434894e-17
     },
     "scuba_450": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 449.8804246684839,
+        "zp_wm2um": 1.3535999999999999e-18
     },
     "scuba_850": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 862.6623883834429,
+        "zp_wm2um": 1.3536e-18
     },
     "sdss_g": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.47631056434647073,
+        "zp_wm2um": 5.280684468873229e-08
     },
     "sdss_i": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.7718283278334457,
+        "zp_wm2um": 1.262598320413574e-08
     },
     "sdss_r": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.6246984545596381,
+        "zp_wm2um": 2.418921418450203e-08
     },
     "sdss_u": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.35010166829842476,
+        "zp_wm2um": 3.5626405239850334e-08
     },
     "sdss_z": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 1.0829832100827694,
+        "zp_wm2um": 4.88009095286343e-09
     },
     "skymapper_g": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.50751941968591,
+        "zp_wm2um": 4.481436027335929e-08
     },
     "skymapper_i": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.7767976295005901,
+        "zp_wm2um": 1.2351466888677756e-08
     },
     "skymapper_r": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.6138440330950057,
+        "zp_wm2um": 2.5628481892374496e-08
     },
     "skymapper_u": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.34933593739978747,
+        "zp_wm2um": 3.2820456356682204e-08
     },
     "skymapper_v": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.38359278871187696,
+        "zp_wm2um": 5.6668974176253317e-08
     },
     "skymapper_z": {
-        "detector_type": "photon"
+        "detector_type": "photon",
+        "pivot_um": 0.914599298763743,
+        "zp_wm2um": 7.958438580569585e-09
     },
     "wise_w1": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 3.3897048580674767,
+        "zp_wm2um": 8.022591572990544e-11
     },
     "wise_w2": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 4.640635661878105,
+        "zp_wm2um": 2.36820125973838e-11
     },
     "wise_w3": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 12.5675936062482,
+        "zp_wm2um": 6.392693132131164e-13
     },
     "wise_w4": {
-        "detector_type": "energy"
+        "detector_type": "energy",
+        "pivot_um": 22.31422559093838,
+        "zp_wm2um": 4.858178469880691e-14
+    },
+    "lsst_r": {
+        "detector_type": "photon",
+        "pivot_um": 0.6217816614032644,
+        "zp_wm2um": 2.4533684079226474e-08
     }
 }
